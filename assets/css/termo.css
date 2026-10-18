@@ -3,7 +3,7 @@
   --tile: 48px;
   --c-correct: #1c8a52;
   --c-present: #b08410;
-  --c-absent: #160e24;
+  --c-absent: #3b3746;
   display: grid;
   grid-template-columns: minmax(250px, 300px) minmax(0, 1fr);
   grid-template-areas:
@@ -317,8 +317,9 @@
   gap: 6px;
 }
 .tm-chip {
-  font-family: var(--pixel);
-  font-size: 10px;
+  font-family: var(--body);
+  font-size: 24px;
+  line-height: 1;
   padding: 6px 8px;
   background: #120a20;
   border: 2px solid var(--purple);
@@ -395,9 +396,9 @@
   border-color: var(--gold);
 }
 .tm-tile--absent {
-  background: #2a1d3d;
-  border-color: #2a1d3d;
-  color: var(--muted);
+  background: var(--c-absent);
+  border-color: #4a4558;
+  color: #d4cede;
 }
 .tm-tile.is-reveal {
   animation: tm-flip 0.42s steps(4) both;
@@ -423,9 +424,11 @@
   border-color: var(--green);
 }
 .tm-answer b {
-  font-family: var(--pixel);
+  font-family: var(--body);
   font-weight: normal;
-  font-size: max(10px, calc(var(--tile) * 0.3));
+  font-size: max(20px, calc(var(--tile) * 0.62));
+  line-height: 1;
+  letter-spacing: 2px;
 }
 .tm-answer__theme {
   color: var(--muted);
@@ -511,8 +514,9 @@
   border-color: var(--gold);
 }
 .tm-key--absent {
-  background: var(--c-absent);
-  color: #6d5a8c;
+  background: #2c2935;
+  border-color: #3b3746;
+  color: #77718a;
 }
 
 @media (max-width: 960px) {

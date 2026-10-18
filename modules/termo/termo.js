@@ -354,10 +354,15 @@ export default {
       revealRow = -1;
       const g = game();
       setMood(g.done ? (g.won ? 'win' : 'lose') : 'idle', true);
-      say(g.done ? 'Partida encerrada. Clique em Nova partida para jogar de novo.' : g.guesses.length ? 'Continuando de onde você parou.' : `Modo ${MODE_BY_ID[id].label}: boa sorte!`);
+      say(g.done ? doneLine(g) : g.guesses.length ? 'Continuando de onde você parou.' : `Modo ${MODE_BY_ID[id].label}: boa sorte!`);
       persist();
       render();
     }
+
+    const doneLine = (g) =>
+      g.won
+        ? `${getProfile().cat.name}: ainda tô comemorando essa vitória! Bora outra? Clique em Jogar de novo.`
+        : `${getProfile().cat.name}: snif… essa foi difícil. Clique em Jogar de novo pra revanche.`;
 
     const settingsDiffer = (g) => g.attempts !== settings.attempts || g.theme !== settings.theme;
 
@@ -468,7 +473,7 @@ export default {
     }
 
     function keyBackground(g, ch) {
-      const colors = { correct: '#1c8a52', present: '#b08410', absent: '#160e24' };
+      const colors = { correct: '#1c8a52', present: '#b08410', absent: '#3b3746' };
       const neutral = '#261543';
       const parts = g.answers.map((_, b) => {
         if (g.solvedAt[b] !== null) return '#0f0919';
@@ -651,7 +656,7 @@ export default {
     if (!g0 || !g0.answers || !g0.answers.length) newGame();
     else {
       setMood(g0.done ? (g0.won ? 'win' : 'lose') : 'idle', true);
-      say(g0.done ? 'Partida encerrada. Clique em Nova partida para jogar de novo.' : g0.guesses.length ? `${getProfile().cat.name}: continuando a sua partida!` : 'Pode começar: digite uma palavra de 5 letras.');
+      say(g0.done ? doneLine(g0) : g0.guesses.length ? `${getProfile().cat.name}: continuando a sua partida!` : 'Pode começar: digite uma palavra de 5 letras.');
     }
     render();
 

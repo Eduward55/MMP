@@ -18,8 +18,9 @@ Outros comandos:
 | Comando | O que faz |
 |---|---|
 | `npm run start:local-data` | Roda salvando os dados em `./data/user` em vez do `userData` do Electron |
-| `npm run check` | Autoteste ponta a ponta dentro do Electron (Galeria, Meu Gato, Air Pads, Beat Cats, eventos, Studio com export WAV/WebM e webcam falsa, MediaPipe local, rede bloqueada) |
+| `npm run check` | Autoteste ponta a ponta dentro do Electron (Galeria, Meu Gato, Air Pads, Beat Cats, eventos, Studio com export WAV/WebM e webcam falsa, Termo, MediaPipe local, rede bloqueada) |
 | `npm run screenshots` | Gera PNGs do Hub, Meu Gato e Galeria em `out/screenshots/` |
+| `npm run termo:words` | Regera `data/termo/answers.json` e `valid.json` a partir de dicionários Hunspell e da lista de frequência (ver `data/termo/README.md`) |
 | `npm run vendor` | Recria `/vendor` a partir de `node_modules` (e baixa o modelo do MediaPipe se faltar) |
 
 Em Linux sem tela (CI/servidor), use o `xvfb`: `xvfb-run -a npm run check`.
@@ -32,7 +33,7 @@ Em Linux sem tela (CI/servidor), use o `xvfb`: `xvfb-run -a npm run check`.
 - **Beat Cats** — beatbox em grupo com 6 gatos em pixel art (o seu gato + as outras 5 pelagens do Meu Gato), vazios no início. Arraste (mouse ou toque) um dos 24 acessórios sonoros sintetizados com Tone.js (6 bateria, 5 baixo, 5 acordes, 4 melodia, 4 efeitos) para um gato: ele entra no loop sincronizado no BPM, canta e dança. Arrastar para fora ou tocar no gato silencia. Modo contínuo (entra na hora) ou por rodada (entra na próxima rodada de 2 compassos). A lontra faz um *splash* especial (tecla O). Grava só áudio ou áudio + animação (vídeo webm) direto na Galeria; Salvar guarda gatos/camadas/BPM/modo e o beat reabre da Galeria.
 - **Studio** — edita as notas tocadas nos módulos: **piano roll** (clicar cria, arrastar move, puxar a ponta estica, duplo clique apaga; fileiras fora da escala ficam escuras) e **step sequencer** (grade de semicolcheias com as notas da escala ou as peças da bateria). Muda BPM, escala/tônica (com “Encaixar na escala”), tamanho em compassos e o instrumento de cada faixa (11 instrumentos), quantiza, silencia faixas e grava pelo teclado do computador. **Exportar WAV** renderiza offline; **Exportar vídeo WebM** grava um canvas animado (linha do tempo, gato e lontra) + webcam opcional + áudio — sem webcam, sai só canvas + áudio. Tudo vai para a Galeria; **Salvar** guarda o projeto, que reabre da Galeria para continuar editando.
 - **Air Pads** — MediaPipe Hand Landmarker local (2 mãos) com vídeo espelhado e **dois círculos grandes, um por mão**, cada um com seu instrumento: piano, bateria, synth, baixo ou theremin (X = nota, Y = volume). Quando a ponta do indicador entra no círculo, toca; a altura dentro do círculo escolhe a nota (na bateria: chimbal, caixa ou bumbo) e, segurando o dedo lá dentro, o som repete no BPM. O HUD mostra o instrumento de cada círculo e o seu gato (do Meu Gato) rege com a batuta apontando para o círculo tocado. Tem escala e tônica, BPM, metrônomo, efeitos visuais e **Gravar: Sim/Não** (a gravação vai para a Galeria como áudio). **Salvar** guarda a configuração (instrumentos, escala, tônica, BPM). Sem câmera: o mouse vale como ponta do dedo, as teclas **A** e **L** “encostam” nos círculos e **Simular dedos** move duas pontas virtuais sozinhas.
-- **Termo** — adivinhe a palavra musical/felina de 5 letras.
+- **Termo** — palavras de 5 letras em português, **ignorando acentos** (digite `acao` ou `ação`, tanto faz; o teclado físico normaliza Á, Ç…). Modos **Simples** (1 tabuleiro), **Dueto** (2) e **Quarteto** (4), todos com **10 tentativas** por padrão (configurável de 4 a 15). Escolha o tema: psicologia, arte, história, gerais ou todos. Cores verde/amarelo/cinza com letras repetidas tratadas certinho; nos modos com vários tabuleiros cada tecla é pintada por pedaço (metades ou quadrantes). Animações de digitar, virar, balançar (palavra fora da lista) e pular ao acertar. O sorteio **não repete palavras** até esgotar o tema. Estatísticas locais por modo (jogos, % de vitórias, sequência, recorde, distribuição de tentativas), partida em andamento continua de onde parou, e o seu gato **comemora** (pulos, corações, confete) ou **chora** (lágrimas) no fim. Ao terminar aparece a forma acentuada (ÂNIMO, ÉPOCA).
 - **Conexões** — agrupe 16 palavras em 4 grupos.
 - **Cat Typing** — digite frases fofas; cada acerto toca uma nota; salva recordes.
 
@@ -89,9 +90,9 @@ modules/
     ui.js, icons.js  toasts, modais, ícones pixel
   hub/ mycat/ gallery/ beatcats/ studio/ airpads/ termo/ conexoes/ cattyping/
 assets/              CSS e fontes pixel (Press Start 2P e VT323, licença OFL)
-data/                padrões versionados (defaults/) e exemplos (demo/)
+data/                padrões versionados (defaults/), exemplos (demo/) e palavras do Termo (termo/)
 vendor/              Tone.js e MediaPipe locais (ver vendor/README.md)
-scripts/             autoteste, screenshots, setup do vendor
+scripts/             autoteste, screenshots, setup do vendor, gerador das palavras do Termo
 ```
 
 ## Offline de verdade
@@ -99,3 +100,7 @@ scripts/             autoteste, screenshots, setup do vendor
 - Os arquivos são servidos por um protocolo próprio (`mmp://app/…`) direto da pasta do app.
 - O processo principal **bloqueia qualquer requisição http(s)/ws(s)**; o `npm run check` falha se alguma acontecer.
 - A CSP do `index.html` só permite recursos do próprio app (`'self'`, `blob:` e `data:`).
+
+## Palavras do Termo
+
+`data/termo/answers.json` (1.547 respostas: 171 de psicologia, 162 de arte, 151 de história e 1.063 gerais) e `data/termo/valid.json` (12.502 palpites aceitos) **não foram escritos à mão**: saem de `npm run termo:words`. Toda palavra passa pelo corretor Hunspell pt-BR do LibreOffice e precisa aparecer na lista de frequência real do português brasileiro (legendas do OpenSubtitles). As respostas gerais também precisam ser reconhecidas pelo dicionário pt-PT, que é independente. As candidatas temáticas ficam em `scripts/termo-themes.mjs`, e o `build-report.json` lista as que foram recusadas e o motivo. Fontes e licenças estão em `data/termo/README.md`.
