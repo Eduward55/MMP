@@ -10,7 +10,8 @@
     "start:local-data": "electron . --local-data",
     "vendor": "node scripts/setup-vendor.js",
     "screenshots": "node scripts/screenshots.js",
-    "check": "node scripts/check.js"
+    "check": "node scripts/check.js",
+    "termo:words": "node scripts/build-termo-words.mjs"
   },
   "keywords": [
     "electron",
@@ -20,7 +21,10 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "electron": "^33.4.11"
+    "dictionary-pt": "^4.0.0",
+    "dictionary-pt-pt": "^2.0.0",
+    "electron": "^33.4.11",
+    "nspell": "^2.1.5"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.14",
