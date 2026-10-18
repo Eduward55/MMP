@@ -397,6 +397,90 @@
     sst = window.__mmpStudio.state();
     ok('Studio: beat do Beat Cats abre como faixas editáveis', sst.tracks.length >= 3 && sst.tracks.some((t) => t.id === 'bumbo') && sst.notes > 20 && sst.length === 16, `${sst.notes} notas · ${sst.tracks.map((t) => t.id).join(',')}`);
 
+    await go('termo');
+    await sleep(400);
+    const T = window.__mmpTermo;
+    const tw = T.words();
+    ok('Termo: listas geradas (1.500+ respostas, 5.000+ aceitas, 4 temas)', tw.answers >= 1500 && tw.valid >= 5000 && ['psicologia', 'arte', 'historia', 'gerais'].every((t) => tw.themes[t] > 50), JSON.stringify(tw));
+    ok('Termo: pontuação com letras repetidas', JSON.stringify(T.score('ossos', 'sopas')) === JSON.stringify(['present', 'present', 'absent', 'absent', 'correct']));
+    ok('Termo: acentos e maiúsculas não importam', T.isValid('ânimo') && T.isValid('ANIMO') && T.isValid('Época') && T.isValid('epoca') && !T.isValid('zzzzz'));
+    let ts = T.state();
+    ok('Termo: Simples com 10 tentativas por padrão', ts.settings.mode === 'simples' && ts.game.attempts === 10 && $$('.tm-board').length === 1 && $$('.tm-board .tm-row').length === 10, `${$$('.tm-board .tm-row').length} linhas`);
+    const fillers = ['muito', 'fazer', 'sobre', 'mundo', 'gente', 'tempo', 'noite', 'festa', 'falar', 'livro', 'carta', 'nuvem'];
+    const wrong = (n) => fillers.filter((w) => !T.answers().includes(w) && T.isValid(w)).slice(0, n);
+    T.type('zzzzz');
+    T.press('enter');
+    ts = T.state();
+    ok('Termo: palavra fora da lista balança e não conta', ts.game.guesses.length === 0 && ts.typing === 'zzzzz' && $('.tm-row.is-current.is-shake'));
+    for (let i = 0; i < 5; i++) T.press('backspace');
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Á', bubbles: true }));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ç', bubbles: true }));
+    ts = T.state();
+    ok('Termo: teclado físico normaliza Á e ç', ts.typing === 'ac', ts.typing);
+    T.press('backspace');
+    T.press('backspace');
+    const [w1] = wrong(1);
+    T.type(w1);
+    $('.tm-key[data-key="enter"]').click();
+    await sleep(150);
+    ts = T.state();
+    const scored = $$('.tm-board .tm-row')[0].querySelectorAll('.tm-tile--correct, .tm-tile--present, .tm-tile--absent').length;
+    const flipping = $$('.tm-board .tm-row')[0].querySelectorAll('.tm-tile.is-reveal').length;
+    ok('Termo: palpite válido vira verde/amarelo/cinza com animação', ts.game.guesses[0] === w1 && scored === 5 && flipping === 5 && $$('.tm-key.tm-key--absent, .tm-key.tm-key--present, .tm-key.tm-key--correct').length > 0, w1);
+    const answer = T.answers()[0];
+    T.type(answer);
+    T.press('enter');
+    await sleep(1100);
+    ts = T.state();
+    ok('Termo: acertar vence e o gato comemora', ts.game.done && ts.game.won && ts.mood === 'win' && $('.tm-stage[data-mood="win"] .tm-heart') && !$('.tm-result').hidden, answer);
+    ok('Termo: estatísticas do Simples', ts.stats.simples.played === 1 && ts.stats.simples.wins === 1 && ts.stats.simples.dist['2'] === 1 && $('.tm-dist__row.is-last'), JSON.stringify(ts.stats.simples));
+    const savedTermo = await window.mmp.store.read('termo');
+    ok('Termo: estatísticas salvas localmente', savedTermo && savedTermo.stats.simples.wins === 1 && savedTermo.used.includes(answer));
+
+    await T.setMode('dueto');
+    T.changeAttempts(-10);
+    ts = T.state();
+    ok('Termo: Dueto com 2 tabuleiros e tentativas configuráveis', ts.game.answers.length === 2 && ts.game.answers[0].word !== ts.game.answers[1].word && ts.game.attempts === 4 && $$('.tm-board').length === 2 && $$('.tm-board')[0].querySelectorAll('.tm-row').length === 4, `${ts.game.attempts} tentativas`);
+    T.type(T.answers()[1]);
+    T.press('enter');
+    await sleep(150);
+    const duetKey = $(`.tm-key[data-key="${wrong(1)[0][0]}"]`);
+    ok('Termo: Dueto resolve um tabuleiro por vez', T.state().game.solvedAt[1] === 0 && T.state().game.solvedAt[0] === null && $$('.tm-board')[1].classList.contains('is-solved'));
+    for (const w of wrong(3)) {
+      T.type(w);
+      T.press('enter');
+    }
+    await sleep(1100);
+    ts = T.state();
+    const tear = $('.tm-tear');
+    ok('Termo: perder mostra as palavras e o gato chora', ts.game.done && !ts.game.won && ts.mood === 'lose' && tear && getComputedStyle(tear).display === 'block' && $$('.tm-answer').length === 2, ts.game.answers.map((a) => a.display).join(','));
+    ok('Termo: derrota zera a sequência do Dueto', ts.stats.dueto.played === 1 && ts.stats.dueto.losses === 1 && ts.stats.dueto.streak === 0 && ts.stats.simples.streak === 1);
+    ok('Termo: teclado do Dueto pinta cada metade', duetKey && /linear-gradient/.test(duetKey.getAttribute('style') || ''));
+
+    await T.setMode('quarteto');
+    T.changeAttempts(6);
+    ts = T.state();
+    ok('Termo: Quarteto com 4 tabuleiros', ts.game.answers.length === 4 && new Set(ts.game.answers.map((a) => a.word)).size === 4 && $$('.tm-board').length === 4 && ts.game.attempts === 10, `${ts.game.attempts} tentativas`);
+    const seen = new Set(T.state().used);
+    let repeats = 0;
+    for (let i = 0; i < 25; i++) {
+      T.newGame();
+      T.answers().forEach((w) => {
+        if (seen.has(w)) repeats++;
+        seen.add(w);
+      });
+    }
+    ok('Termo: sorteio sem repetição', repeats === 0 && T.state().used.length === seen.size, `${seen.size} palavras sorteadas, ${repeats} repetidas`);
+    await T.setMode('simples');
+    T.newGame();
+    T.type(wrong(1)[0]);
+    T.press('enter');
+    await go('hub');
+    await go('termo');
+    await sleep(400);
+    ts = window.__mmpTermo.state();
+    ok('Termo: partida em andamento continua ao voltar', ts.settings.mode === 'simples' && ts.game.guesses.length === 1 && !ts.game.done && $$('.tm-board .tm-row')[0].querySelectorAll('.tm-tile--absent, .tm-tile--present, .tm-tile--correct').length === 5);
+
     const base = new URL('vendor/mediapipe/', location.href).href;
     const vision = await import(`${base}vision_bundle.mjs`);
     const fileset = await vision.FilesetResolver.forVisionTasks(`${base}wasm`);

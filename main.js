@@ -70,7 +70,7 @@ async function readJson(file, fallback) {
 }
 
 async function writeJsonAtomic(file, value) {
-  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
+  const tmp = `${file}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}.tmp`;
   await fs.writeFile(tmp, JSON.stringify(value, null, 2), 'utf8');
   await fs.rename(tmp, file);
 }

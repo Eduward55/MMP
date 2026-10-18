@@ -1167,23 +1167,7 @@ svg.pixel-icon {
   padding: 10px 14px 14px;
 }
 
-/* ---------- TERMO ---------- */
-.termo {
-  max-width: 640px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-.termo__head {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
+/* ---------- Placar compartilhado (Cat Typing, Termo) ---------- */
 .termo__stats {
   display: flex;
   gap: 8px;
@@ -1208,22 +1192,6 @@ svg.pixel-icon {
   font-size: 16px;
   color: var(--muted);
 }
-.termo__msg {
-  margin: 0;
-  color: var(--muted);
-  text-align: center;
-}
-.termo__board {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.termo__row {
-  display: grid;
-  grid-template-columns: repeat(5, clamp(44px, 11vw, 58px));
-  gap: 6px;
-}
-.termo__row.is-shake,
 .typing__text.is-shake {
   animation: shake 0.3s steps(4);
 }
@@ -1234,76 +1202,6 @@ svg.pixel-icon {
   75% {
     transform: translateX(6px);
   }
-}
-.tile {
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  font-family: var(--pixel);
-  font-size: clamp(16px, 3.4vw, 22px);
-  background: #120a20;
-  border: 3px solid var(--line);
-}
-.tile--typed {
-  border-color: var(--purple);
-}
-.tile--correct {
-  background: #1c8a52;
-  border-color: var(--green);
-  animation: flip 0.4s steps(3) both;
-  animation-delay: calc(var(--i) * 80ms);
-}
-.tile--present {
-  background: #8f6a0c;
-  border-color: var(--gold);
-  animation: flip 0.4s steps(3) both;
-  animation-delay: calc(var(--i) * 80ms);
-}
-.tile--absent {
-  background: #2a1d3d;
-  color: var(--muted);
-}
-@keyframes flip {
-  from {
-    transform: scaleY(0.2);
-  }
-}
-.termo__kb {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
-}
-.termo__kbrow {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-}
-.key {
-  flex: 0 1 44px;
-  min-width: 0;
-  height: 48px;
-  font-family: var(--pixel);
-  font-size: 11px;
-  color: var(--text);
-  background: var(--panel2);
-  border: 3px solid var(--line);
-  cursor: pointer;
-}
-.key--wide {
-  flex-basis: 84px;
-  font-size: 9px;
-}
-.key--correct {
-  background: #1c8a52;
-  border-color: var(--green);
-}
-.key--present {
-  background: #8f6a0c;
-  border-color: var(--gold);
-}
-.key--absent {
-  opacity: 0.45;
 }
 
 /* ---------- CONEXÕES ---------- */
