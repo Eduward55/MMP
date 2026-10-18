@@ -3,6 +3,7 @@
 import { createOutputRecorder } from '../shared/audio.js';
 import { creatureSVG } from '../shared/creatures.js';
 import { dockSay } from '../shared/companion.js';
+import { createEventLog, eventsSummary, openInStudio } from '../shared/events.js';
 import { gallery, getProfile, kv } from '../shared/store.js';
 import { el, startAudio, stamp, toast } from '../shared/ui.js';
 import { loadHandLandmarker, mapHands } from './hands.js';
@@ -72,6 +73,9 @@ export default {
     const lastLabel = ['', ''];
     const theremin = [null, null];
     const effects = [];
+    const log = createEventLog({ source: 'airpads', bpm: config.bpm, scale: config.scale, root: config.root });
+    const DRUM_NOTES = [42, 38, 36];
+    const trackOf = (i) => ({ track: `circulo-${i + 1}-${config.instruments[i]}`, trackName: `${HANDS[i]} · ${INSTRUMENT_BY_ID[config.instruments[i]].name}` });
 
     /* ---------- DOM ---------- */
     const video = el('video', { class: 'airx__video', autoplay: true, muted: true, playsinline: true });
@@ -186,6 +190,7 @@ export default {
 
     function setInstrument(i, id) {
       if (config.instruments[i] === id) return;
+      log.noteOff(`theremin-${i}`);
       config.instruments[i] = id;
       inside[i] = false;
       theremin[i] = null;
@@ -214,6 +219,7 @@ export default {
         label = midiName(value);
       }
       lastTrig[i] = performance.now();
+      log.note({ note: id === 'drums' ? DRUM_NOTES[value] : value, inst: id, ...trackOf(i), time, dur: (id === 'piano' ? 60 : 30) / config.bpm, vel: 0.85 });
       const fire = () => engines && engines[i] && engines[i].play(value, time);
       if (engines) fire();
       else ensureAudio().then(fire).catch(() => {});
@@ -235,6 +241,7 @@ export default {
       const vol = 1 - (Math.max(-1, Math.min(1, rel.ry)) + 1) / 2;
       const changed = !theremin[i] || theremin[i].midi !== m;
       theremin[i] = { midi: m, vol };
+      if (changed) log.noteOn(`theremin-${i}`, { note: m, inst: 'theremin', ...trackOf(i), vel: 0.2 + vol * 0.8 });
       if (engines && engines[i] && engines[i].continuous) engines[i].hold(m, vol);
       else ensureAudio().catch(() => {});
       const label = `${midiName(m)} · ${Math.round(vol * 100)}%`;
@@ -339,6 +346,7 @@ export default {
           circles[i].classList.remove('is-inside');
           if (continuous && engines && engines[i].release) engines[i].release();
           if (continuous) theremin[i] = null;
+          if (continuous) log.noteOff(`theremin-${i}`);
         }
       });
       draw(now, tips);
@@ -378,7 +386,7 @@ export default {
           const r = 12 + age * 220;
           ctx.strokeRect(Math.round(e.x - r), Math.round(e.y - r), Math.round(r * 2), Math.round(r * 2));
           ctx.beginPath();
-          ctx.arc(e.x, e.y, r * 0.75, 0, Math.PI * 2);
+          ctx.arc(e.x, e.y, Math.max(0, r * 0.75), 0, Math.PI * 2);
           ctx.stroke();
         } else if (e.kind === 'spark') {
           const f = age * 60;
@@ -479,11 +487,12 @@ export default {
       recBtn.classList.remove('is-active');
       recBtn.setAttribute('aria-pressed', 'false');
       recBtn.querySelector('.btn__text').textContent = 'Gravar: Não';
+      const events = log.stopTake();
       const { blob, seconds } = await r.stop();
       r.dispose();
       const names = config.instruments.map((id) => INSTRUMENT_BY_ID[id].name).join(' + ');
       const title = `Air Pads · ${names} · ${stamp()}`;
-      const item = await gallery.addBlob('audio', title, 'airpads', blob, { seconds, bpm: config.bpm, instruments: [...config.instruments], scale: config.scale, root: config.root });
+      const item = await gallery.addBlob('audio', title, 'airpads', blob, { seconds, bpm: config.bpm, instruments: [...config.instruments], scale: config.scale, root: config.root, ...eventsSummary(events) }, events);
       return item;
     }
 
@@ -498,6 +507,7 @@ export default {
           await ensureAudio();
           rec = await createOutputRecorder();
           rec.start();
+          log.startTake();
           const t0 = Date.now();
           timer.textContent = '00:00';
           recTimer = setInterval(() => {
@@ -515,18 +525,28 @@ export default {
       }
     });
 
+    function sendToStudio() {
+      const json = log.recent();
+      if (!json) return toast('Toque alguma coisa primeiro: tudo que você tocar vira notas no Studio.', 'info');
+      openInStudio(json);
+    }
+    const studioBtn = el('button', { class: 'btn btn--ghost', title: 'Leva tudo que você tocou (notas, tempo, instrumento) para editar no Studio', onclick: sendToStudio }, 'Editar no Studio');
+
     camBtn.addEventListener('click', enableCamera);
     demoBtn.addEventListener('click', () => setDemo(!demo));
     scaleSel.addEventListener('change', () => {
       config.scale = scaleSel.value;
+      log.set({ scale: config.scale });
       bubble.textContent = `Escala ${SCALE_BY_ID[config.scale].name}!`;
     });
     rootSel.addEventListener('change', () => {
       config.root = Number(rootSel.value);
+      log.set({ root: config.root });
       bubble.textContent = `Tom de ${ROOTS[config.root]}!`;
     });
     bpmInput.addEventListener('input', () => {
       config.bpm = Number(bpmInput.value);
+      log.set({ bpm: config.bpm });
       bpmLabel.textContent = `${config.bpm} BPM`;
       if (Tone) Tone.Transport.bpm.value = config.bpm;
     });
@@ -540,7 +560,7 @@ export default {
       el(
         'div',
         { class: 'airx' },
-        el('section', { class: 'panel airx__stage' }, el('div', { class: 'toolbar' }, camBtn, demoBtn, recBtn, timer, status), arena),
+        el('section', { class: 'panel airx__stage' }, el('div', { class: 'toolbar' }, camBtn, demoBtn, recBtn, timer, studioBtn, status), arena),
         el(
           'section',
           { class: 'panel airx__controls' },
@@ -558,7 +578,7 @@ export default {
             el('label', { class: 'airx__setting' }, el('span', { class: 'field__label' }, 'BPM'), bpmLabel, bpmInput),
             metroBtn
           ),
-          el('p', { class: 'hint' }, 'Entrou no círculo, tocou. Segurando dentro, repete no ritmo do BPM. Altura no círculo = nota (bateria: chimbal, caixa, bumbo). Theremin: X = nota, Y = volume. Gravar: Sim manda o áudio para a Galeria; Salvar guarda instrumentos, escala e BPM.')
+          el('p', { class: 'hint' }, 'Entrou no círculo, tocou. Segurando dentro, repete no ritmo do BPM. Altura no círculo = nota (bateria: chimbal, caixa, bumbo). Theremin: X = nota, Y = volume. Gravar: Sim manda o áudio (com as notas) para a Galeria; Editar no Studio leva tudo que você tocou; Salvar guarda instrumentos, escala e BPM.')
         )
       )
     );
@@ -583,6 +603,8 @@ export default {
         simTips = i === undefined ? [] : simTips.filter((t) => t.hand !== i);
       },
       setInstrument,
+      events: () => log.recent(),
+      sendToStudio,
       ready: () => ensureAudio()
     };
 

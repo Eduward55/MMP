@@ -7,14 +7,17 @@ const TYPES = [
   { id: 'all', label: 'Tudo' },
   { id: 'audio', label: 'Áudio' },
   { id: 'video', label: 'Vídeo' },
-  { id: 'beat', label: 'Beats' }
+  { id: 'beat', label: 'Beats' },
+  { id: 'project', label: 'Projetos' }
 ];
 
 const TYPE_INFO = {
   audio: { label: 'Áudio', icon: 'studio', color: '#5ff3ff' },
   video: { label: 'Vídeo', icon: 'gallery', color: '#ffd23f' },
-  beat: { label: 'Beat', icon: 'beatcats', color: '#ff4fd8' }
+  beat: { label: 'Beat', icon: 'beatcats', color: '#ff4fd8' },
+  project: { label: 'Projeto', icon: 'studio', color: '#5dff9b' }
 };
+const hasEvents = (item) => item.type === 'project' || item.type === 'beat' || Boolean(item.eventsFile);
 
 const MODULE_NAMES = { beatcats: 'Beat Cats', studio: 'Studio', airpads: 'Air Pads', cattyping: 'Cat Typing', mmp: 'MMP' };
 
@@ -121,6 +124,7 @@ export default {
       const meta = [];
       if (item.meta && item.meta.bpm) meta.push(`${item.meta.bpm} BPM`);
       if (item.meta && item.meta.seconds) meta.push(`${Math.round(item.meta.seconds)}s`);
+      if (item.meta && item.meta.notes) meta.push(`${item.meta.notes} notas`);
       meta.push(formatBytes(item.size));
       return el(
         'article',
@@ -142,6 +146,9 @@ export default {
           'div',
           { class: 'gcard__actions' },
           el('button', { class: 'btn btn--sm btn--primary', onclick: () => open(item) }, 'Abrir'),
+          hasEvents(item) && item.type !== 'project'
+            ? el('a', { class: 'btn btn--sm btn--ghost gcard__studio', href: `#/studio?open=${encodeURIComponent(item.id)}`, title: 'Editar as notas no Studio' }, 'No Studio')
+            : null,
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => rename(item) }, 'Renomear'),
           el('button', { class: 'btn btn--sm btn--ghost', onclick: () => exportItem(item) }, 'Exportar'),
           el('button', { class: 'btn btn--sm btn--danger', onclick: () => remove(item) }, 'Apagar')
@@ -152,6 +159,10 @@ export default {
     async function open(item) {
       if (item.type === 'beat') {
         location.hash = `#/beatcats?open=${encodeURIComponent(item.id)}`;
+        return;
+      }
+      if (item.type === 'project') {
+        location.hash = `#/studio?open=${encodeURIComponent(item.id)}`;
         return;
       }
       try {

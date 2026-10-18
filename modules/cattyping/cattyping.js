@@ -3,6 +3,7 @@ import { kv, getProfile } from '../shared/store.js';
 import { creatureSVG } from '../shared/creatures.js';
 import { el, esc, startAudio } from '../shared/ui.js';
 import { dockSay } from '../shared/companion.js';
+import { createEventLog, openInStudio } from '../shared/events.js';
 
 const PHRASES = [
   'o gato maestro rege a orquestra com sua batuta',
@@ -14,6 +15,7 @@ const PHRASES = [
   'cada tecla é uma nota e cada nota é um carinho'
 ];
 const SCALE = ['C5', 'D5', 'E5', 'G5', 'A5', 'C6'];
+const SCALE_MIDI = [72, 74, 76, 79, 81, 84];
 
 export default {
   id: 'cattyping',
@@ -30,6 +32,7 @@ export default {
     let finished = null;
     let synth = null;
     let sound = true;
+    const log = createEventLog({ source: 'cattyping', bpm: 100, scale: 'penta', root: 0 });
 
     const textEl = el('p', { class: 'typing__text', 'aria-live': 'polite' });
     const statsEl = el('div', { class: 'termo__stats' });
@@ -68,6 +71,7 @@ export default {
     }
 
     async function blip(i) {
+      log.note({ note: SCALE_MIDI[i % SCALE.length], inst: 'chip', track: 'digitacao', trackName: 'Teclas certas', dur: 0.12, vel: 0.7 });
       if (!sound) return;
       try {
         const Tone = await startAudio();
@@ -115,7 +119,21 @@ export default {
           { class: 'panel typing__main' },
           el('div', { class: 'typing__top' }, cat, statsEl),
           textEl,
-          el('div', { class: 'row-actions' }, el('button', { class: 'btn btn--ghost', onclick: reset }, 'Nova frase'), soundBtn),
+          el(
+            'div',
+            { class: 'row-actions' },
+            el('button', { class: 'btn btn--ghost', onclick: reset }, 'Nova frase'),
+            soundBtn,
+            el('button', {
+              class: 'btn btn--ghost',
+              title: 'Cada tecla certa virou uma nota: leve a melodia para o Studio',
+              onclick: () => {
+                const json = log.recent();
+                if (!json) return dockSay('Digite um pouco primeiro: cada acerto vira uma nota!');
+                openInStudio({ ...json, name: 'Melodia digitada' });
+              }
+            }, 'Melodia no Studio')
+          ),
           el('p', { class: 'hint' }, 'Comece a digitar — o cronômetro começa na primeira tecla. Salvar guarda seu resultado nos recordes.')
         ),
         el('section', { class: 'panel typing__side' }, el('h2', {}, 'Recordes'), bestEl)

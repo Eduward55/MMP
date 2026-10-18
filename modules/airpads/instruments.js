@@ -1,4 +1,5 @@
 // Instrumentos e escalas do Air Pads (Tone.js de /vendor).
+import { SCALES, SCALE_BY_ID, midiHz } from '../shared/instruments.js';
 
 export const INSTRUMENTS = [
   { id: 'piano', name: 'Piano', color: '#5ff3ff', octave: 4, octaves: 2 },
@@ -9,18 +10,7 @@ export const INSTRUMENTS = [
 ];
 export const INSTRUMENT_BY_ID = Object.fromEntries(INSTRUMENTS.map((i) => [i.id, i]));
 
-export const SCALES = [
-  { id: 'major', name: 'Maior', steps: [0, 2, 4, 5, 7, 9, 11] },
-  { id: 'minor', name: 'Menor', steps: [0, 2, 3, 5, 7, 8, 10] },
-  { id: 'penta', name: 'Pentatônica', steps: [0, 2, 4, 7, 9] },
-  { id: 'blues', name: 'Blues', steps: [0, 3, 5, 6, 7, 10] },
-  { id: 'dorian', name: 'Dórica', steps: [0, 2, 3, 5, 7, 9, 10] },
-  { id: 'chromatic', name: 'Cromática', steps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }
-];
-export const SCALE_BY_ID = Object.fromEntries(SCALES.map((s) => [s.id, s]));
-
-export const ROOTS = ['Dó', 'Dó#', 'Ré', 'Ré#', 'Mi', 'Fá', 'Fá#', 'Sol', 'Sol#', 'Lá', 'Lá#', 'Si'];
-const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+export { SCALES, SCALE_BY_ID, ROOTS, midiName } from '../shared/instruments.js';
 
 export const DRUM_ZONES = ['Chimbal', 'Caixa', 'Bumbo'];
 
@@ -35,11 +25,6 @@ export function scaleNotes(instrumentId, scaleId, root) {
   return out;
 }
 
-export function midiName(m) {
-  return `${NOTE_NAMES[m % 12]}${Math.floor(m / 12) - 1}`;
-}
-
-const midiHz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
 // rx, ry ∈ [-1, 1] relativos ao centro do círculo. Topo = agudo / forte.
 export function pickNote(notes, ry) {

@@ -2,10 +2,11 @@
 import { createOutputRecorder } from '../shared/audio.js';
 import { COATS, EYE_COLORS, accessorySVG, creatureSVG } from '../shared/creatures.js';
 import { dockSay } from '../shared/companion.js';
+import { createEventLog, eventsSummary, openInStudio } from '../shared/events.js';
 import { OUTFIT_BY_ID } from '../shared/outfits.js';
 import { gallery, getProfile } from '../shared/store.js';
 import { el, esc, startAudio, stamp, toast } from '../shared/ui.js';
-import { GROUPS, GROUP_BY_ID, LOOP_STEPS, SOUNDS, SOUND_BY_ID, otterSplash } from './sounds.js';
+import { GROUPS, GROUP_BY_ID, LOOP_STEPS, SOUNDS, SOUND_BY_ID, makeCaptured, otterSplash } from './sounds.js';
 import { createStageRecorder } from './stage-recorder.js';
 
 const CAT_COUNT = 6;
@@ -23,7 +24,7 @@ function band(profile) {
 }
 
 // Converte um beat salvo (v2 ou o formato antigo de sequenciador) para a lista de sons dos 6 gatos.
-function beatFromJson(json) {
+export function beatFromJson(json) {
   const cats = new Array(CAT_COUNT).fill(null);
   if (json && Array.isArray(json.cats)) {
     json.cats.slice(0, CAT_COUNT).forEach((id, i) => (cats[i] = SOUND_BY_ID[id] ? id : null));
@@ -70,6 +71,7 @@ export default {
     const voices = new Array(CAT_COUNT).fill(null);
     const pending = new Map();
     const singTimers = [];
+    const log = createEventLog({ source: 'beatcats', bpm: state.bpm, scale: 'minor', root: 9 });
 
     /* ---------- DOM ---------- */
     const nameInput = el('input', { class: 'input', type: 'text', maxlength: '60', value: name, 'aria-label': 'Nome do beat' });
@@ -210,7 +212,7 @@ export default {
           masterFilter = new Tone.Filter(18000, 'lowpass').toDestination();
           master = new Tone.Gain(0.85).connect(masterFilter);
           Tone.Transport.bpm.value = state.bpm;
-          state.cats.forEach((id, i) => id && (voices[i] = SOUND_BY_ID[id].make(Tone, master)));
+          state.cats.forEach((id, i) => id && (voices[i] = makeCaptured(Tone, id, master, log)));
           loop = new Tone.Loop(onStep, '16n').start(0);
         })();
         audioPromise.catch((err) => {
@@ -222,6 +224,7 @@ export default {
     }
 
     function onStep(time) {
+      log.align(time);
       const s = step % LOOP_STEPS;
       if (state.mode === 'round' && s % ROUND_STEPS === 0) {
         pending.forEach((id, i) => applyLayer(i, id, time));
@@ -232,6 +235,7 @@ export default {
       if (otterPending && (state.mode === 'continuous' || s % 16 === 0)) {
         otterPending = false;
         otterSplash(Tone, master, masterFilter, time);
+        log.note({ note: 84, inst: 'fx', track: 'lontra', trackName: `${profile.otter.name} · splash`, time, dur: 60 / state.bpm, vel: 0.9 });
         Tone.Draw.schedule(splashVisual, time);
       }
       const sang = [];
@@ -253,7 +257,7 @@ export default {
         voices[i] = null;
       }
       state.cats[i] = id || null;
-      if (id && Tone && master) voices[i] = SOUND_BY_ID[id].make(Tone, master);
+      if (id && Tone && master) voices[i] = makeCaptured(Tone, id, master, log);
     }
 
     /* ---------- Visual sincronizado ---------- */
@@ -469,10 +473,11 @@ export default {
       recBtn.classList.remove('is-active');
       recBtn.querySelector('.btn__text').textContent = 'Gravar';
       renderModes();
+      const events = log.stopTake();
       const { blob, seconds } = await r.handle.stop();
       if (r.handle.dispose) r.handle.dispose();
       const title = `${nameInput.value.trim() || name} (${r.type === 'video' ? 'vídeo' : 'áudio'})`;
-      return gallery.addBlob(r.type, title, 'beatcats', blob, { seconds, bpm: state.bpm, layers: state.cats.filter(Boolean).length });
+      return gallery.addBlob(r.type, title, 'beatcats', blob, { seconds, bpm: state.bpm, layers: state.cats.filter(Boolean).length, ...eventsSummary(events) }, events);
     }
 
     recBtn.addEventListener('click', async () => {
@@ -487,6 +492,7 @@ export default {
           const type = state.recordMode === 'video' ? 'video' : 'audio';
           const handle = type === 'video' ? createStageRecorder(Tone, masterFilter, stage) : await createOutputRecorder();
           handle.start();
+          log.startTake();
           rec = { type, handle };
           const t0 = Date.now();
           timer.textContent = '00:00';
@@ -516,6 +522,7 @@ export default {
     });
     bpmInput.addEventListener('input', () => {
       state.bpm = Number(bpmInput.value);
+      log.set({ bpm: state.bpm });
       bpmLabel.textContent = `${state.bpm} BPM`;
       if (Tone) Tone.Transport.bpm.value = state.bpm;
     });
@@ -527,6 +534,15 @@ export default {
         select(null);
       }
     }, 'Silenciar todos');
+    const studioBtn = el('button', {
+      class: 'btn btn--ghost',
+      title: 'Leva as notas que os gatos tocaram para editar no Studio',
+      onclick: () => {
+        const json = log.recent();
+        if (!json) return toast('Vista um gato e deixe o loop tocar: as notas vão para o Studio.', 'info');
+        openInStudio({ ...json, name: nameInput.value.trim() || name });
+      }
+    }, 'Editar no Studio');
 
     root.append(
       el(
@@ -544,7 +560,8 @@ export default {
             el('div', { class: 'bc-opt' }, el('span', { class: 'field__label' }, 'Gravar'), recModeTabs),
             recBtn,
             timer,
-            clearBtn
+            clearBtn,
+            studioBtn
           ),
           el('div', { class: 'form-grid form-grid--tight' }, el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome do beat'), nameInput), el('div', { class: 'field field--end' }, status)),
           stage,
@@ -580,6 +597,7 @@ export default {
         toast(`Não abriu o exemplo: ${err.message}`, 'error');
       }
     }
+    log.set({ bpm: state.bpm });
     renderAll();
     if (params.play && state.cats.some(Boolean)) start().catch(() => {});
 
@@ -590,6 +608,7 @@ export default {
       remove,
       setMode,
       otter: otterFx,
+      events: () => log.recent(),
       ready: () => ensureAudio()
     };
 

@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('mmp', {
     add: (payload) => call('gallery:add', payload),
     updateJson: (id, json, name) => call('gallery:updateJson', id, json, name),
     read: (id) => call('gallery:read', id),
+    readEvents: (id) => call('gallery:readEvents', id),
     rename: (id, name) => call('gallery:rename', id, name),
     remove: (id) => call('gallery:delete', id),
     export: (id) => call('gallery:export', id)

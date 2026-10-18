@@ -1,6 +1,8 @@
 // 24 sons sintetizados com Tone.js. Cada som é uma camada em loop de 4 compassos (64 semicolcheias)
 // sobre a progressão Lá menor – Fá – Dó – Sol. tick(step, time) devolve true quando o gato "canta".
 
+import { createEventLog, tapTone } from '../shared/events.js';
+
 export const LOOP_STEPS = 64;
 
 export const GROUPS = [
@@ -412,4 +414,67 @@ export function otterSplash(Tone, master, filter, time) {
     bubbles.frequency.exponentialRampToValueAtTime(Tone.Frequency(n).toFrequency(), t + 0.04);
   });
   setTimeout(() => [hp, splash, bubbles].forEach((n) => n.dispose()), (beat * 5 + 1) * 1000);
+}
+
+/* ---------- Eventos (nota, tempo, instrumento) para o Studio ---------- */
+const SOUND_INST = { 'pad-neon': 'pad', stab: 'chip', arpejo: 'keys', orgao: 'keys', 'coral-miau': 'meow', 'melodia-flauta': 'theremin', 'melodia-8bit': 'chip', 'melodia-miau': 'meow', 'melodia-sinos': 'bells' };
+const DRUM_FOR = {
+  bumbo: () => 36,
+  caixa: (kind) => (kind === 'NoiseSynth' ? 38 : null),
+  chimbal: (_k, d) => (d > 0.1 ? 46 : 42),
+  palmas: () => 39,
+  tamborim: () => 76,
+  beatbox: (kind) => (kind === 'MembraneSynth' ? 36 : 38)
+};
+
+export function soundInstrument(id) {
+  const s = SOUND_BY_ID[id];
+  if (s.group === 'drums' || s.group === 'bass' || s.group === 'fx') return s.group;
+  return SOUND_INST[id] || 'keys';
+}
+
+// Cria a camada com os sintetizadores "grampeados": cada nota disparada vira um evento no log.
+export function makeCaptured(Tone, id, out, log) {
+  const s = SOUND_BY_ID[id];
+  const inst = soundInstrument(id);
+  let lastDrum = -1;
+  const emit = (kind, a) => {
+    const noise = kind === 'NoiseSynth';
+    const [note, dur, time, vel] = noise ? [null, a[0], a[1], a[2]] : a;
+    const t = time ?? Tone.now();
+    const d = Tone.Time(dur).toSeconds();
+    const base = { inst, track: id, trackName: s.name, time: t, dur: d, vel: vel ?? 0.8 };
+    if (inst === 'drums') {
+      const n = DRUM_FOR[id](kind, d);
+      if (n === null || Math.abs(t - lastDrum) < 0.03) return;
+      lastDrum = t;
+      log.note({ ...base, note: n });
+      return;
+    }
+    (Array.isArray(note) ? note : [note]).forEach((x) => {
+      const m = noise ? 72 : Math.round(Tone.Frequency(x).toMidi());
+      log.note({ ...base, note: Math.max(24, Math.min(108, m)) });
+    });
+  };
+  return s.make(tapTone(Tone, emit), out);
+}
+
+// Converte um beat salvo (gatos + BPM) em eventos tocando os 4 compassos "em silêncio".
+export function beatToEvents(Tone, beat) {
+  const log = createEventLog({ source: 'beatcats', bpm: beat.bpm, scale: 'minor', root: 9, rawTimes: true });
+  const prevBpm = Tone.Transport.bpm.value;
+  Tone.Transport.bpm.value = beat.bpm;
+  const mute = new Tone.Gain(0);
+  const s16 = 60 / beat.bpm / 4;
+  const t0 = Tone.now() + 0.2;
+  const voices = beat.cats.filter((id) => id && SOUND_BY_ID[id]).map((id) => makeCaptured(Tone, id, mute, log));
+  for (let s = 0; s < LOOP_STEPS; s++) voices.forEach((v) => v.tick(s, t0 + s * s16));
+  log.startTake(t0);
+  const json = log.stopTake(t0 + LOOP_STEPS * s16 - 0.001);
+  json.length = LOOP_STEPS / 4;
+  json.events.forEach((e) => (e.time = Math.round(e.time * 4) / 4));
+  voices.forEach((v) => v.dispose());
+  mute.dispose();
+  Tone.Transport.bpm.value = prevBpm;
+  return json;
 }

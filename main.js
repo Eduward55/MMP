@@ -10,7 +10,7 @@ const { makeDemoWav } = require('./scripts/demo-audio');
 const ROOT = __dirname;
 const SCHEME = 'mmp';
 const KEY_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/i;
-const ITEM_TYPES = new Set(['audio', 'video', 'beat']);
+const ITEM_TYPES = new Set(['audio', 'video', 'beat', 'project']);
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -29,6 +29,11 @@ const MIME = {
 
 // App desktop de música: o áudio pode começar sem precisar de um clique antes.
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+// No autoteste a webcam é uma câmera falsa do Chromium (padrão de teste), para exercitar o vídeo com webcam na VM.
+if (process.env.MMP_SELFTEST) {
+  app.commandLine.appendSwitch('use-fake-device-for-media-stream');
+  app.commandLine.appendSwitch('use-fake-ui-for-media-stream');
+}
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -130,6 +135,11 @@ async function galleryAdd(payload) {
     ? Buffer.from(JSON.stringify(payload.json, null, 2), 'utf8')
     : Buffer.from(payload.data);
   await fs.writeFile(path.join(paths.gallery, file), buffer);
+  let eventsFile;
+  if (payload.events && typeof payload.events === 'object' && Array.isArray(payload.events.events)) {
+    eventsFile = `${id}.events.json`;
+    await fs.writeFile(path.join(paths.gallery, eventsFile), JSON.stringify(payload.events));
+  }
   const now = new Date().toISOString();
   const item = {
     id,
@@ -141,6 +151,7 @@ async function galleryAdd(payload) {
     file,
     size: buffer.length,
     meta: payload.meta && typeof payload.meta === 'object' ? payload.meta : {},
+    ...(eventsFile ? { eventsFile } : {}),
     createdAt: now,
     updatedAt: now
   };
@@ -169,6 +180,15 @@ async function galleryRead(id) {
   const buffer = await fs.readFile(itemFile(item));
   if (item.ext === 'json') return { item, json: JSON.parse(buffer.toString('utf8')) };
   return { item, data: buffer };
+}
+
+// Eventos (nota, tempo, instrumento) de um item: o próprio JSON de um projeto ou o arquivo lateral de uma gravação.
+async function galleryReadEvents(id) {
+  const index = await readJson(paths.galleryIndex, { version: 1, items: [] });
+  const item = findItem(index, id);
+  if (item.eventsFile) return { item, json: JSON.parse(await fs.readFile(path.join(paths.gallery, path.basename(item.eventsFile)), 'utf8')) };
+  if (item.type === 'project') return { item, json: JSON.parse(await fs.readFile(itemFile(item), 'utf8')) };
+  throw new Error('Este item não tem eventos gravados.');
 }
 
 async function galleryExport(win, id) {
@@ -319,6 +339,7 @@ function registerIpc() {
   handle('gallery:add', (_e, payload) => galleryAdd(payload));
   handle('gallery:updateJson', (_e, id, json, name) => galleryUpdateJson(id, json, name));
   handle('gallery:read', (_e, id) => galleryRead(id));
+  handle('gallery:readEvents', (_e, id) => galleryReadEvents(id));
   handle('gallery:rename', (_e, id, name) =>
     withGallery((index) => {
       const item = findItem(index, id);
@@ -331,6 +352,7 @@ function registerIpc() {
     withGallery(async (index) => {
       const item = findItem(index, id);
       await fs.rm(itemFile(item), { force: true });
+      if (item.eventsFile) await fs.rm(path.join(paths.gallery, path.basename(item.eventsFile)), { force: true });
       index.items = index.items.filter((i) => i.id !== id);
       return { dirty: true, value: true };
     })

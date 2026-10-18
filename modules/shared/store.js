@@ -60,16 +60,18 @@ function emitGallery() {
 export const gallery = {
   list: () => api.gallery.list(),
   read: (id) => api.gallery.read(id),
+  readEvents: (id) => api.gallery.readEvents(id),
   async addJson(type, name, module, json, meta) {
     const item = await api.gallery.add({ type, name, module, json, meta });
     emitGallery();
     return item;
   },
-  async addBlob(type, name, module, blob, meta) {
+  // events: JSON "mmp-events" opcional, salvo ao lado do arquivo para reabrir no Studio.
+  async addBlob(type, name, module, blob, meta, events) {
     const data = new Uint8Array(await blob.arrayBuffer());
     const mime = blob.type || 'application/octet-stream';
     const ext = mimeToExt(mime);
-    const item = await api.gallery.add({ type, name, module, data, mime, ext, meta });
+    const item = await api.gallery.add({ type, name, module, data, mime, ext, meta, events: events || undefined });
     emitGallery();
     return item;
   },
