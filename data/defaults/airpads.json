@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "instruments": ["piano", "drums"],
+  "scale": "penta",
+  "root": 0,
+  "bpm": 96,
+  "metronome": false
+}

@@ -253,8 +253,7 @@ svg.pixel-icon {
 .chip:focus-visible,
 .outfit:focus-visible,
 .card:focus-visible,
-.seq__cell:focus-visible,
-.pad:focus-visible {
+.seq__cell:focus-visible {
   outline: 3px solid var(--cyan);
   outline-offset: 2px;
 }
@@ -1269,8 +1268,7 @@ svg.pixel-icon {
   background: var(--pink);
   box-shadow: var(--glow-pink);
 }
-.studio__video,
-.air__video {
+.studio__video {
   width: 100%;
   max-height: 420px;
   background: #000;
@@ -1299,76 +1297,6 @@ svg.pixel-icon {
   padding: 12px;
   background: #120a20;
   border: 3px dashed var(--line);
-}
-
-/* ---------- AIR PADS ---------- */
-.air__arena {
-  position: relative;
-  min-height: 360px;
-  background: #120a20;
-  border: 3px solid var(--line);
-}
-.air__video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-height: none;
-  object-fit: cover;
-  border: 0;
-  opacity: 0;
-}
-.air.has-camera .air__video {
-  opacity: 0.55;
-}
-.air__overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-.air__pads {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: clamp(8px, 2vw, 18px);
-  padding: clamp(10px, 2.5vw, 24px);
-  min-height: 360px;
-}
-.air__status {
-  margin: 0;
-  flex: 1 1 260px;
-}
-.pad {
-  --c: var(--pink);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 120px;
-  font-family: var(--pixel);
-  font-size: clamp(9px, 1.2vw, 12px);
-  color: var(--text);
-  background: color-mix(in srgb, var(--c) 18%, rgba(18, 10, 32, 0.6));
-  border: var(--px) solid var(--c);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--c) 40%, transparent), 4px 4px 0 #0a0512;
-  cursor: pointer;
-}
-.pad__key {
-  font-size: 8px;
-  color: var(--muted);
-}
-.pad.is-hit {
-  animation: padhit 0.25s steps(3);
-}
-@keyframes padhit {
-  0% {
-    background: var(--c);
-    transform: scale(0.95);
-    box-shadow: 0 0 40px var(--c);
-  }
 }
 
 /* ---------- TERMO ---------- */
@@ -1645,9 +1573,6 @@ svg.pixel-icon {
   }
   .topbar__icon {
     display: none;
-  }
-  .air__pads {
-    grid-template-columns: repeat(2, 1fr);
   }
   .conn__grid {
     grid-template-columns: repeat(2, 1fr);

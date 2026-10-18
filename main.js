@@ -27,6 +27,9 @@ const MIME = {
   '.map': 'application/json'
 };
 
+// App desktop de música: o áudio pode começar sem precisar de um clique antes.
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: SCHEME,
@@ -207,7 +210,6 @@ function createWindow() {
     backgroundColor: '#0d0716',
     title: 'My Music Place',
     autoHideMenuBar: true,
-    show: !process.env.MMP_SELFTEST,
     webPreferences: {
       preload: path.join(ROOT, 'preload.js'),
       contextIsolation: true,

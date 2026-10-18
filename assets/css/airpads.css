@@ -1,0 +1,281 @@
+/* ---------- AIR PADS ---------- */
+.airx {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.airx__status {
+  margin: 0;
+  flex: 1 1 260px;
+}
+.airx__arena {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 68vh;
+  overflow: hidden;
+  touch-action: none;
+  cursor: crosshair;
+  background:
+    radial-gradient(ellipse at 50% 110%, rgba(255, 79, 216, 0.22), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 8px, transparent 8px 16px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 8px, transparent 8px 16px), #0f0819;
+  border: var(--px) solid var(--line);
+  box-shadow: 0 0 0 var(--px) #0a0512, inset 0 0 60px rgba(155, 92, 255, 0.18);
+}
+.airx__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.airx__arena.has-camera .airx__video {
+  opacity: 0.6;
+}
+.airx__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Círculos */
+.air-circle {
+  --c: var(--pink);
+  position: absolute;
+  top: 58%;
+  width: min(34%, 62cqh, 60%);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 2;
+  color: var(--text);
+  background: radial-gradient(circle, color-mix(in srgb, var(--c) 22%, transparent) 0 55%, color-mix(in srgb, var(--c) 8%, transparent) 70%, transparent 71%);
+  border: 6px dashed var(--c);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--c) 55%, transparent), inset 0 0 26px color-mix(in srgb, var(--c) 35%, transparent);
+  transition: border-style 0.1s;
+  user-select: none;
+}
+.airx__arena {
+  container-type: size;
+}
+.air-circle--0 {
+  left: 25%;
+}
+.air-circle--1 {
+  left: 75%;
+}
+.air-circle.is-inside {
+  border-style: solid;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c) 38%, transparent) 0 60%, transparent 71%);
+}
+.air-circle.is-hit {
+  animation: air-hit 0.28s steps(3);
+}
+@keyframes air-hit {
+  0% {
+    transform: translate(-50%, -50%) scale(1.08);
+    box-shadow: 0 0 60px var(--c), inset 0 0 60px var(--c);
+  }
+}
+.air-circle__name {
+  font-family: var(--pixel);
+  font-size: clamp(11px, 1.7vw, 20px);
+  color: var(--c);
+  text-shadow: 2px 2px 0 #0a0512, 0 0 12px var(--c);
+}
+.air-circle__note {
+  font-family: var(--pixel);
+  font-size: clamp(9px, 1.1vw, 13px);
+  color: var(--text);
+  background: rgba(10, 5, 18, 0.7);
+  padding: 4px 8px;
+  border: 2px solid var(--c);
+}
+.air-circle__guide {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-size: clamp(14px, 1.4vw, 18px);
+  color: color-mix(in srgb, var(--c) 70%, white);
+}
+.air-circle[data-instrument='drums'] .air-circle__guide {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10% 0;
+}
+.air-circle[data-instrument='drums'] .air-circle__name,
+.air-circle[data-instrument='drums'] .air-circle__note {
+  position: relative;
+  z-index: 1;
+}
+.air-zone {
+  opacity: 0.75;
+  padding: 0 6px;
+  border-bottom: 2px dotted color-mix(in srgb, var(--c) 50%, transparent);
+}
+.air-circle[data-instrument='drums'] .air-circle__name {
+  display: none;
+}
+.air-axis {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  opacity: 0.8;
+}
+.air-axis--top {
+  top: 9%;
+}
+.air-axis--bottom {
+  bottom: 9%;
+}
+.air-axis--x {
+  bottom: 12%;
+}
+.air-axis--y {
+  top: 10%;
+}
+
+/* HUD */
+.air-hud {
+  --c: var(--pink);
+  position: absolute;
+  top: 12px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 150px;
+  padding: 8px 12px;
+  background: rgba(13, 7, 22, 0.82);
+  border: 3px solid var(--c);
+  box-shadow: 4px 4px 0 #0a0512, 0 0 16px color-mix(in srgb, var(--c) 40%, transparent);
+  pointer-events: none;
+}
+.air-hud--0 {
+  left: 12px;
+}
+.air-hud--1 {
+  right: 12px;
+  text-align: right;
+}
+.air-hud__hand {
+  font-family: var(--pixel);
+  font-size: 8px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.air-hud__inst {
+  font-family: var(--pixel);
+  font-weight: normal;
+  font-size: clamp(11px, 1.4vw, 15px);
+  color: var(--c);
+  text-shadow: 0 0 10px var(--c);
+}
+.air-hud__note {
+  font-size: 18px;
+}
+
+/* Gato maestro apontando */
+.air-maestro {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.air-maestro__cat {
+  transition: transform 0.18s steps(3);
+}
+.air-maestro__cat svg {
+  width: clamp(64px, 9vw, 112px);
+  height: auto;
+}
+.air-maestro.is-left .air-maestro__cat {
+  transform: scaleX(-1) rotate(-6deg);
+}
+.air-maestro.is-right .air-maestro__cat {
+  transform: rotate(6deg);
+}
+.air-maestro.is-playing .acc-hand {
+  animation: conduct 0.25s ease-in-out infinite alternate;
+}
+.air-maestro__bubble {
+  font-family: var(--pixel);
+  font-size: 9px;
+  color: #1c0d30;
+  background: #f6ecff;
+  border: 3px solid #120a20;
+  box-shadow: 3px 3px 0 #0a0512;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+.air-maestro.is-playing .air-maestro__bubble {
+  animation: pop 0.25s steps(3);
+}
+.air-maestro__name {
+  font-family: var(--pixel);
+  font-size: 8px;
+  padding: 3px 6px;
+  background: #120a20;
+  border: 2px solid var(--pink);
+}
+
+/* Controles */
+.airx__pick {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0 20px;
+}
+.airx__pick .chip.is-on {
+  border-color: var(--c);
+  box-shadow: 0 0 12px var(--c);
+}
+.airx__settings {
+  margin-bottom: 4px;
+}
+.airx__setting {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .airx__arena {
+    aspect-ratio: 4 / 5;
+    max-height: none;
+  }
+  .air-circle {
+    top: 52%;
+    width: 44%;
+  }
+  .air-circle--0 {
+    left: 26%;
+  }
+  .air-circle--1 {
+    left: 74%;
+  }
+  .air-hud {
+    min-width: 0;
+    max-width: 46%;
+  }
+}

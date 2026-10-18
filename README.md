@@ -31,7 +31,7 @@ Em Linux sem tela (CI/servidor), use o `xvfb`: `xvfb-run -a npm run check`.
 - **Galeria** — lista áudios, vídeos e beats salvos, com filtro, busca, ordenação e ações de **abrir, renomear, exportar e apagar**.
 - **Beat Cats** — sequenciador de 16 passos com 4 gatos (bumbo, caixa, chimbal, miau), BPM, aleatório; salva o beat na Galeria e também grava 2 compassos como áudio.
 - **Studio** — teclado sintetizador (mouse ou teclado do computador), microfone e câmera; grava e salva áudio/vídeo na Galeria.
-- **Air Pads** — 8 pads tocados com a ponta do indicador pela câmera (MediaPipe Hand Landmarker local) ou por mouse/teclas 1–8; grava a performance.
+- **Air Pads** — MediaPipe Hand Landmarker local (2 mãos) com vídeo espelhado e **dois círculos grandes, um por mão**, cada um com seu instrumento: piano, bateria, synth, baixo ou theremin (X = nota, Y = volume). Quando a ponta do indicador entra no círculo, toca; a altura dentro do círculo escolhe a nota (na bateria: chimbal, caixa ou bumbo) e, segurando o dedo lá dentro, o som repete no BPM. O HUD mostra o instrumento de cada círculo e o seu gato (do Meu Gato) rege com a batuta apontando para o círculo tocado. Tem escala e tônica, BPM, metrônomo, efeitos visuais e **Gravar: Sim/Não** (a gravação vai para a Galeria como áudio). **Salvar** guarda a configuração (instrumentos, escala, tônica, BPM). Sem câmera: o mouse vale como ponta do dedo, as teclas **A** e **L** “encostam” nos círculos e **Simular dedos** move duas pontas virtuais sozinhas.
 - **Termo** — adivinhe a palavra musical/felina de 5 letras.
 - **Conexões** — agrupe 16 palavras em 4 grupos.
 - **Cat Typing** — digite frases fofas; cada acerto toca uma nota; salva recordes.
@@ -45,7 +45,7 @@ Tudo é JSON local, gravado pelo processo principal via IPC:
 ```
 <userData>/mmp-data/
   store/profile.json      ← gato + lontra (Meu Gato)
-  store/<modulo>.json     ← progresso de Termo, Conexões, Cat Typing, preferências da Galeria
+  store/<modulo>.json     ← configuração do Air Pads, progresso de Termo, Conexões, Cat Typing, preferências da Galeria
   gallery.json            ← índice da Galeria
   gallery/<id>.json|webm|wav  ← os arquivos de cada criação
 ```
