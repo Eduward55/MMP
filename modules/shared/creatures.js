@@ -159,7 +159,35 @@ export function creatureSVG(kind, look = {}, { size = 160, label = '', extraClas
     parts.push(layerSVG(layer.grid, layer.outline ? OUTLINE : null, `acc acc-${layer.slot} acc--${layer.id}`, style));
   }
   const classes = ['creature', `creature--${kind}`, d.glow ? 'creature--glow' : '', extraClass].filter(Boolean).join(' ');
-  return `<svg class="${classes}" viewBox="${viewBox}" width="${size}" height="${size}" shape-rendering="crispEdges" role="img" aria-label="${escapeAttr(label)}">${parts.join('')}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" class="${classes}" viewBox="${viewBox}" width="${size}" height="${size}" shape-rendering="crispEdges" role="img" aria-label="${escapeAttr(label)}">${parts.join('')}</svg>`;
+}
+
+// Só o acessório (sem criatura), recortado no próprio tamanho — usado como ficha arrastável.
+export function accessorySVG(id, { size = 48, kind = 'cat', label = '' } = {}) {
+  const def = OUTFIT_BY_ID[id];
+  if (!def) return '';
+  const A = kind === 'otter' ? OTTER_ANCHORS : CAT_ANCHORS;
+  const back = new Grid(SIZE, SIZE);
+  const front = new Grid(SIZE, SIZE);
+  if (def.back) def.back(back, A);
+  if (def.front) def.front(front, A);
+  const all = new Grid(SIZE, SIZE).stamp(back).stamp(front);
+  let x0 = SIZE, y0 = SIZE, x1 = 0, y1 = 0;
+  for (let y = 0; y < SIZE; y++) {
+    for (let x = 0; x < SIZE; x++) {
+      if (!all.get(x, y)) continue;
+      x0 = Math.min(x0, x);
+      y0 = Math.min(y0, y);
+      x1 = Math.max(x1, x);
+      y1 = Math.max(y1, y);
+    }
+  }
+  const side = Math.max(x1 - x0, y1 - y0) + 4;
+  const vx = (x0 + x1) / 2 - side / 2 + 0.5;
+  const vy = (y0 + y1) / 2 - side / 2 + 0.5;
+  const outline = def.outline !== false;
+  const layer = (g) => (outline ? gridToPaths(g.outline(OUTLINE)) : '') + gridToPaths(g);
+  return `<svg xmlns="http://www.w3.org/2000/svg" class="pixel-icon accessory" viewBox="${vx} ${vy} ${side} ${side}" width="${size}" height="${size}" shape-rendering="crispEdges" role="img" aria-label="${escapeAttr(label || def.name)}">${layer(back)}${layer(front)}</svg>`;
 }
 
 function escapeAttr(s) {

@@ -191,7 +191,7 @@ async function seedFirstRun() {
   await writeJsonAtomic(paths.galleryIndex, index);
   const demoBeat = await readJson(path.join(ROOT, 'data', 'demo', 'miau-groove.json'), null);
   if (demoBeat) {
-    await galleryAdd({ type: 'beat', name: 'Miau Groove (exemplo)', module: 'beatcats', json: demoBeat, meta: { bpm: demoBeat.bpm, steps: demoBeat.steps } });
+    await galleryAdd({ type: 'beat', name: 'Miau Groove (exemplo)', module: 'beatcats', json: demoBeat, meta: { bpm: demoBeat.bpm, layers: (demoBeat.cats || []).filter(Boolean).length, mode: demoBeat.mode } });
   }
   const wav = makeDemoWav();
   await galleryAdd({ type: 'audio', name: 'Ronronar em Dó (exemplo)', module: 'studio', data: wav, mime: 'audio/wav', ext: 'wav', meta: { seconds: 4 } });

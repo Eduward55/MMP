@@ -32,10 +32,13 @@
 
     await window.mmp.gallery.rename(beat.id, 'Ronron Funk');
     const read = await window.mmp.gallery.read(beat.id);
-    ok('renomear + ler beat', read.item.name === 'Ronron Funk' && read.json.tracks.kick.length === 16, read.item.name);
+    ok('renomear + ler beat', read.item.name === 'Ronron Funk' && read.json.version === 2 && read.json.cats.length === 6, read.item.name);
 
     await go(`beatcats?open=${beat.id}`);
     ok('abrir beat da Galeria no Beat Cats', $('.beatcats input.input').value === 'Ronron Funk');
+    const demo = list.find((i) => i.name.startsWith('Miau Groove'));
+    await go(`beatcats?open=${demo.id}`);
+    ok('beat de exemplo abre com 5 gatos ativos', $$('.bc-cat.is-active').length === 5, $$('.bc-cat.is-active').length);
 
     await go('mycat');
     const nameInput = $('input[aria-label="Nome do gato"]');
@@ -114,6 +117,131 @@
     const after = await window.mmp.gallery.list();
     const take = after.find((i) => i.module === 'airpads');
     ok('Air Pads: gravação vai para a Galeria como áudio', after.length === before + 1 && take && take.type === 'audio' && take.size > 0, take && `${take.name} · ${take.mime} · ${take.size} B`);
+
+    await go('beatcats');
+    const bc = window.__mmpBeatCats;
+    const snd = bc.sounds();
+    const count = (g) => snd.filter((x) => x.group === g).length;
+    ok('Beat Cats: 24 sons (6 bateria, 5 baixo, 5 acordes, 4 melodia, 4 efeitos)', snd.length === 24 && count('drums') === 6 && count('bass') === 5 && count('chords') === 5 && count('melody') === 4 && count('fx') === 4 && new Set(snd.map((x) => x.outfit)).size === 24, snd.length);
+    ok('Beat Cats: 6 gatos vazios no início', $$('.bc-cat').length === 6 && $$('.bc-cat.is-empty').length === 6 && bc.state().cats.every((c) => c === null));
+    const looks = $$('.bc-cat svg.creature--cat').map((x) => x.innerHTML.replace(/aria-label="[^"]*"/, ''));
+    ok('Beat Cats: 6 gatos com pelagens diferentes do Meu Gato', looks.length === 6 && new Set(looks).size === 6);
+    await bc.ready();
+    const drag = async (soundId, catIdx, pointerType, fromCat = false) => {
+      const src = fromCat ? $$('.bc-cat')[fromCat.index] : $(`.bc-token[data-sound="${soundId}"]`);
+      src.scrollIntoView({ block: 'center' });
+      const a = src.getBoundingClientRect();
+      const opts = (x, y) => ({ bubbles: true, cancelable: true, pointerId: 7, pointerType, isPrimary: true, button: 0, buttons: 1, clientX: x, clientY: y });
+      src.dispatchEvent(new PointerEvent('pointerdown', opts(a.left + a.width / 2, a.top + a.height / 2)));
+      let tx;
+      let ty;
+      if (catIdx === null) {
+        tx = 4;
+        ty = 4;
+      } else {
+        const cat = $$('.bc-cat')[catIdx];
+        cat.scrollIntoView({ block: 'center' });
+        const b = cat.getBoundingClientRect();
+        tx = b.left + b.width / 2;
+        ty = b.top + b.height / 2;
+      }
+      for (let k = 1; k <= 5; k++) window.dispatchEvent(new PointerEvent('pointermove', opts(a.left + ((tx - a.left) * k) / 5, a.top + ((ty - a.top) * k) / 5)));
+      await sleep(30);
+      const ghost = Boolean($('.bc-ghost'));
+      window.dispatchEvent(new PointerEvent('pointerup', { ...opts(tx, ty), buttons: 0 }));
+      await sleep(120);
+      return ghost;
+    };
+    const ghostMouse = await drag('bumbo', 0, 'mouse');
+    let st = bc.state();
+    ok('Beat Cats: arrastar com mouse ativa camada no gato', ghostMouse && st.cats[0] === 'bumbo' && $$('.bc-cat')[0].classList.contains('is-active') && $$('.bc-cat')[0].querySelector('.acc--capacete'), JSON.stringify(st.cats));
+    await sleep(400);
+    ok('Beat Cats: loop toca sozinho ao vestir o primeiro gato', bc.state().playing && bc.state().step > 0, bc.state().step);
+    const ghostTouch = await drag('baixo-pulso', 2, 'touch');
+    st = bc.state();
+    ok('Beat Cats: arrastar com toque ativa camada', ghostTouch && st.cats[2] === 'baixo-pulso' && $(`.bc-token[data-sound="baixo-pulso"]`).classList.contains('is-used'), JSON.stringify(st.cats));
+    bc.assign(1, 'chimbal');
+    bc.assign(3, 'pad-neon');
+    let sang = false;
+    for (let k = 0; k < 30 && !sang; k++) {
+      await sleep(40);
+      sang = $$('.bc-cat.is-sing').length > 0;
+    }
+    ok('Beat Cats: gato canta (boca) no ritmo', sang && $('.bc-cat.is-sing .bc-mouth'));
+    await drag('baixo-pulso', 5, 'touch', { index: 2 });
+    st = bc.state();
+    ok('Beat Cats: arrastar acessório de um gato para outro move o som', st.cats[2] === null && st.cats[5] === 'baixo-pulso', JSON.stringify(st.cats));
+    await drag('baixo-pulso', null, 'mouse', { index: 5 });
+    st = bc.state();
+    ok('Beat Cats: arrastar para fora tira o acessório e silencia', st.cats[5] === null && !st.voices[5] && $$('.bc-cat')[5].classList.contains('is-empty'), JSON.stringify(st.cats));
+    const catEl = $$('.bc-cat')[3];
+    const r3 = catEl.getBoundingClientRect();
+    const tap = { bubbles: true, pointerId: 9, pointerType: 'touch', isPrimary: true, button: 0, clientX: r3.left + 20, clientY: r3.top + 20 };
+    catEl.dispatchEvent(new PointerEvent('pointerdown', tap));
+    window.dispatchEvent(new PointerEvent('pointerup', tap));
+    await sleep(80);
+    ok('Beat Cats: tocar no gato ativo tira o acessório', bc.state().cats[3] === null);
+    $(`.bc-token[data-sound="arpejo"]`).dispatchEvent(new PointerEvent('pointerdown', { ...tap, clientX: 0, clientY: 0 }));
+    window.dispatchEvent(new PointerEvent('pointerup', { ...tap, clientX: 0, clientY: 0 }));
+    await sleep(40);
+    $$('.bc-cat')[4].click();
+    await sleep(80);
+    ok('Beat Cats: tocar acessório e depois gato também veste', bc.state().cats[4] === 'arpejo');
+
+    $('.bc-otter').click();
+    let splash = false;
+    for (let k = 0; k < 40 && !splash; k++) {
+      await sleep(40);
+      splash = $('.bc-stage').classList.contains('is-splash') && $$('.bc-bubble').length > 0;
+    }
+    ok('Beat Cats: lontra faz o efeito especial (splash)', splash && $('.bc-otter').classList.contains('is-diving'));
+
+    $('.beatcats input[aria-label="BPM"]').value = '160';
+    $('.beatcats input[aria-label="BPM"]').dispatchEvent(new Event('input'));
+    bc.setMode('round');
+    await sleep(60);
+    bc.assign(5, 'melodia-8bit');
+    st = bc.state();
+    ok('Beat Cats: modo por rodada deixa a camada pendente', st.mode === 'round' && st.cats[5] === null && st.pending[5] === 'melodia-8bit' && $$('.bc-cat')[5].classList.contains('is-pending') && !$('.bc-round').hidden, JSON.stringify(st.pending));
+    let applied = false;
+    for (let k = 0; k < 60 && !applied; k++) {
+      await sleep(100);
+      applied = bc.state().cats[5] === 'melodia-8bit';
+    }
+    ok('Beat Cats: camada entra na próxima rodada', applied && !Object.keys(bc.state().pending).length && bc.state().voices[5], JSON.stringify(bc.state()));
+
+    $('.beatcats input.input').value = 'Gatos de Rodada';
+    $('.topbar__save').click();
+    await sleep(600);
+    const saved = (await window.mmp.gallery.list()).find((i) => i.name === 'Gatos de Rodada');
+    const savedJson = saved && (await window.mmp.gallery.read(saved.id)).json;
+    ok('Beat Cats: Salvar guarda gatos, BPM e modo', savedJson && savedJson.bpm === 160 && savedJson.mode === 'round' && savedJson.cats.join() === ['bumbo', 'chimbal', null, null, 'arpejo', 'melodia-8bit'].join(), JSON.stringify(savedJson));
+    await go(`beatcats?open=${saved.id}`);
+    st = window.__mmpBeatCats.state();
+    ok('Beat Cats: beat reabre da Galeria igualzinho', st.bpm === 160 && st.mode === 'round' && st.cats[0] === 'bumbo' && st.cats[5] === 'melodia-8bit' && $$('.bc-cat.is-active').length === 4 && $('.beatcats input.input').value === 'Gatos de Rodada', JSON.stringify(st));
+    window.__mmpBeatCats.setMode('continuous');
+
+    const recOnce = async (label) => {
+      const ids = new Set((await window.mmp.gallery.list()).map((i) => i.id));
+      [...$$('.beatcats .segmented__btn')].find((b) => b.textContent === label).click();
+      await sleep(50);
+      $('.beatcats .btn--rec').click();
+      await sleep(400);
+      const during = window.__mmpBeatCats.state().recording;
+      await sleep(1600);
+      $('.beatcats .btn--rec').click();
+      for (let k = 0; k < 50; k++) {
+        await sleep(100);
+        const item = (await window.mmp.gallery.list()).find((i) => !ids.has(i.id));
+        if (item) return { item, during };
+      }
+      return { item: null, during };
+    };
+    await window.__mmpBeatCats.ready();
+    const aud = await recOnce('Só áudio');
+    ok('Beat Cats: gravar só áudio vai para a Galeria', aud.during === 'audio' && aud.item && aud.item.type === 'audio' && aud.item.module === 'beatcats' && aud.item.size > 0, aud.item && `${aud.item.name} · ${aud.item.mime} · ${aud.item.size} B`);
+    const vid = await recOnce('Áudio + animação');
+    ok('Beat Cats: gravar áudio + animação vai para a Galeria como vídeo', vid.during === 'video' && vid.item && vid.item.type === 'video' && /webm/.test(vid.item.mime) && vid.item.size > 1000, vid.item && `${vid.item.name} · ${vid.item.mime} · ${vid.item.size} B`);
 
     const base = new URL('vendor/mediapipe/', location.href).href;
     const vision = await import(`${base}vision_bundle.mjs`);

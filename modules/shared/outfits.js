@@ -302,5 +302,58 @@ export const OUTFITS = [
   }
 ];
 
-export const OUTFIT_BY_ID = Object.fromEntries(OUTFITS.map((o) => [o.id, o]));
+// Acessórios extras usados só pelos efeitos do Beat Cats (não entram nas 20 roupinhas do Meu Gato).
+export const BONUS_OUTFITS = [
+  {
+    id: 'antena',
+    name: 'Antena alien',
+    slot: 'head',
+    front(g, A) {
+      for (let i = 1; i <= 5; i++) {
+        g.set(A.cx - 3 - Math.floor(i / 2), A.headTop - i, P.shade);
+        g.set(A.cx + 3 + Math.floor(i / 2), A.headTop - i, P.shade);
+      }
+      g.rect(A.cx - 6, A.headTop - 7, 2, 2, P.green);
+      g.rect(A.cx + 5, A.headTop - 7, 2, 2, P.green);
+    }
+  },
+  {
+    id: 'asas',
+    name: 'Asinhas',
+    slot: 'back',
+    back(g, A) {
+      const wing = ['....www', '..wwwcw', '.wwwcww', 'wwwcww.', 'wwcww..', '.www...', '..w....'];
+      const pal = { w: P.white, c: P.cyan };
+      g.map(wing, pal, A.cx - A.bodyRx - 5, A.neckY - 3);
+      g.map(wing.map((r) => [...r].reverse().join('')), pal, A.cx + A.bodyRx - 1, A.neckY - 3);
+    }
+  },
+  {
+    id: 'visor',
+    name: 'Visor neon',
+    slot: 'face',
+    outline: false,
+    front(g, A) {
+      const x = Math.round(A.eyeLX) - 3;
+      const w = Math.round(A.eyeRX) - Math.round(A.eyeLX) + 7;
+      const y = Math.round(A.eyeY) - 1;
+      g.rect(x, y, w, 3, 'rgba(95, 243, 255, 0.78)');
+      g.rect(x, y - 1, w, 1, P.pink);
+      g.rect(x, y + 3, w, 1, P.pinkDark);
+      g.set(x + 2, y, P.white);
+    }
+  },
+  {
+    id: 'aureola',
+    name: 'Auréola',
+    slot: 'head',
+    outline: false,
+    front(g, A) {
+      g.ring(A.cx, A.headTop - 4, 5.5, 1.8, 1, P.gold);
+      g.points([[A.cx - 7, A.headTop - 6], [A.cx + 7, A.headTop - 7], [A.cx + 1, A.headTop - 8]], P.white);
+    }
+  }
+];
+
+export const OUTFIT_BY_ID = Object.fromEntries([...OUTFITS, ...BONUS_OUTFITS].map((o) => [o.id, o]));
 export const OUTLINE = OUT;

@@ -1,11 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
+  "kind": "beatcats",
   "bpm": 104,
-  "steps": 16,
-  "tracks": {
-    "kick":  [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,0,0],
-    "snare": [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1],
-    "hat":   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,1,1,0],
-    "meow":  [0,0,0,0, 0,0,0,0, 0,0,1,0, 0,0,0,0]
-  }
+  "mode": "continuous",
+  "recordMode": "audio",
+  "cats": ["bumbo", "chimbal", "baixo-pulso", "pad-neon", "melodia-miau", null]
 }

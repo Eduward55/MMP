@@ -253,7 +253,7 @@ svg.pixel-icon {
 .chip:focus-visible,
 .outfit:focus-visible,
 .card:focus-visible,
-.seq__cell:focus-visible {
+.bc-token:focus-visible {
   outline: 3px solid var(--cyan);
   outline-offset: 2px;
 }
@@ -1165,64 +1165,6 @@ svg.pixel-icon {
   flex-wrap: wrap;
   gap: 6px;
   padding: 10px 14px 14px;
-}
-
-/* ---------- BEAT CATS ---------- */
-.seq-wrap {
-  overflow-x: auto;
-  padding-bottom: 8px;
-}
-.seq {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 720px;
-}
-.seq__row {
-  display: grid;
-  grid-template-columns: 120px repeat(16, 1fr);
-  gap: 5px;
-  align-items: center;
-}
-.seq__label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: 0;
-  color: var(--text);
-  font-family: var(--pixel);
-  font-size: 9px;
-  cursor: pointer;
-  padding: 0;
-}
-.seq__cat.is-hit {
-  animation: hop 0.18s steps(2);
-}
-.seq__cell {
-  aspect-ratio: 1;
-  min-height: 30px;
-  background: #120a20;
-  border: 3px solid var(--line);
-  cursor: pointer;
-}
-.seq__cell.is-beat {
-  border-color: #563196;
-}
-.seq__cell.is-alt {
-  background: #1f1236;
-}
-.seq__cell.is-on {
-  background: var(--pink);
-  border-color: #ffb3ef;
-  box-shadow: var(--glow-pink);
-}
-.seq__cell.is-playhead {
-  outline: 3px solid var(--cyan);
-  outline-offset: -1px;
-}
-.seq__cell.is-on.is-playhead {
-  background: #fff;
 }
 
 /* ---------- STUDIO ---------- */
