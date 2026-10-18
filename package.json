@@ -1,0 +1,29 @@
+{
+  "name": "my-music-place",
+  "productName": "My Music Place",
+  "version": "0.1.0",
+  "description": "My Music Place (MMP) — app desktop musical, fofo e 100% offline, com gato maestro e lontra companheira.",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "start:local-data": "electron . --local-data",
+    "vendor": "node scripts/setup-vendor.js",
+    "screenshots": "node scripts/screenshots.js",
+    "check": "node scripts/check.js"
+  },
+  "keywords": [
+    "electron",
+    "music",
+    "pixel-art",
+    "offline"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.4.11"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "0.10.14",
+    "tone": "14.8.49"
+  }
+}

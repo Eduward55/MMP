@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "cat": {
+    "name": "Miau",
+    "coat": "tabby",
+    "eyes": "#5dff9b",
+    "outfit": { "ear": "lacinho" }
+  },
+  "otter": {
+    "name": "Lulu",
+    "outfit": { "neck": "cachecol" }
+  }
+}

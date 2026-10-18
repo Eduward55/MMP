@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval' 'unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: mediastream: data:; font-src 'self'; connect-src 'self' blob: data:"
+    />
+    <title>My Music Place</title>
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <script src="modules/shared/error-capture.js"></script>
+    <script src="vendor/tone/Tone.js"></script>
+  </head>
+  <body>
+    <div class="sky" aria-hidden="true"></div>
+    <div id="app" class="app" aria-live="polite">
+      <div class="boot">
+        <div class="boot__spinner"></div>
+        <p>Afinando os bigodes…</p>
+      </div>
+    </div>
+    <div id="dock-root"></div>
+    <div id="toast-root" class="toasts" role="status"></div>
+    <script type="module" src="modules/app.js"></script>
+  </body>
+</html>
