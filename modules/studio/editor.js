@@ -99,8 +99,9 @@ export function createEditor({ project, track, view, onCommit, onAudition, onSel
 
   /* ---------- Piano roll ---------- */
   function renderRoll(p, t) {
+    const drums = Boolean(INSTRUMENT_BY_ID[t.inst].drums);
     p.tracks
-      .filter((o) => o.id !== t.id && !o.mute)
+      .filter((o) => o.id !== t.id && !o.mute && Boolean(INSTRUMENT_BY_ID[o.inst].drums) === drums)
       .forEach((o) => {
         p.events
           .filter((e) => e.track === o.id)

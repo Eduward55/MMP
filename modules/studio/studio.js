@@ -716,6 +716,7 @@ export default {
     } else if (params.demo) {
       load(toJsonOf(demoProject()), { originText: 'Projeto de exemplo' });
       if (params.view === 'steps') setView('steps');
+      else selectTrack('melodia');
     } else {
       renderAll();
     }
