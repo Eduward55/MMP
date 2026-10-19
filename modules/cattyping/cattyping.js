@@ -72,6 +72,13 @@ function pickSpawnLen(rocks) {
   return bag[Math.floor(Math.random() * bag.length)];
 }
 
+const VOL_DEFAULT = 70;
+function clampVolume(n, fallback = VOL_DEFAULT) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return fallback;
+  return Math.max(0, Math.min(100, Math.round(v)));
+}
+
 function emptyRun() {
   return {
     score: 0,
@@ -116,7 +123,9 @@ export default {
     let alive = true;
     let raf = 0;
     let lastT = 0;
+    let volume = clampVolume(saved.volume, VOL_DEFAULT);
     let sound = saved.sound !== false;
+    if (volume <= 0) sound = false;
     let chip = null;
     let idSeq = 1;
     let lastShotAt = 0;
@@ -133,7 +142,18 @@ export default {
     const bestEl = el('p', { class: 'ct-best' });
     const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Pausar');
     const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => newGame() }, 'Nova partida');
-    const soundBtn = el('button', { class: 'btn btn--ghost btn--sm', onclick: () => toggleSound() }, '');
+    const soundBtn = el('button', { class: 'btn btn--ghost btn--sm', type: 'button', onclick: () => toggleSound() }, '');
+    const volInput = el('input', {
+      class: 'range ct-vol',
+      type: 'range',
+      min: '0',
+      max: '100',
+      step: '1',
+      value: String(volume),
+      'aria-label': 'Volume',
+      oninput: (e) => setVolume(e.target.value)
+    });
+    const soundRow = el('div', { class: 'ct-sound' }, soundBtn, volInput);
     const skinRow = el('div', { class: 'chips ct-skins', role: 'radiogroup', 'aria-label': 'Nave' });
     const hud = el(
       'aside',
@@ -143,7 +163,7 @@ export default {
       el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Vidas'), livesEl),
       bestEl,
       el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Nave'), skinRow),
-      el('div', { class: 'row-actions' }, pauseBtn, newBtn, soundBtn),
+      el('div', { class: 'row-actions' }, pauseBtn, newBtn, soundRow),
       el(
         'p',
         { class: 'ct-hint' },
@@ -168,7 +188,7 @@ export default {
         startedAt: run.startedAt,
         rocks: rocks.map((r) => ({ id: r.id, word: r.word, display: r.display, theme: r.theme, x: r.x, y: r.y, vy: r.vy, rad: r.rad }))
       };
-      return kv.set(STORE_KEY, { version: 2, best, game: run.over ? null : game, deck, sound, ship: shipSkin }).catch(() => {});
+      return kv.set(STORE_KEY, { version: 2, best, game: run.over ? null : game, deck, sound, volume, ship: shipSkin }).catch(() => {});
     }
 
     function renderSkins() {
@@ -217,11 +237,23 @@ export default {
     }
     const offProfile = onProfile((p) => renderShip(p));
 
+    function liveGain() {
+      return sound ? volume / 100 : 0;
+    }
+
+    function applyGain() {
+      if (chip && typeof chip.setGain === 'function') chip.setGain(liveGain());
+    }
+
     async function ensureSound() {
-      if (!sound || chip) return chip;
+      if (chip) {
+        applyGain();
+        return chip;
+      }
+      if (!sound) return null;
       try {
         const Tone = await startAudio();
-        const out = new Tone.Gain(0.7).toDestination();
+        const out = new Tone.Gain(liveGain()).toDestination();
         const square = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.001, decay: 0.09, sustain: 0, release: 0.04 }, volume: -12 }).connect(out);
         const noise = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.12, sustain: 0 }, volume: -18 }).connect(out);
         let nextT = 0;
@@ -237,6 +269,13 @@ export default {
           } catch {}
         };
         chip = {
+          setGain(v) {
+            const g = Math.max(0, Math.min(1, Number(v) || 0));
+            try {
+              if (out.gain && typeof out.gain.rampTo === 'function') out.gain.rampTo(g, 0.04);
+              else out.gain.value = g;
+            } catch {}
+          },
           blip(n = 'C5') {
             safe(() => square.triggerAttackRelease(n, '32n', at(0.04)));
           },
@@ -276,14 +315,36 @@ export default {
           }
         };
       } catch {
-        chip = { blip() {}, laser() {}, boom() {}, miss() {}, level() {}, over() {}, dispose() {} };
+        chip = { setGain() {}, blip() {}, laser() {}, boom() {}, miss() {}, level() {}, over() {}, dispose() {} };
       }
       return chip;
     }
 
+    function refreshSoundUi() {
+      const on = sound && volume > 0;
+      soundBtn.textContent = `Som: ${on ? 'ligado' : 'desligado'}`;
+      soundBtn.setAttribute('aria-pressed', String(on));
+      volInput.value = String(volume);
+      volInput.setAttribute('aria-valuenow', String(volume));
+      volInput.title = `Volume ${volume}%`;
+    }
+
     function toggleSound() {
-      sound = !sound;
-      soundBtn.textContent = `Som: ${sound ? 'ligado' : 'desligado'}`;
+      if (sound && volume > 0) sound = false;
+      else {
+        sound = true;
+        if (volume <= 0) volume = VOL_DEFAULT;
+      }
+      applyGain();
+      refreshSoundUi();
+      persist();
+    }
+
+    function setVolume(n) {
+      volume = clampVolume(n, volume);
+      sound = volume > 0;
+      applyGain();
+      refreshSoundUi();
       persist();
     }
 
@@ -300,7 +361,7 @@ export default {
       bestEl.textContent = best ? `Melhor: ${best}` : 'Ainda sem recorde local.';
       pauseBtn.textContent = run.paused ? 'Continuar' : 'Pausar';
       pauseBtn.disabled = run.over;
-      soundBtn.textContent = `Som: ${sound ? 'ligado' : 'desligado'}`;
+      refreshSoundUi();
       typeHud.textContent = run.typing ? run.typing.toUpperCase() : '';
     }
 
@@ -320,7 +381,7 @@ export default {
       } else if (run.paused) {
         overlay.hidden = false;
         overlay.innerHTML = '';
-          overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Tab ou Esc continua. P escreve P e atira.'), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Continuar'));
+          overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Tab ou Esc continua.'), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Continuar'));
       } else overlay.hidden = true;
     }
 
@@ -931,7 +992,10 @@ export default {
             destroyed: run.destroyed,
             best: Math.max(best, run.score),
             lastShotAt,
-            spawnIn: run.spawnIn
+            spawnIn: run.spawnIn,
+            sound,
+            volume,
+            gain: liveGain()
           })
         ),
       type: typeChar,
@@ -952,6 +1016,7 @@ export default {
       newGame,
       spawn,
       tick: (dt) => tick(dt, true),
+      setVolume,
       clear() {
         rocks = [];
         lasers = [];
