@@ -104,11 +104,12 @@ export default {
     );
     const fsBack = el('a', { class: 'btn btn--ghost airx__fs-back', href: '#/hub', title: 'Voltar ao Hub' }, '◀ Voltar');
     const fsExit = el('button', { class: 'btn btn--primary airx__fs-exit', type: 'button' }, 'Sair da tela cheia');
-    const fsHint = el('span', { class: 'airx__fs-hint' }, 'Mostre as palmas. Esc também sai.');
-    const fsBar = el('div', { class: 'airx__fsbar', hidden: true, 'aria-label': 'Controles da tela cheia' }, fsBack, fsExit, fsHint);
+    const fsCam = el('button', { class: 'btn btn--ghost airx__fs-cam', type: 'button', hidden: true }, 'Desligar câmera');
+    const fsHint = el('span', { class: 'airx__fs-hint' }, 'Esc também sai.');
+    const fsBar = el('div', { class: 'airx__fsbar', hidden: true, 'aria-label': 'Controles da tela cheia' }, fsBack, fsExit, fsCam, fsHint);
     const arena = el('div', { class: 'airx__arena' }, video, ...circles, canvas, ...huds, maestro, fsBar);
 
-    const camBtn = el('button', { class: 'btn btn--primary' }, 'Ativar câmera');
+    const camBtn = el('button', { class: 'btn btn--primary', type: 'button', 'aria-pressed': 'false' }, 'Ativar câmera');
     const demoBtn = el('button', { class: 'btn btn--ghost', 'aria-pressed': 'false' }, 'Simular dedos: Não');
     const recBtn = el('button', { class: 'btn btn--rec', 'aria-pressed': 'false' }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar: Não'));
     const timer = el('span', { class: 'pill' }, '00:00');
@@ -538,7 +539,57 @@ export default {
     }
 
     /* ---------- Câmera, mouse, teclado, demo ---------- */
+    function cameraUiOn() {
+      return Boolean(stream) || arena.classList.contains('has-camera');
+    }
+
+    function syncFsChrome() {
+      const on = arena.classList.contains('is-fs') || document.fullscreenElement === arena;
+      fsBar.hidden = !on;
+      fsCam.hidden = !cameraUiOn();
+      fsHint.textContent = cameraUiOn() ? 'Mostre as palmas. Esc também sai.' : 'Esc também sai.';
+    }
+
+    function setCameraUi(on) {
+      arena.classList.toggle('has-camera', on);
+      root.querySelector('.airx')?.classList.toggle('is-cam', on);
+      distHint.hidden = !on;
+      camBtn.disabled = false;
+      camBtn.textContent = on ? 'Desligar câmera' : 'Ativar câmera';
+      camBtn.setAttribute('aria-pressed', String(on));
+      if (!on) {
+        distHint.textContent = '';
+        distHint.classList.remove('is-warn');
+        status.textContent = 'Mouse nos círculos ou A / L. Câmera: Hub e Esc continuam visíveis.';
+      }
+      syncFsChrome();
+    }
+
+    function exitArena() {
+      setArenaSize(false);
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    }
+
+    function disableCamera({ exitFs = true } = {}) {
+      stopHandLoop();
+      if (stream) {
+        stream.getTracks().forEach((t) => t.stop());
+        stream = null;
+      }
+      camHands = [];
+      video.srcObject = null;
+      resetHandSmooth();
+      lastVideoTime = -1;
+      lastDetectTs = 0;
+      setCameraUi(false);
+      if (exitFs) exitArena();
+    }
+
     async function enableCamera() {
+      if (cameraUiOn()) {
+        disableCamera({ exitFs: true });
+        return;
+      }
       camBtn.disabled = true;
       status.textContent = 'Carregando o detector de mãos local (MediaPipe)…';
       try {
@@ -560,17 +611,13 @@ export default {
         if (!(video.readyState >= 2 && video.videoWidth)) {
           await new Promise((resolve) => video.addEventListener('loadeddata', resolve, { once: true }));
         }
-        arena.classList.add('has-camera');
-        root.querySelector('.airx')?.classList.add('is-cam');
-        distHint.hidden = false;
-        camBtn.textContent = 'Câmera ligada';
-        status.textContent = 'Mostre as palmas. Use Voltar ou Esc para sair da tela cheia.';
+        setCameraUi(true);
+        status.textContent = 'Mostre as palmas. Hub continua no topo; Tela cheia amplia o palco. Esc sai da tela cheia.';
         ensureAudio().catch(() => {});
         startHandLoop();
-        setArenaSize(true);
       } catch (err) {
         console.error(err);
-        camBtn.disabled = false;
+        disableCamera({ exitFs: false });
         status.textContent = `Câmera indisponível (${err.name || err.message}). Use o mouse, as teclas A/L ou “Simular dedos”.`;
       }
     }
@@ -600,13 +647,22 @@ export default {
       }
     });
 
+    const isEsc = (e) => e.key === 'Escape' || e.key === 'Esc' || e.code === 'Escape';
     const onKeyDown = (e) => {
-      if (e.key === 'Escape' && arena.classList.contains('is-fs') && !document.fullscreenElement) {
-        e.preventDefault();
-        setArenaSize(false);
-        return;
+      if (isEsc(e)) {
+        const trapped =
+          arena.classList.contains('is-fs') ||
+          document.documentElement.classList.contains('is-airpads-fs') ||
+          document.fullscreenElement === arena;
+        if (trapped) {
+          e.preventDefault();
+          e.stopPropagation();
+          exitArena();
+          return;
+        }
       }
-      if (e.repeat || e.ctrlKey || e.metaKey || e.target.matches('input, select, textarea')) return;
+      if (e.repeat || e.ctrlKey || e.metaKey) return;
+      if (e.target && typeof e.target.matches === 'function' && e.target.matches('input, select, textarea')) return;
       const i = KEYS.indexOf(e.key.toLowerCase());
       if (i >= 0) {
         keyHeld.add(i);
@@ -617,10 +673,16 @@ export default {
       const i = KEYS.indexOf(e.key.toLowerCase());
       if (i >= 0) keyHeld.delete(i);
     };
-    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keydown', onKeyDown, true);
     window.addEventListener('keyup', onKeyUp);
 
     /* ---------- Gravação (vai para a Galeria como áudio) ---------- */
+    function syncAirpadsDock() {
+      const hide = arena.classList.contains('is-fs') || Boolean(rec);
+      document.documentElement.classList.toggle('is-recording', Boolean(rec));
+      setDockVisible(!hide);
+    }
+
     async function stopRecording() {
       const r = rec;
       rec = null;
@@ -628,6 +690,7 @@ export default {
       recBtn.classList.remove('is-active');
       recBtn.setAttribute('aria-pressed', 'false');
       recBtn.querySelector('.btn__text').textContent = 'Gravar: Não';
+      syncAirpadsDock();
       const events = log.stopTake();
       const { blob, seconds } = await r.stop();
       r.dispose();
@@ -658,6 +721,7 @@ export default {
           recBtn.classList.add('is-active');
           recBtn.setAttribute('aria-pressed', 'true');
           recBtn.querySelector('.btn__text').textContent = 'Gravar: Sim';
+          syncAirpadsDock();
         }
       } catch (err) {
         toast(`Falhou a gravação: ${err.message}`, 'error');
@@ -679,16 +743,13 @@ export default {
       arena.classList.toggle('is-fs', on);
       root.querySelector('.airx')?.classList.toggle('is-arena-fs', on);
       document.documentElement.classList.toggle('is-airpads-fs', on);
-      fsBar.hidden = !on;
       fsBtn.textContent = on ? 'Encolher palco' : 'Tela cheia';
       fsBtn.setAttribute('aria-pressed', String(on));
-      setDockVisible(!on);
+      syncAirpadsDock();
       resetHandSmooth();
       lastVideoTime = -1;
-      if (on) {
-        fsHint.textContent = stream ? 'Mostre as palmas. Esc também sai.' : 'Esc também sai.';
-        video.play().catch(() => {});
-      }
+      syncFsChrome();
+      if (on) video.play().catch(() => {});
     }
     let fsOp = Promise.resolve();
     async function toggleArenaSize(on) {
@@ -697,21 +758,22 @@ export default {
       const op = fsOp.then(async () => {
         try {
           if (!alive) return;
-          if (next && arena.requestFullscreen && document.fullscreenElement !== arena) await arena.requestFullscreen();
-          else if (!next && document.fullscreenElement) await document.exitFullscreen();
+          if (!next && document.fullscreenElement) await document.exitFullscreen();
         } catch {}
       });
       fsOp = op.catch(() => {});
       return op;
     }
     fsBtn.addEventListener('click', () => toggleArenaSize());
-    fsExit.addEventListener('click', () => toggleArenaSize(false));
+    fsExit.addEventListener('click', () => exitArena());
+    fsCam.addEventListener('click', () => disableCamera({ exitFs: true }));
+    fsBack.addEventListener('click', () => exitArena());
     const onFsChange = () => {
-      if (document.fullscreenElement === arena && !arena.classList.contains('is-fs')) {
-        document.exitFullscreen().catch(() => {});
+      if (document.fullscreenElement === arena) {
+        if (!arena.classList.contains('is-fs')) setArenaSize(true);
         return;
       }
-      if (!document.fullscreenElement && arena.classList.contains('is-fs')) setArenaSize(false);
+      if (arena.classList.contains('is-fs')) setArenaSize(false);
     };
     document.addEventListener('fullscreenchange', onFsChange);
     scaleSel.addEventListener('change', () => {
@@ -768,6 +830,7 @@ export default {
     raf = requestAnimationFrame(frame);
     if (params.demo) setDemo(true);
     if (params.fs) setArenaSize(true);
+    if (params.cam) setCameraUi(true);
 
     window.__mmpAirPads = {
       state: () => ({
@@ -779,9 +842,16 @@ export default {
         recording: Boolean(rec),
         audio: Boolean(engines),
         fullscreen: arena.classList.contains('is-fs'),
+        camera: cameraUiOn(),
         hands: camHands.length
       }),
       setArenaSize,
+      exitArena,
+      disableCamera,
+      simulateCamera: (on) => {
+        if (on) setCameraUi(true);
+        else disableCamera({ exitFs: false });
+      },
       tap(i, rx = 0, ry = 0) {
         simTips = simTips.filter((t) => t.hand !== i).concat({ hand: i, rx, ry });
       },
@@ -803,13 +873,13 @@ export default {
       unmount() {
         alive = false;
         stopHandLoop();
-        document.documentElement.classList.remove('is-airpads-fs');
+        document.documentElement.classList.remove('is-airpads-fs', 'is-recording');
         document.removeEventListener('fullscreenchange', onFsChange);
         if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
         setDockVisible(true);
         cancelAnimationFrame(raf);
         clearTimeout(pointTimer);
-        window.removeEventListener('keydown', onKeyDown);
+        window.removeEventListener('keydown', onKeyDown, true);
         window.removeEventListener('keyup', onKeyUp);
         if (window.__mmpAirPads) delete window.__mmpAirPads;
         if (stream) stream.getTracks().forEach((t) => t.stop());

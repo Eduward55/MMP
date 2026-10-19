@@ -28,14 +28,17 @@
 .airx__video {
   position: absolute;
   inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   transform: scaleX(-1);
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s ease;
 }
 .airx__arena.has-camera .airx__video {
+  z-index: 0;
   opacity: 0.72;
   object-fit: contain;
   background: #0c0d12;
@@ -270,7 +273,7 @@
 
 .airx.is-cam .airx__arena {
   max-height: none;
-  height: min(72vh, 760px);
+  height: min(82vh, 860px);
   aspect-ratio: auto;
 }
 .airx.is-arena-fs .airx__arena,
@@ -285,6 +288,7 @@
   aspect-ratio: auto;
   border-radius: 0;
   background: var(--bg);
+  isolation: isolate;
 }
 .airx__arena:fullscreen {
   background: var(--bg);
@@ -292,29 +296,35 @@
 .airx__fsbar {
   display: none;
   position: absolute;
-  top: 10px;
-  left: 50%;
-  z-index: 20;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  transform: translateZ(0);
+  isolation: isolate;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
-  max-width: calc(100% - 24px);
-  padding: 8px 10px;
-  background: color-mix(in srgb, var(--bg) 90%, transparent);
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
+  width: 100%;
+  max-width: none;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  border-radius: 0;
   pointer-events: auto;
   cursor: default;
 }
 .airx__arena.is-fs .airx__fsbar,
 .airx.is-arena-fs .airx__fsbar,
 .airx__arena:fullscreen .airx__fsbar {
-  display: flex;
+  display: flex !important;
 }
-.airx__fsbar[hidden] {
-  display: none !important;
+.airx__fsbar .btn {
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
 }
 .airx__fs-hint {
   font-size: 0.82rem;
@@ -325,6 +335,7 @@
 .airx.is-arena-fs .air-hud,
 .airx__arena:fullscreen .air-hud {
   top: 62px;
+  z-index: 6;
 }
 .airx.is-arena-fs .air-circle,
 .airx__arena.is-fs .air-circle,

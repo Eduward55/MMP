@@ -131,6 +131,8 @@
       const exit = $('.airx__fs-exit');
       const bar = $('.airx__fsbar');
       const br = back && back.getBoundingClientRect();
+      const barZ = Number(getComputedStyle(bar).zIndex);
+      const vidZ = Number(getComputedStyle($('.airx__video')).zIndex);
       ok(
         'Air Pads: Voltar e Sair visíveis na tela cheia',
         bar &&
@@ -141,15 +143,73 @@
           /Sair da tela cheia/i.test(exit.textContent) &&
           br &&
           br.height > 0 &&
-          getComputedStyle(bar).display !== 'none',
-        bar && `${bar.hidden} ${getComputedStyle(bar).display} ${back && back.textContent}`
+          getComputedStyle(bar).display !== 'none' &&
+          barZ >= 50 &&
+          (Number.isNaN(vidZ) || barZ > vidZ),
+        bar && `${bar.hidden} ${getComputedStyle(bar).display} z=${barZ}/${vidZ} ${back && back.textContent}`
       );
-      fsBtn.click();
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true }));
       await sleep(200);
+      const camBtn = $$('.airx__stage .toolbar button').find((b) => /Ativar câmera|Desligar câmera/.test(b.textContent));
+      const camRect = camBtn && camBtn.getBoundingClientRect();
+      ok(
+        'Air Pads: Esc sai da tela cheia e devolve a toolbar',
+        !$('.airx__arena')?.classList.contains('is-fs') &&
+          !document.documentElement.classList.contains('is-airpads-fs') &&
+          camBtn &&
+          /Ativar câmera/.test(camBtn.textContent) &&
+          camRect &&
+          camRect.height > 0,
+        camBtn && `${camBtn.textContent} h=${camRect && Math.round(camRect.height)} fs=${$('.airx__arena')?.classList.contains('is-fs')}`
+      );
       ok(
         'Air Pads: dock volta ao sair da tela cheia',
         !dock.hidden && getComputedStyle(dockRoot).display !== 'none' && !document.documentElement.classList.contains('is-airpads-fs')
       );
+      ap.setArenaSize(true);
+      ap.simulateCamera(true);
+      await sleep(80);
+      const camOff = $('.airx__fs-cam');
+      const back2 = $('.airx__fs-back');
+      ok(
+        'Air Pads: Voltar visível com câmera em tela cheia',
+        $('.airx__arena')?.classList.contains('is-fs') &&
+          $('.airx__arena')?.classList.contains('has-camera') &&
+          back2 &&
+          /Voltar/i.test(back2.textContent) &&
+          back2.getBoundingClientRect().height > 0 &&
+          camOff &&
+          !camOff.hidden &&
+          /Desligar câmera/.test(camOff.textContent),
+        back2 && `${back2.textContent} camOff=${camOff && camOff.hidden} ${camOff && camOff.textContent}`
+      );
+      $('.airx__fs-exit').click();
+      await sleep(120);
+      const camAfter = $$('.airx__stage .toolbar button').find((b) => /Ativar câmera|Desligar câmera/.test(b.textContent));
+      ok(
+        'Air Pads: Sair devolve a toolbar da câmera',
+        !$('.airx__arena')?.classList.contains('is-fs') && camAfter && camAfter.getBoundingClientRect().height > 0,
+        camAfter && camAfter.textContent
+      );
+      camAfter.click();
+      await sleep(80);
+      ok(
+        'Air Pads: Desligar câmera restaura Ativar câmera',
+        /Ativar câmera/.test(camAfter.textContent) && !$('.airx__arena')?.classList.contains('has-camera'),
+        camAfter.textContent
+      );
+      ap.simulateCamera(true);
+      await sleep(40);
+      ok(
+        'Air Pads: câmera não entra em tela cheia sozinha',
+        !$('.airx__arena')?.classList.contains('is-fs') &&
+          $('.airx__arena')?.classList.contains('has-camera') &&
+          $('.topbar__back') &&
+          $('.topbar__back').getBoundingClientRect().height > 0 &&
+          /Desligar câmera/.test(camAfter.textContent),
+        camAfter && `${camAfter.textContent} fs=${$('.airx__arena')?.classList.contains('is-fs')}`
+      );
+      ap.simulateCamera(false);
     }
     await ap.ready();
     ap.tap(0, 0, -0.9);

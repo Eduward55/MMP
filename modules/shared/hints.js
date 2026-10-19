@@ -5,6 +5,7 @@ export const HINTS = {
 • Ative a câmera ou passe o mouse nos círculos (teclas A e L também valem).
 • Círculo da esquerda = sua mão esquerda; o da direita = a direita.
 • Cada fatia é uma nota da escala (na bateria: chimbal, caixa, bumbo).
+• Tela cheia amplia o palco; Voltar, Sair ou Esc saem. Desligar câmera para o vídeo.
 • Salvar guarda os instrumentos. Gravar manda o áudio pra Galeria.`,
   beatcats: `Beat Cats — como mexer
 • Arraste um acessório até um gato: ele entra no loop cantando.
