@@ -1,5 +1,54 @@
-// Candidatas temáticas do Cat Typing (3–10 letras). Só entram se o Hunspell e a lista de frequência confirmarem.
+// Candidatas temáticas do Cat Typing (3–10 letras). Entram se o Hunspell pt-BR reconhecer.
+// Termos históricos comuns passam mesmo sem aparecer na lista de frequência.
 import { THEMES as TERMO, BLOCKLIST } from './termo-themes.mjs';
+import { EXTRA_HISTORIA, EXTRA_PSICOLOGIA, EXTRA_ARTE } from './cattyping-extra.mjs';
+import histCats from './conexoes-data/historia.mjs';
+import arteCats from './conexoes-data/arte.mjs';
+import psiCats from './conexoes-data/psicologia.mjs';
+import musCats from './conexoes-data/musica.mjs';
+
+const PT_WORD = /^[a-záàâãéêíóôõúüç]+$/i;
+
+export const letters = (s) =>
+  String(s || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z]/g, '');
+
+function tokensFromText(str) {
+  return String(str || '')
+    .split(/\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function tokensFromConexoes(mod) {
+  const out = [];
+  for (const row of mod) {
+    for (const part of String(row[3] || '').split(/[,;/]+/)) {
+      const w = part.trim().toLowerCase();
+      if (!w || /\s/.test(w) || w.includes('-')) continue;
+      out.push(w);
+    }
+  }
+  return out;
+}
+
+function pack(groups) {
+  const byN = new Map();
+  for (const raw of groups.flat()) {
+    const token = String(raw).trim();
+    if (!PT_WORD.test(token)) continue;
+    const n = letters(token);
+    if (n.length < 3 || n.length > 10) continue;
+    const prev = byN.get(n);
+    const hasMark = /[áàâãéêíóôõúüç]/i.test(token);
+    const prevMark = prev && /[áàâãéêíóôõúüç]/i.test(prev);
+    if (!prev || (hasMark && !prevMark)) byN.set(n, token.toLowerCase());
+  }
+  return [...byN.values()];
+}
 
 const extra = {
   psicologia: `ego self mente afeto apego trauma luto medo raiva calma crise surto sonho culpa animo humor fobia mania
@@ -61,19 +110,27 @@ const extra = {
     apartheid descolonizacao maome meca medina califado hegira istambul sultao janizaro solimao xogunato samurai
     meiji edo daimio bushido mauria gupta moghul ashoka gandhi particao magna carta iluminismo voltaire rousseau
     diderot kant sindicato greve marx engels anarquismo acucar ouro cafe borracha cacau cabanagem balaiada sabinada
-    farroupilha praieira canudos conselheiro jagunco zumbi palmares humaita caxias feb pracinhas`,
-  gerais: TERMO.gerais
+    farroupilha praieira canudos conselheiro jagunco zumbi palmares humaita caxias feb pracinhas`
 };
 
-function merge(a, b) {
-  return `${a} ${b}`;
-}
+export const THEME_TOKENS = {
+  psicologia: pack([tokensFromText(TERMO.psicologia), tokensFromText(extra.psicologia), tokensFromText(EXTRA_PSICOLOGIA), tokensFromConexoes(psiCats)]),
+  arte: pack([
+    tokensFromText(TERMO.arte),
+    tokensFromText(extra.arte),
+    tokensFromText(EXTRA_ARTE),
+    tokensFromConexoes(arteCats),
+    tokensFromConexoes(musCats)
+  ]),
+  historia: pack([tokensFromText(TERMO.historia), tokensFromText(extra.historia), tokensFromText(EXTRA_HISTORIA), tokensFromConexoes(histCats)]),
+  gerais: pack([tokensFromText(TERMO.gerais)])
+};
 
 export const THEMES = {
-  psicologia: merge(TERMO.psicologia, extra.psicologia),
-  arte: merge(TERMO.arte, extra.arte),
-  historia: merge(TERMO.historia, extra.historia),
-  gerais: extra.gerais
+  psicologia: THEME_TOKENS.psicologia.join(' '),
+  arte: THEME_TOKENS.arte.join(' '),
+  historia: THEME_TOKENS.historia.join(' '),
+  gerais: THEME_TOKENS.gerais.join(' ')
 };
 
 export { BLOCKLIST };

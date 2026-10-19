@@ -269,7 +269,7 @@
         ctd.words >= 5000 &&
         ctd.minLen === 3 &&
         ctd.maxLen === 10 &&
-        ['psicologia', 'arte', 'historia', 'gerais'].every((t) => ctd.themes[t] >= 50) &&
+        ['psicologia', 'arte', 'historia', 'gerais'].every((t) => ctd.themes[t] >= 800) &&
         [3, 4, 5, 6, 7, 8, 9, 10].every((n) => ctd.byLen[n] > 0),
       ctd && JSON.stringify({ words: ctd.words, themes: ctd.themes, byLen: ctd.byLen })
     );
