@@ -54,17 +54,17 @@ export const DRUM_BY_NOTE = Object.fromEntries(DRUM_KIT.map((d) => [d.note, d]))
 export const nearestDrum = (n) => DRUM_KIT.reduce((a, b) => (Math.abs(b.note - n) < Math.abs(a.note - n) ? b : a)).note;
 
 export const INSTRUMENTS = [
-  { id: 'piano', name: 'Piano', color: '#5ff3ff', range: [48, 84] },
-  { id: 'keys', name: 'Teclado Fofo', color: '#8fd3ff', range: [48, 84] },
-  { id: 'synth', name: 'Synth Neon', color: '#9b5cff', range: [48, 84] },
-  { id: 'pad', name: 'Pad', color: '#5ff3ff', range: [45, 77] },
-  { id: 'chip', name: 'Chip 8-bit', color: '#5dff9b', range: [60, 96] },
-  { id: 'bass', name: 'Baixo', color: '#ffd23f', range: [28, 60] },
-  { id: 'theremin', name: 'Theremin', color: '#5dff9b', range: [55, 91] },
-  { id: 'meow', name: 'Miau', color: '#ff7fb0', range: [60, 96] },
-  { id: 'bells', name: 'Sininhos', color: '#ffe08a', range: [72, 103] },
-  { id: 'fx', name: 'Efeitos', color: '#b07cff', range: [48, 108] },
-  { id: 'drums', name: 'Bateria', color: '#ff4fd8', drums: true, range: [36, 76] }
+  { id: 'piano', name: 'Piano', color: '#7a93b8', range: [48, 84] },
+  { id: 'keys', name: 'Teclado Fofo', color: '#8aa3c4', range: [48, 84] },
+  { id: 'synth', name: 'Synth', color: '#8b5cf6', range: [48, 84] },
+  { id: 'pad', name: 'Pad', color: '#7a93b8', range: [45, 77] },
+  { id: 'chip', name: 'Chip 8-bit', color: '#6f9a7e', range: [60, 96] },
+  { id: 'bass', name: 'Baixo', color: '#b8a46a', range: [28, 60] },
+  { id: 'theremin', name: 'Theremin', color: '#6f9a7e', range: [55, 91] },
+  { id: 'meow', name: 'Miau', color: '#b88aa0', range: [60, 96] },
+  { id: 'bells', name: 'Sininhos', color: '#c4b070', range: [72, 103] },
+  { id: 'fx', name: 'Efeitos', color: '#8a7aa8', range: [48, 108] },
+  { id: 'drums', name: 'Bateria', color: '#9a7ab0', drums: true, range: [36, 76] }
 ];
 export const INSTRUMENT_BY_ID = Object.fromEntries(INSTRUMENTS.map((i) => [i.id, i]));
 

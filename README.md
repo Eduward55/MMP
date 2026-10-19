@@ -1,6 +1,6 @@
 # My Music Place (MMP)
 
-App desktop musical, fofo e **100% offline**, feito com **Electron + HTML/JS/CSS puro** (sem frameworks de UI, sem bundler). Tema escuro roxo e rosa neon, tudo em pixel art desenhada pelo próprio código, com um **gato maestro** e sua **lontra companheira** presentes em todos os módulos.
+App desktop musical, fofo e **100% offline**, feito com **Electron + HTML/JS/CSS puro** (sem frameworks de UI, sem bundler). Tema minimalista escuro (fundo `#0f0f12`, roxo `#8b5cf6` só em bordas finas, títulos e o botão principal). Os gatos em pixel art continuam; as cores ficam em `assets/css/theme.css`. Um **gato maestro** e sua **lontra companheira** aparecem em todos os módulos.
 
 ## Como rodar
 
@@ -54,7 +54,7 @@ O repositório precisa ser **privado** no GitHub (a Action usa `GITHUB_TOKEN` co
 
 ## O que tem
 
-- **Hub** — gato maestro animado (capa + batuta regendo), lontra dançando, notas flutuando e os cards dos módulos.
+- **Hub** — gato maestro animado (capa + batuta regendo), lontra dançando e os cards dos módulos (borda roxa fina, bastante espaço).
 - **Meu Gato** — nome do gato e da lontra, 6 pelagens (tigresa, preto, frajola, branco, laranja, cinza), cor dos olhos (6 prontas + seletor livre) e **20 roupinhas/acessórios** que servem no gato e na lontra: astronauta, maid, suéter listrado, capa de maestro, cachecol, gravata borboleta, coleira com sininho, óculos redondos, óculos de coração, estrelinha, lacinho, florzinha, capacete espacial, chapéu de bruxa, coroa, fone de ouvido, chapéu de festa, boina, batuta e microfone. Um item por lugar (cabeça, orelha, rosto, pescoço, corpo, costas, patinha).
 - **Galeria** — lista áudios, vídeos, beats e projetos do Studio, com filtro, busca, ordenação e ações de **abrir, renomear, exportar e apagar**. Itens que têm notas (gravações dos módulos, beats, projetos) ganham o botão **No Studio**.
 - **Beat Cats** — beatbox em grupo com 6 gatos em pixel art (o seu gato + as outras 5 pelagens do Meu Gato), vazios no início. Arraste (mouse ou toque) um dos 24 acessórios sonoros sintetizados com Tone.js (6 bateria, 5 baixo, 5 acordes, 4 melodia, 4 efeitos) para um gato: ele entra no loop sincronizado no BPM, canta e dança. Arrastar para fora ou tocar no gato silencia. Modo contínuo (entra na hora) ou por rodada (entra na próxima rodada de 2 compassos). A lontra faz um *splash* especial (tecla O). Grava só áudio ou áudio + animação (vídeo webm) direto na Galeria; Salvar guarda gatos/camadas/BPM/modo e o beat reabre da Galeria.
@@ -65,6 +65,19 @@ O repositório precisa ser **privado** no GitHub (a Action usa `GITHUB_TOKEN` co
 - **Cat Typing** — o gato espacial (com a pelagem e as roupas atuais do Meu Gato) fica embaixo da tela e a lontra vai de copiloto. Asteroides descem com palavras de 3 a 10 letras; você digita a palavra no teclado físico (acentos não importam) e o gato atira um laser 8-bit. Velocidade sobe a cada nível, há 3 vidas, pontos, pausa (Espaço ou P) e recorde local. A lista tem **5.000+ palavras reais** de psicologia, arte, história e gerais (`data/cattyping/words.json`), embaralhadas a cada partida. **Salvar** guarda a missão em andamento e o recorde.
 
 Todo módulo tem a mesma barra superior: **◀ Hub**, **Salvar** (também `Ctrl+S`) e **Galeria**.
+
+### Tema visual
+
+Toda a paleta fica em `assets/css/theme.css`. Troque só esse arquivo para mudar o app:
+
+| Variável | Uso |
+|---|---|
+| `--bg` | Fundo da janela (`#0f0f12`) |
+| `--surface` | Cards e palcos, um tom acima do fundo |
+| `--border` / `--accent` | Detalhe roxo: borda 1px, título, ícone ativo, botão principal (`#8b5cf6`) |
+| `--text` | Texto em cinza claro (`#e4e4e7`) |
+
+Tipografia sem serifa (fonte do sistema). Animações só de fade e leve elevação. Os gatos pixel art não têm fundo colorido atrás.
 
 ### Eventos: tudo que é tocado vira JSON
 
@@ -114,10 +127,10 @@ modules/
     events.js        captura de eventos (nota, tempo, instrumento), passagem para o Studio
     instruments.js   escalas e os 11 instrumentos do Studio (tocam ao vivo e no render offline)
     wav.js           AudioBuffer → WAV
-    ui.js, icons.js  toasts, modais, ícones pixel
+    ui.js, icons.js, theme.js  toasts, modais, ícones pixel, leitura das variáveis de theme.css
   hub/ mycat/ gallery/ beatcats/ studio/ airpads/ termo/ conexoes/ cattyping/
                  conexoes/engine.js  gerador de puzzles (4 categorias sem palavras em comum)
-assets/              CSS e fontes pixel (Press Start 2P e VT323, licença OFL)
+assets/              theme.css (paleta) + CSS dos módulos; fontes pixel OFL ainda no repo, não usadas no tema atual
 data/                padrões versionados (defaults/), exemplos (demo/), palavras do Termo (termo/), categorias do Conexões (conexoes/) e palavras do Cat Typing (cattyping/)
 vendor/              Tone.js e MediaPipe locais (ver vendor/README.md)
 scripts/             autoteste, screenshots, setup do vendor, geradores do Termo, do Conexões, do Cat Typing e do ícone

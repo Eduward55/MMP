@@ -2,11 +2,11 @@
 import { SCALES, SCALE_BY_ID, midiHz } from '../shared/instruments.js';
 
 export const INSTRUMENTS = [
-  { id: 'piano', name: 'Piano', color: '#5ff3ff', octave: 4, octaves: 2 },
-  { id: 'drums', name: 'Bateria', color: '#ff4fd8' },
-  { id: 'synth', name: 'Synth', color: '#9b5cff', octave: 4, octaves: 2 },
-  { id: 'bass', name: 'Baixo', color: '#ffd23f', octave: 2, octaves: 1 },
-  { id: 'theremin', name: 'Theremin', color: '#5dff9b', octave: 4, octaves: 2, continuous: true }
+  { id: 'piano', name: 'Piano', color: '#7a93b8', octave: 4, octaves: 2 },
+  { id: 'drums', name: 'Bateria', color: '#9a7ab0' },
+  { id: 'synth', name: 'Synth', color: '#8b5cf6', octave: 4, octaves: 2 },
+  { id: 'bass', name: 'Baixo', color: '#b8a46a', octave: 2, octaves: 1 },
+  { id: 'theremin', name: 'Theremin', color: '#6f9a7e', octave: 4, octaves: 2, continuous: true }
 ];
 export const INSTRUMENT_BY_ID = Object.fromEntries(INSTRUMENTS.map((i) => [i.id, i]));
 

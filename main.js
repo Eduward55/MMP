@@ -243,7 +243,7 @@ function createWindow() {
     height: Number(process.env.MMP_HEIGHT) || 820,
     minWidth: 360,
     minHeight: 560,
-    backgroundColor: '#0d0716',
+    backgroundColor: '#0f0f12',
     title: 'My Music Place',
     icon: iconPath(),
     autoHideMenuBar: true,

@@ -11,10 +11,10 @@ export const THEMES = [
 ];
 export const THEME_LABEL = Object.fromEntries(THEMES.map((t) => [t.id, t.label]));
 export const LEVELS = [
-  { id: 'yellow', hex: '#ffd23f', ink: '#10051d', label: 'Direto' },
-  { id: 'green', hex: '#7dce6a', ink: '#10051d', label: 'Claro' },
-  { id: 'blue', hex: '#7eb6ff', ink: '#10051d', label: 'Ardil' },
-  { id: 'purple', hex: '#c89bff', ink: '#10051d', label: 'Obscuro' }
+  { id: 'yellow', hex: '#c4b060', ink: '#0f0f12', label: 'Direto' },
+  { id: 'green', hex: '#6a9a72', ink: '#0f0f12', label: 'Claro' },
+  { id: 'blue', hex: '#6a8fbf', ink: '#0f0f12', label: 'Ardil' },
+  { id: 'purple', hex: '#8b5cf6', ink: '#0f0f12', label: 'Obscuro' }
 ];
 
 export function norm(s) {

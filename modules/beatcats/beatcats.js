@@ -137,7 +137,7 @@ export default {
       const s = shown && SOUND_BY_ID[shown];
       const g = s && GROUP_BY_ID[s.group];
       c.className = `bc-cat ${current ? 'is-active' : 'is-empty'} ${s ? `bc-cat--${s.group}` : ''} ${pending.has(i) ? (target ? 'is-pending' : 'is-leaving') : ''}`;
-      c.style.setProperty('--c', g ? g.color : '#3b2266');
+      c.style.setProperty('--c', g ? g.color : '#2a2a32');
       const svg = creatureSVG('cat', catLook(i, shown), { size: 120, label: members[i].name }).replace('</svg>', `${MOUTH}</svg>`);
       c.innerHTML = `
         <div class="bc-cat__spot" aria-hidden="true"></div>

@@ -49,11 +49,10 @@
 }
 .st-origin {
   flex: 1 1 260px;
-  font-size: 18px;
+  font-size: 0.88rem;
   padding-bottom: 10px;
 }
 
-/* Faixas */
 .st-add {
   display: flex;
   gap: 6px;
@@ -67,31 +66,33 @@
   gap: 8px;
 }
 .st-track {
-  --c: var(--pink);
+  --c: var(--accent);
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   padding: 8px;
-  background: #120a20;
-  border: 3px solid var(--line);
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
   cursor: pointer;
+  transition: border-color 0.18s ease;
 }
 .st-track.is-on {
   border-color: var(--c);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--c) 45%, transparent);
 }
 .st-track.is-muted {
   opacity: 0.6;
 }
 .st-track:focus-visible {
-  outline: 3px solid var(--cyan);
+  outline: 2px solid var(--accent-hover);
   outline-offset: 2px;
 }
 .st-track__dot {
-  width: 10px;
+  width: 8px;
   align-self: stretch;
   background: var(--c);
+  border-radius: 99px;
 }
 .st-track__body {
   display: flex;
@@ -101,12 +102,13 @@
 }
 .st-track__name {
   width: 100%;
-  font-family: var(--pixel);
-  font-size: 10px;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--text);
   background: transparent;
   border: 0;
-  border-bottom: 2px dashed transparent;
+  border-bottom: 1px dashed transparent;
   padding: 2px 0;
 }
 .st-track__name:focus {
@@ -120,13 +122,13 @@
 }
 .input--sm {
   padding: 4px 6px;
-  font-size: 16px;
+  font-size: 0.82rem;
   min-width: 0;
   flex: 1 1 auto;
 }
 .st-track__count {
-  font-size: 15px;
-  color: var(--muted);
+  font-size: 0.75rem;
+  color: var(--text-muted);
   white-space: nowrap;
 }
 .st-track__tools {
@@ -135,14 +137,13 @@
   gap: 4px;
 }
 .btn--xs {
-  font-size: 8px;
+  font-size: 0.68rem;
   padding: 5px 7px;
 }
 .st-keysrec .hint {
   margin-top: 8px;
 }
 
-/* Editor */
 .st-edit .panel__head {
   align-items: flex-start;
 }
@@ -153,8 +154,9 @@
 .st-scroll {
   overflow: auto;
   max-height: 470px;
-  border: 3px solid var(--line);
-  background: #0f0819;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--bg);
   overscroll-behavior: contain;
 }
 .st-grid {
@@ -168,48 +170,48 @@
   top: 0;
   left: 0;
   z-index: 4;
-  background: #1c1030;
-  border-bottom: 2px solid var(--line);
-  border-right: 2px solid var(--line);
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+  border-right: 1px solid var(--hairline);
 }
 .st-ruler {
   position: sticky;
   top: 0;
   z-index: 3;
   height: 22px;
-  background: #1c1030;
-  border-bottom: 2px solid var(--line);
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
 }
 .st-ruler__bar {
   position: absolute;
   top: 3px;
   padding-left: 4px;
-  font-family: var(--pixel);
-  font-size: 8px;
-  color: var(--muted);
-  border-left: 2px solid var(--purple);
+  font-family: var(--font);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  border-left: 1px solid var(--accent);
   height: 17px;
 }
 .st-keys {
   position: sticky;
   left: 0;
   z-index: 2;
-  background: #1c1030;
-  border-right: 2px solid var(--line);
+  background: var(--surface);
+  border-right: 1px solid var(--hairline);
 }
 .st-key {
   display: flex;
   align-items: center;
   padding: 0 6px;
-  font-size: 14px;
+  font-size: 0.72rem;
   line-height: 1;
-  color: var(--muted);
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--hairline);
 }
 .st-key.is-black {
-  background: #140a22;
+  background: var(--bg);
 }
 .st-key.is-scale {
   color: var(--text);
@@ -217,11 +219,11 @@
 .st-lanes {
   position: relative;
   background:
-    linear-gradient(90deg, rgba(155, 92, 255, 0.55) 2px, transparent 2px) 0 0 / calc(var(--cell) * 16) 100%,
-    linear-gradient(90deg, rgba(155, 92, 255, 0.25) 1px, transparent 1px) 0 0 / calc(var(--cell) * 4) 100%,
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / var(--cell) 100%,
-    linear-gradient(0deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 100% var(--row),
-    #150b25;
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 45%, transparent) 1px, transparent 1px) 0 0 / calc(var(--cell) * 16) 100%,
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px) 0 0 / calc(var(--cell) * 4) 100%,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / var(--cell) 100%,
+    linear-gradient(0deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 100% var(--row),
+    var(--bg);
   touch-action: none;
   user-select: none;
 }
@@ -234,18 +236,18 @@
   right: 0;
   height: var(--row);
   pointer-events: none;
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.02);
 }
 .st-row.is-out {
-  background: rgba(0, 0, 0, 0.38);
+  background: rgba(0, 0, 0, 0.28);
 }
 .st-note {
   position: absolute;
   height: calc(var(--row) - 2px);
   margin-top: 1px;
   background: var(--c);
-  border: 2px solid #120a20;
-  box-shadow: 0 0 8px color-mix(in srgb, var(--c) 55%, transparent);
+  border: 1px solid var(--bg);
+  border-radius: 3px;
   cursor: grab;
   z-index: 2;
 }
@@ -257,10 +259,10 @@
   width: 7px;
   height: 100%;
   cursor: ew-resize;
-  background: rgba(18, 10, 32, 0.35);
+  background: rgba(15, 15, 18, 0.28);
 }
 .st-note.is-selected {
-  outline: 2px solid #fff;
+  outline: 1px solid var(--text);
   z-index: 3;
 }
 .st-ghost {
@@ -278,21 +280,21 @@
   margin: 1px 0 0 1px;
   padding: 0;
   border: 0;
-  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
 }
 .st-cell.is-odd {
-  background: rgba(155, 92, 255, 0.12);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 .st-cell.is-beat {
-  background: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.1);
 }
 .st-cell:hover {
   background: color-mix(in srgb, var(--c) 40%, transparent);
 }
 .st-cell.is-on {
   background: var(--c);
-  box-shadow: 0 0 8px var(--c);
 }
 .st-cell:focus-visible {
   outline: 2px solid #fff;
@@ -304,8 +306,7 @@
   bottom: 0;
   left: 0;
   width: 2px;
-  background: #fff;
-  box-shadow: 0 0 8px #fff;
+  background: var(--text);
   pointer-events: none;
   z-index: 5;
 }
@@ -316,7 +317,6 @@
   min-height: 220px;
 }
 
-/* Exportar e abrir */
 .st-export h2 {
   margin-top: 0;
 }
@@ -324,22 +324,22 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 18px;
+  font-size: 0.88rem;
   cursor: pointer;
 }
 .st-check input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--pink);
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
 }
 .st-export__status {
-  font-size: 18px;
+  font-size: 0.88rem;
 }
 .st-export__preview .player {
   width: 100%;
   max-height: 360px;
   background: #000;
-  border: 3px solid var(--line);
+  border: 1px solid var(--hairline);
 }
 .st-picker {
   display: flex;
@@ -356,19 +356,21 @@
   padding: 10px 12px;
   text-align: left;
   color: var(--text);
-  background: #120a20;
-  border: 3px solid var(--line);
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
   cursor: pointer;
+  transition: border-color 0.18s ease;
 }
 .st-picker__item:hover,
 .st-picker__item:focus-visible {
-  border-color: var(--cyan);
+  border-color: var(--accent-hover);
   outline: none;
 }
 .st-picker__item strong {
-  font-family: var(--pixel);
-  font-size: 10px;
-  font-weight: normal;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 650;
 }
 
 @media (max-width: 1080px) {
@@ -386,7 +388,7 @@
     grid-template-columns: 64px max-content;
   }
   .st-key {
-    font-size: 12px;
+    font-size: 0.68rem;
     padding: 0 3px;
   }
   .st-scroll {

@@ -6,11 +6,11 @@ import { createEventLog, tapTone } from '../shared/events.js';
 export const LOOP_STEPS = 64;
 
 export const GROUPS = [
-  { id: 'drums', name: 'Bateria', color: '#ff4fd8' },
-  { id: 'bass', name: 'Baixo', color: '#ffd23f' },
-  { id: 'chords', name: 'Acordes', color: '#5ff3ff' },
-  { id: 'melody', name: 'Melodia', color: '#5dff9b' },
-  { id: 'fx', name: 'Efeitos', color: '#b07cff' }
+  { id: 'drums', name: 'Bateria', color: '#9a7ab0' },
+  { id: 'bass', name: 'Baixo', color: '#b8a46a' },
+  { id: 'chords', name: 'Acordes', color: '#7a93b8' },
+  { id: 'melody', name: 'Melodia', color: '#6f9a7e' },
+  { id: 'fx', name: 'Efeitos', color: '#8b5cf6' }
 ];
 export const GROUP_BY_ID = Object.fromEntries(GROUPS.map((g) => [g.id, g]));
 

@@ -1,4 +1,5 @@
 // Grava "áudio + animação": redesenha o palco num canvas a cada quadro e junta com o áudio do Tone.
+import { themeTokens, hexToRgba } from '../shared/theme.js';
 
 const imageCache = new Map();
 
@@ -20,25 +21,21 @@ function paint(ctx, stage, scale) {
   const h = s.height;
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   ctx.imageSmoothingEnabled = false;
-  const bg = ctx.createLinearGradient(0, 0, 0, h);
-  bg.addColorStop(0, '#24113f');
-  bg.addColorStop(1, '#0d0716');
-  ctx.fillStyle = bg;
+  const theme = themeTokens();
+  ctx.fillStyle = theme.surface;
   ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = 'rgba(155, 92, 255, 0.35)';
-  ctx.fillRect(0, h - 18, w, 18);
+  ctx.fillStyle = theme.hairline;
+  ctx.fillRect(0, h - 2, w, 2);
 
   stage.querySelectorAll('.bc-cat').forEach((cat) => {
     const r = cat.getBoundingClientRect();
     const x = r.left - s.left;
     const y = r.top - s.top;
     if (cat.classList.contains('is-active')) {
-      const color = getComputedStyle(cat).getPropertyValue('--c').trim() || '#ff4fd8';
-      const g = ctx.createRadialGradient(x + r.width / 2, y, 4, x + r.width / 2, y + r.height * 0.6, r.width * 0.8);
-      g.addColorStop(0, `${color}88`);
-      g.addColorStop(1, `${color}00`);
-      ctx.fillStyle = g;
-      ctx.fillRect(x - r.width * 0.3, y - 10, r.width * 1.6, r.height + 10);
+      const color = getComputedStyle(cat).getPropertyValue('--c').trim() || theme.accent;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + 1, y + 1, r.width - 2, r.height - 2);
     }
   });
 
@@ -64,7 +61,7 @@ function paint(ctx, stage, scale) {
   ctx.textAlign = 'center';
   stage.querySelectorAll('.bc-cat__tag, .bc-otter__name').forEach((tag) => {
     const r = tag.getBoundingClientRect();
-    ctx.font = '10px "Press Start 2P", monospace';
+    ctx.font = `12px ${theme.font}`;
     ctx.fillStyle = getComputedStyle(tag).color;
     ctx.fillText(tag.textContent, r.left - s.left + r.width / 2, r.top - s.top + r.height / 2 + 4);
   });
@@ -78,12 +75,12 @@ function paint(ctx, stage, scale) {
   });
   ctx.globalAlpha = 1;
   if (stage.classList.contains('is-splash')) {
-    ctx.fillStyle = 'rgba(95, 243, 255, 0.16)';
+    ctx.fillStyle = hexToRgba(theme.accent, 0.12);
     ctx.fillRect(0, h * 0.55, w, h * 0.45);
   }
-  ctx.font = '9px "Press Start 2P", monospace';
+  ctx.font = `11px ${theme.font}`;
   ctx.textAlign = 'right';
-  ctx.fillStyle = 'rgba(246, 236, 255, 0.7)';
+  ctx.fillStyle = hexToRgba(theme.text, 0.7);
   ctx.fillText('My Music Place · Beat Cats', w - 10, h - 5);
 }
 

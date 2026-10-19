@@ -12,10 +12,10 @@ const TYPES = [
 ];
 
 const TYPE_INFO = {
-  audio: { label: 'Áudio', icon: 'studio', color: '#5ff3ff' },
-  video: { label: 'Vídeo', icon: 'gallery', color: '#ffd23f' },
-  beat: { label: 'Beat', icon: 'beatcats', color: '#ff4fd8' },
-  project: { label: 'Projeto', icon: 'studio', color: '#5dff9b' }
+  audio: { label: 'Áudio', icon: 'studio', color: '#8b5cf6' },
+  video: { label: 'Vídeo', icon: 'gallery', color: '#a1a1aa' },
+  beat: { label: 'Beat', icon: 'beatcats', color: '#a78bfa' },
+  project: { label: 'Projeto', icon: 'studio', color: '#d4d4d8' }
 };
 const hasEvents = (item) => item.type === 'project' || item.type === 'beat' || Boolean(item.eventsFile);
 

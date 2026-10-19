@@ -4,7 +4,7 @@ const api = window.mmp;
 
 const DEFAULT_PROFILE = {
   version: 1,
-  cat: { name: 'Miau', coat: 'tabby', eyes: '#5dff9b', outfit: {} },
+  cat: { name: 'Miau', coat: 'tabby', eyes: '#4ade80', outfit: {} },
   otter: { name: 'Lulu', outfit: {} }
 };
 

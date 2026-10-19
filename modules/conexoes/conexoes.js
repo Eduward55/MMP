@@ -141,7 +141,7 @@ export default {
       if (!fx) return;
       fx.innerHTML = '';
       if (mood === 'win' && !quiet) {
-        const colors = ['#5dff9b', '#ffd23f', '#ff4fd8', '#5ff3ff', '#9b5cff'];
+        const colors = ['#8b5cf6', '#a78bfa', '#4ade80', '#eab308', '#a1a1aa'];
         for (let i = 0; i < 28; i++) {
           fx.append(
             el('i', {

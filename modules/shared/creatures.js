@@ -6,8 +6,8 @@ export const SIZE = 40;
 
 export const COATS = [
   { id: 'tabby', name: 'Tigresa', fur: '#a88a6a', stripe: '#5e4634', light: '#e6d3b6', paw: '#e6d3b6', ear: '#ff9ccf', outline: OUTLINE, stripes: true },
-  { id: 'black', name: 'Preto', fur: '#2c2438', stripe: '#2c2438', light: '#3b3149', paw: '#3b3149', ear: '#ff7fc2', outline: '#05020a', stripes: false, glow: true },
-  { id: 'tuxedo', name: 'Frajola', fur: '#231d2e', stripe: '#231d2e', light: '#f6f2ff', paw: '#f6f2ff', ear: '#ff7fc2', outline: '#05020a', stripes: false, glow: true },
+  { id: 'black', name: 'Preto', fur: '#2c2438', stripe: '#2c2438', light: '#3b3149', paw: '#3b3149', ear: '#ff7fc2', outline: '#05020a', stripes: false },
+  { id: 'tuxedo', name: 'Frajola', fur: '#231d2e', stripe: '#231d2e', light: '#f6f2ff', paw: '#f6f2ff', ear: '#ff7fc2', outline: '#05020a', stripes: false },
   { id: 'white', name: 'Branco', fur: '#f5f0ff', stripe: '#e3dcf3', light: '#ffffff', paw: '#ffffff', ear: '#ffa6d6', outline: '#5e4a8a', stripes: false },
   { id: 'orange', name: 'Laranja', fur: '#f28a3b', stripe: '#c25c1c', light: '#ffd8a8', paw: '#ffd8a8', ear: '#ff9ccf', outline: OUTLINE, stripes: true },
   { id: 'gray', name: 'Cinza', fur: '#8f8ba3', stripe: '#6b667f', light: '#c9c5da', paw: '#c9c5da', ear: '#ff9ccf', outline: OUTLINE, stripes: true }
@@ -16,12 +16,12 @@ export const COATS = [
 export const COAT_BY_ID = Object.fromEntries(COATS.map((c) => [c.id, c]));
 
 export const EYE_COLORS = [
-  { id: '#5dff9b', name: 'Verde menta' },
-  { id: '#5ff3ff', name: 'Azul neon' },
-  { id: '#ffc23f', name: 'Âmbar' },
-  { id: '#ff4fd8', name: 'Rosa neon' },
-  { id: '#b07cff', name: 'Violeta' },
-  { id: '#ff7a3d', name: 'Cobre' }
+  { id: '#4ade80', name: 'Verde menta' },
+  { id: '#93c5fd', name: 'Azul' },
+  { id: '#eab308', name: 'Âmbar' },
+  { id: '#c4b5fd', name: 'Lilás' },
+  { id: '#8b5cf6', name: 'Violeta' },
+  { id: '#d4a574', name: 'Cobre' }
 ];
 
 const OTTER = { fur: '#9a6a45', light: '#f1dcb8', dark: '#6e4529', outline: OUTLINE };
@@ -42,7 +42,7 @@ const OTTER_ANCHORS = {
 
 function drawCat(look) {
   const coat = COAT_BY_ID[look.coat] || COATS[0];
-  const eye = look.eyes || '#5dff9b';
+  const eye = look.eyes || '#4ade80';
   const body = new Grid(SIZE, SIZE);
   const tail = new Grid(SIZE, SIZE);
   const eyes = new Grid(SIZE, SIZE);

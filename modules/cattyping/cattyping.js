@@ -1,6 +1,7 @@
 // Cat Typing: o gato espacial atira laser nos asteroides cuja palavra você digitou.
 import { kv, getProfile, onProfile } from '../shared/store.js';
 import { creatureSVG } from '../shared/creatures.js';
+import { themeTokens, hexToRgba } from '../shared/theme.js';
 import { el, toast, startAudio } from '../shared/ui.js';
 
 const LIVES = 3;
@@ -445,16 +446,17 @@ export default {
       const w = stage.clientWidth || 640;
       const h = stage.clientHeight || 520;
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = '#070414';
+      const theme = themeTokens();
+      ctx.fillStyle = theme.bg;
       ctx.fillRect(0, 0, w, h);
       stars.forEach((st) => {
-        ctx.fillStyle = `rgba(246,236,255,${st.a})`;
+        ctx.fillStyle = hexToRgba(theme.text, st.a * 0.45);
         ctx.fillRect(Math.floor(st.x * w), Math.floor(st.y * h), st.s, st.s);
       });
       lasers.forEach((l) => {
         const k = Math.min(1, l.t / l.life);
-        ctx.strokeStyle = k < 0.5 ? '#5ff3ff' : '#ff4fd8';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = k < 0.5 ? theme.accentHover : theme.accent;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(l.x0 * w, l.y0 * h);
         ctx.lineTo(l.x1 * w, l.y1 * h);
@@ -467,10 +469,10 @@ export default {
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(r.rot);
-        const fill = { psicologia: '#4a1d73', arte: '#7a1848', historia: '#6a4a12', gerais: '#4a2d1a' };
-        ctx.fillStyle = r.id === run.targetId ? '#9b5cff' : fill[r.theme] || fill.gerais;
-        ctx.strokeStyle = '#120a20';
-        ctx.lineWidth = 3;
+        const fill = { psicologia: '#2a2a32', arte: '#32323a', historia: '#26262c', gerais: '#1c1c22' };
+        ctx.fillStyle = r.id === run.targetId ? theme.accent : fill[r.theme] || fill.gerais;
+        ctx.strokeStyle = theme.hairline;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         for (let i = 0; i < 7; i++) {
           const a = (i / 7) * Math.PI * 2;
@@ -483,38 +485,38 @@ export default {
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = '#2a1810';
+        ctx.fillStyle = theme.bg;
         ctx.fillRect(-rad * 0.2, -rad * 0.15, rad * 0.25, rad * 0.2);
         ctx.restore();
-        ctx.font = '9px "Press Start 2P", monospace';
+        ctx.font = `13px ${theme.font}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const typed = r.id === run.targetId ? run.typing.length : 0;
         const label = r.display;
         const tw = ctx.measureText(label).width;
-        ctx.fillStyle = '#120a20';
+        ctx.fillStyle = theme.surface;
         ctx.fillRect(cx - tw / 2 - 6, cy - 28, tw + 12, 18);
-        ctx.strokeStyle = r.id === run.targetId ? '#ffd23f' : '#3b2266';
+        ctx.strokeStyle = r.id === run.targetId ? theme.accent : theme.hairline;
         ctx.strokeRect(cx - tw / 2 - 6, cy - 28, tw + 12, 18);
         let acc = 0;
         for (let i = 0; i < label.length; i++) {
           const ch = label[i];
           const cw = ctx.measureText(ch).width;
-          ctx.fillStyle = i < typed ? '#5dff9b' : '#f6ecff';
+          ctx.fillStyle = i < typed ? theme.accentHover : theme.text;
           ctx.fillText(ch, cx - tw / 2 + acc + cw / 2, cy - 19);
           acc += cw;
         }
       });
       booms.forEach((b) => {
         const k = b.t / b.life;
-        ctx.strokeStyle = `rgba(255,79,216,${1 - k})`;
+        ctx.strokeStyle = hexToRgba(theme.accent, 1 - k);
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(b.x * w, b.y * h, 8 + k * 28, 0, Math.PI * 2);
         ctx.stroke();
         if (b.pts) {
-          ctx.fillStyle = `rgba(255,210,63,${1 - k})`;
-          ctx.font = '8px "Press Start 2P", monospace';
+          ctx.fillStyle = hexToRgba(theme.text, 1 - k);
+          ctx.font = `12px ${theme.font}`;
           ctx.fillText(`+${b.pts}`, b.x * w, b.y * h - 20 - k * 20);
         }
       });

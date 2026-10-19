@@ -1,5 +1,6 @@
 // Exportações do Studio: WAV (render offline, mais rápido que tempo real) e WebM (canvas + webcam opcional + áudio).
 import { INSTRUMENT_BY_ID, createVoice, midiName } from '../shared/instruments.js';
+import { themeTokens, hexToRgba } from '../shared/theme.js';
 import { audioBufferToWav } from '../shared/wav.js';
 
 const TAIL = 1.6;
@@ -57,23 +58,21 @@ export async function createVideoRecorder({ Tone, master, project, cam, sprites,
 
   function paint() {
     const beat = getBeat();
-    const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#24113f');
-    g.addColorStop(1, '#0d0716');
-    ctx.fillStyle = g;
+    const theme = themeTokens();
+    ctx.fillStyle = theme.bg;
     ctx.fillRect(0, 0, W, H);
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = '#ff4fd8';
-    ctx.font = '28px "Press Start 2P", monospace';
+    ctx.fillStyle = theme.accent;
+    ctx.font = `28px ${theme.font}`;
     ctx.textAlign = 'left';
     ctx.fillText(project.name || 'Studio', 40, 62);
-    ctx.fillStyle = '#b7a2d8';
-    ctx.font = '14px "Press Start 2P", monospace';
+    ctx.fillStyle = theme.muted;
+    ctx.font = `16px ${theme.font}`;
     ctx.fillText(`${project.bpm} BPM · compasso ${Math.floor(beat / 4) + 1}/${Math.ceil(project.length / 4)}`, 40, 92);
 
-    ctx.fillStyle = 'rgba(13, 7, 22, 0.7)';
+    ctx.fillStyle = theme.surface;
     ctx.fillRect(roll.x, roll.y, roll.w, roll.h);
-    ctx.strokeStyle = 'rgba(155, 92, 255, 0.25)';
+    ctx.strokeStyle = hexToRgba(theme.accent, 0.35);
     ctx.lineWidth = 1;
     for (let b = 0; b <= project.length; b++) {
       const x = roll.x + (b / project.length) * roll.w;
@@ -91,26 +90,21 @@ export async function createVideoRecorder({ Tone, master, project, cam, sprites,
       const w = Math.max(3, (e.dur / project.length) * roll.w);
       const y = roll.y + (hi - e.note) * rh;
       const active = beat >= e.time && beat < e.time + Math.max(e.dur, 0.2);
-      ctx.fillStyle = colorOf[e.track] || '#ff4fd8';
+      ctx.fillStyle = colorOf[e.track] || theme.accent;
       ctx.globalAlpha = active ? 1 : 0.55;
-      if (active) {
-        ctx.shadowColor = ctx.fillStyle;
-        ctx.shadowBlur = 18;
-        playing.push(e);
-      }
+      if (active) playing.push(e);
       ctx.fillRect(x, y, w, Math.max(3, rh - 1));
-      ctx.shadowBlur = 0;
     });
     ctx.globalAlpha = 1;
     const px = roll.x + (Math.min(beat, project.length) / project.length) * roll.w;
-    ctx.fillStyle = '#f6ecff';
+    ctx.fillStyle = theme.text;
     ctx.fillRect(px - 1, roll.y - 6, 3, roll.h + 12);
 
     const bounce = Math.abs(Math.sin(beat * Math.PI)) * 14;
     if (cat) ctx.drawImage(cat, 40, H - 210 - bounce, 180, 180);
     if (otter) ctx.drawImage(otter, 220, H - 170 - Math.abs(Math.sin((beat + 0.5) * Math.PI)) * 10, 140, 140);
-    ctx.fillStyle = '#f6ecff';
-    ctx.font = '16px "Press Start 2P", monospace';
+    ctx.fillStyle = theme.text;
+    ctx.font = `18px ${theme.font}`;
     ctx.fillText(playing.length ? playing.slice(0, 4).map((e) => midiName(e.note)).join(' ') : '♪', 400, H - 90);
 
     if (camVideo && camVideo.readyState >= 2) {
@@ -118,7 +112,7 @@ export async function createVideoRecorder({ Tone, master, project, cam, sprites,
       const ch = Math.round((cw * (camVideo.videoHeight || 3)) / (camVideo.videoWidth || 4));
       const cx = W - cw - 40;
       const cy = H - ch - 40;
-      ctx.fillStyle = '#ff4fd8';
+      ctx.fillStyle = theme.accent;
       ctx.fillRect(cx - 6, cy - 6, cw + 12, ch + 12);
       ctx.save();
       ctx.translate(cx + cw, cy);
@@ -126,13 +120,13 @@ export async function createVideoRecorder({ Tone, master, project, cam, sprites,
       ctx.drawImage(camVideo, 0, 0, cw, ch);
       ctx.restore();
     }
-    ctx.fillStyle = 'rgba(155, 92, 255, 0.5)';
+    ctx.fillStyle = theme.hairline;
     ctx.fillRect(0, H - 10, W, 10);
-    ctx.fillStyle = '#ff4fd8';
+    ctx.fillStyle = theme.accent;
     ctx.fillRect(0, H - 10, (Math.min(beat, project.length) / project.length) * W, 10);
     ctx.textAlign = 'right';
-    ctx.font = '11px "Press Start 2P", monospace';
-    ctx.fillStyle = 'rgba(246, 236, 255, 0.7)';
+    ctx.font = `13px ${theme.font}`;
+    ctx.fillStyle = hexToRgba(theme.text, 0.7);
     ctx.fillText('My Music Place · Studio', W - 40, 40);
   }
 

@@ -2,16 +2,16 @@
 import { iconSVG } from './pixel.js';
 
 const C = {
-  p: '#ff4fd8',
-  v: '#9b5cff',
-  c: '#5ff3ff',
-  y: '#ffd23f',
-  w: '#f4f1ff',
-  d: '#2a1846',
-  g: '#5dff9b',
-  o: '#f28a3b',
-  k: '#120a1c',
-  r: '#ff3d6e'
+  p: '#a78bfa',
+  v: '#8b5cf6',
+  c: '#d4d4d8',
+  y: '#a1a1aa',
+  w: '#f4f4f5',
+  d: '#27272a',
+  g: '#86efac',
+  o: '#d4a574',
+  k: '#0f0f12',
+  r: '#f87171'
 };
 
 const MAPS = {

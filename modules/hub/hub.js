@@ -30,7 +30,7 @@ export default {
       cards.append(
         el(
           'a',
-          { class: 'card', href: `#/${m.id}`, style: `--accent:${m.accent};--delay:${idx * 50}ms` },
+          { class: 'card', href: `#/${m.id}`, style: `--delay:${idx * 60}ms` },
           el('span', { class: 'card__icon', html: icon(m.icon, 56) }),
           el('span', { class: 'card__body' }, el('span', { class: 'card__title' }, m.title), el('span', { class: 'card__desc' }, m.desc)),
           m.id === 'gallery' ? el('span', { class: 'card__badge', 'data-gallery-count': '' }) : null

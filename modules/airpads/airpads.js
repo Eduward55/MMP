@@ -5,6 +5,7 @@ import { creatureSVG } from '../shared/creatures.js';
 import { dockSay } from '../shared/companion.js';
 import { createEventLog, eventsSummary, openInStudio } from '../shared/events.js';
 import { gallery, getProfile, kv } from '../shared/store.js';
+import { themeTokens } from '../shared/theme.js';
 import { el, startAudio, stamp, toast } from '../shared/ui.js';
 import { loadHandLandmarker, mapHands } from './hands.js';
 import {
@@ -363,10 +364,13 @@ export default {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.imageSmoothingEnabled = false;
       ctx.clearRect(0, 0, w, h);
+      const theme = themeTokens();
 
       camHands.forEach((hand) => {
-        ctx.fillStyle = hand.hand === 0 ? 'rgba(95,243,255,0.75)' : 'rgba(255,79,216,0.75)';
+        ctx.fillStyle = hand.hand === 0 ? theme.accentHover : theme.accent;
+        ctx.globalAlpha = 0.75;
         hand.points.forEach((p) => ctx.fillRect(Math.round(p.x - 3), Math.round(p.y - 3), 6, 6));
+        ctx.globalAlpha = 1;
       });
 
       for (let k = effects.length - 1; k >= 0; k--) {
@@ -392,7 +396,7 @@ export default {
           const f = age * 60;
           ctx.fillRect(Math.round(e.x + e.vx * f), Math.round(e.y + e.vy * f + age * age * 120), e.size, e.size);
         } else {
-          ctx.font = '14px "Press Start 2P", monospace';
+          ctx.font = `13px ${theme.font}`;
           ctx.textAlign = 'center';
           ctx.fillText(e.text, e.x, e.y - age * 50);
         }
@@ -400,13 +404,10 @@ export default {
       ctx.globalAlpha = 1;
 
       tips.forEach((t) => {
-        const color = t.hand === null ? '#f6ecff' : INSTRUMENT_BY_ID[config.instruments[t.hand]].color;
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 14;
+        const color = t.hand === null ? theme.text : INSTRUMENT_BY_ID[config.instruments[t.hand]].color;
         ctx.fillStyle = color;
         ctx.fillRect(Math.round(t.x - 7), Math.round(t.y - 7), 14, 14);
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = '#120a20';
+        ctx.fillStyle = theme.bg;
         ctx.fillRect(Math.round(t.x - 3), Math.round(t.y - 3), 6, 6);
       });
     }

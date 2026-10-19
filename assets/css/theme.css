@@ -1,0 +1,46 @@
+/* My Music Place — tema único.
+   Troque só as variáveis abaixo para mudar o visual do hub e de todos os módulos.
+   As cinco chaves pedidas: --bg, --surface, --border, --accent, --text. */
+
+:root {
+  --bg: #0f0f12;
+  --surface: #18181c;
+  --border: #8b5cf6;
+  --accent: #8b5cf6;
+  --text: #e4e4e7;
+
+  --surface-2: #1c1c22;
+  --hairline: #2a2a32;
+  --text-muted: #a1a1aa;
+  --accent-hover: #a78bfa;
+  --accent-ink: #0f0f12;
+  --ok: #4ade80;
+  --warn: #eab308;
+  --danger: #f87171;
+  --radius: 12px;
+  --font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  --elevate: 0 12px 28px rgba(0, 0, 0, 0.34);
+
+  /* Aliases para CSS legado dos módulos (sem neon, sem glow). */
+  --bg2: var(--bg);
+  --panel: var(--surface);
+  --panel2: var(--surface-2);
+  --line: var(--hairline);
+  --purple: var(--accent);
+  --purple-deep: #6d28d9;
+  --pink: var(--accent);
+  --pink-deep: #6d28d9;
+  --cyan: var(--accent-hover);
+  --gold: var(--warn);
+  --green: var(--ok);
+  --red: var(--danger);
+  --muted: var(--text-muted);
+  --pixel: var(--font);
+  --body: var(--font);
+  --px: 1px;
+  --glow-pink: none;
+  --glow-purple: none;
+
+  color-scheme: dark;
+}

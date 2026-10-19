@@ -165,7 +165,7 @@ export default {
       if (!fx) return;
       fx.innerHTML = '';
       if (mood === 'win' && !quiet) {
-        const colors = ['#5dff9b', '#ffd23f', '#ff4fd8', '#5ff3ff', '#9b5cff'];
+        const colors = ['#8b5cf6', '#a78bfa', '#4ade80', '#eab308', '#a1a1aa'];
         for (let i = 0; i < 28; i++) {
           fx.append(
             el('i', {
@@ -473,10 +473,10 @@ export default {
     }
 
     function keyBackground(g, ch) {
-      const colors = { correct: '#1c8a52', present: '#b08410', absent: '#3b3746' };
-      const neutral = '#261543';
+      const colors = { correct: '#3f8f63', present: '#b08d2e', absent: '#3f3f46' };
+      const neutral = '#1c1c22';
       const parts = g.answers.map((_, b) => {
-        if (g.solvedAt[b] !== null) return '#0f0919';
+        if (g.solvedAt[b] !== null) return '#0f0f12';
         const s = boardStatesCache[b][ch];
         return s ? colors[s] : neutral;
       });
