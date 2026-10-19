@@ -15,7 +15,8 @@ const C = {
   n: '#94a3b8',
   b: '#2563eb',
   s: '#64748b',
-  m: '#f472b6'
+  m: '#f472b6',
+  e: '#9a3412'
 };
 
 const MAPS = {
@@ -34,18 +35,18 @@ const MAPS = {
     '............'
   ],
   beatcats: [
-    '.o........o.',
-    '.omo....omo.',
-    '.oooooooooo.',
-    'oogkooookgoo',
-    'ooooommooooo',
-    '.oooowkwooo.',
-    '..oooooooo..',
-    '...y....y...',
-    '..yyy..yyy..',
-    '.ywy....ywy.',
-    '.yyy....yyy.',
-    '............'
+    '.eo......oe.',
+    'eoo.nnnn.ooe',
+    'eomoooooomoe',
+    'eooooooooooe',
+    'dvowkookwovd',
+    'dvogkookgovd',
+    'dvooommooovd',
+    '.eooowkwooe.',
+    '..eooooooe..',
+    '...eeeeee...',
+    '.....cc.....',
+    '....ckkc....'
   ],
   studio: [
     'kkkkkkkkkkkk',
