@@ -152,6 +152,15 @@ function clearInset(node) {
   INSET_PROPS.forEach((p) => node.style.removeProperty(p));
 }
 
+function recBtnIsOn(btn) {
+  if (!btn) return false;
+  return (
+    btn.classList.contains('is-active') ||
+    btn.getAttribute('aria-pressed') === 'true' ||
+    /Gravar:\s*Sim/i.test(btn.textContent || '')
+  );
+}
+
 function liveOverlayShouldHide() {
   const html = document.documentElement;
   const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
@@ -160,7 +169,8 @@ function liveOverlayShouldHide() {
       html.classList.contains('is-airpads-fs') ||
       html.classList.contains('is-recording') ||
       fsEl ||
-      document.querySelector('.airx.is-arena-fs, .airx__arena.is-fs, .airx .btn--rec.is-active')
+      document.querySelector('.airx.is-arena-fs, .airx__arena.is-fs') ||
+      recBtnIsOn(document.querySelector('.airx .btn--rec'))
   );
 }
 

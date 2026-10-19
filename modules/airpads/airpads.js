@@ -2,7 +2,7 @@
 // Sem câmera, o mouse, as teclas A/L ou o "Simular dedos" fazem o papel das pontas dos dedos.
 import { createOutputRecorder } from '../shared/audio.js';
 import { creatureSVG } from '../shared/creatures.js';
-import { dockSay, reactCreature, setDockVisible } from '../shared/companion.js';
+import { dockSay, reactCreature, setDockCaptureHidden, setDockVisible } from '../shared/companion.js';
 import { createEventLog, eventsSummary, openInStudio } from '../shared/events.js';
 import { gallery, getProfile, kv } from '../shared/store.js';
 import { themeTokens } from '../shared/theme.js';
@@ -667,6 +667,12 @@ export default {
     window.addEventListener('keyup', onKeyUp);
 
     /* ---------- Gravação (vai para a Galeria como áudio) ---------- */
+    function syncAirpadsDock() {
+      const hide = arena.classList.contains('is-fs') || Boolean(rec);
+      document.documentElement.classList.toggle('is-recording', Boolean(rec));
+      setDockCaptureHidden(hide);
+    }
+
     async function stopRecording() {
       const r = rec;
       rec = null;
@@ -674,6 +680,7 @@ export default {
       recBtn.classList.remove('is-active');
       recBtn.setAttribute('aria-pressed', 'false');
       recBtn.querySelector('.btn__text').textContent = 'Gravar: Não';
+      syncAirpadsDock();
       const events = log.stopTake();
       const { blob, seconds } = await r.stop();
       r.dispose();
@@ -704,6 +711,7 @@ export default {
           recBtn.classList.add('is-active');
           recBtn.setAttribute('aria-pressed', 'true');
           recBtn.querySelector('.btn__text').textContent = 'Gravar: Sim';
+          syncAirpadsDock();
         }
       } catch (err) {
         toast(`Falhou a gravação: ${err.message}`, 'error');
@@ -728,7 +736,7 @@ export default {
       fsBar.hidden = !on;
       fsBtn.textContent = on ? 'Encolher palco' : 'Tela cheia';
       fsBtn.setAttribute('aria-pressed', String(on));
-      setDockVisible(!on);
+      syncAirpadsDock();
       resetHandSmooth();
       lastVideoTime = -1;
       if (on) {
@@ -849,9 +857,10 @@ export default {
       unmount() {
         alive = false;
         stopHandLoop();
-        document.documentElement.classList.remove('is-airpads-fs');
+        document.documentElement.classList.remove('is-airpads-fs', 'is-recording');
         document.removeEventListener('fullscreenchange', onFsChange);
         if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+        setDockCaptureHidden(false);
         setDockVisible(true);
         cancelAnimationFrame(raf);
         clearTimeout(pointTimer);
