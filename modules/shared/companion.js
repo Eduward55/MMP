@@ -137,8 +137,20 @@ const TIPS = [
 ];
 
 let dock = null;
+const DOCK_POS_KEY = 'dock-pos';
+
+function pinCollapsedDock(node) {
+  node.style.left = 'auto';
+  node.style.top = 'auto';
+  node.style.right = '14px';
+  node.style.bottom = '12px';
+}
 
 function applyDockPos(node, pos) {
+  if (node.classList.contains('is-collapsed')) {
+    pinCollapsedDock(node);
+    return;
+  }
   if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
   node.style.left = `${pos.x}px`;
   node.style.top = `${pos.y}px`;
@@ -146,14 +158,28 @@ function applyDockPos(node, pos) {
   node.style.bottom = 'auto';
 }
 
-function bindDockDrag(node) {
-  const KEY = 'dock-pos';
-  kv.get(KEY)
-    .then((pos) => applyDockPos(node, pos))
+function restoreDockPos(node) {
+  kv.get(DOCK_POS_KEY)
+    .then((pos) => {
+      if (node.classList.contains('is-collapsed')) return pinCollapsedDock(node);
+      if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) {
+        node.style.left = '';
+        node.style.top = '';
+        node.style.right = '';
+        node.style.bottom = '';
+        return;
+      }
+      applyDockPos(node, pos);
+    })
     .catch(() => {});
+}
+
+function bindDockDrag(node) {
+  restoreDockPos(node);
   let drag = null;
   node.addEventListener('pointerdown', (e) => {
     if (e.button && e.button !== 0) return;
+    if (node.classList.contains('is-collapsed')) return;
     if (e.target.closest('.dock__toggle, .dock__edit, .creature')) return;
     const r = node.getBoundingClientRect();
     drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
@@ -173,8 +199,9 @@ function bindDockDrag(node) {
     if (!drag) return;
     drag = null;
     node.classList.remove('is-dragging');
+    if (node.classList.contains('is-collapsed')) return;
     const r = node.getBoundingClientRect();
-    kv.set(KEY, { x: r.left, y: r.top }).catch(() => {});
+    kv.set(DOCK_POS_KEY, { x: r.left, y: r.top }).catch(() => {});
     try {
       node.releasePointerCapture(e.pointerId);
     } catch {}
@@ -200,7 +227,11 @@ export function mountDock(root) {
   setInterval(tick, 8000);
   toggle.addEventListener('click', () => {
     node.classList.toggle('is-collapsed');
-    toggle.textContent = node.classList.contains('is-collapsed') ? '+' : '–';
+    const collapsed = node.classList.contains('is-collapsed');
+    toggle.textContent = collapsed ? '+' : '–';
+    toggle.setAttribute('aria-label', collapsed ? 'Mostrar companheiros' : 'Esconder companheiros');
+    if (collapsed) pinCollapsedDock(node);
+    else restoreDockPos(node);
   });
   bindDockDrag(node);
   root.append(node);

@@ -1125,6 +1125,11 @@ svg.creature:focus-visible {
 .dock.is-collapsed {
   filter: none;
   backdrop-filter: none;
+  /* Ignora left/top salvos do duo expandido — o + fica no canto. */
+  left: auto !important;
+  top: auto !important;
+  right: 14px !important;
+  bottom: 12px !important;
 }
 .dock.is-collapsed .dock__bubble,
 .dock.is-collapsed .dock__duo {
@@ -1145,6 +1150,15 @@ svg.creature:focus-visible {
 }
 .dock[hidden] {
   display: none;
+}
+
+/* #dock-root é irmão do #app: a arena em FS (z-index 50) não cobre o + colapsado. */
+html.is-airpads-fs #dock-root,
+html:fullscreen #dock-root,
+html:has(:fullscreen) #dock-root,
+body:has(.airx.is-arena-fs) #dock-root,
+body:has(.airx__arena.is-fs) #dock-root {
+  display: none !important;
 }
 
 .hub {

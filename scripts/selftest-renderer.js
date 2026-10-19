@@ -91,6 +91,66 @@
     ok('Air Pads: 2 círculos + HUD + gato maestro', $$('.air-circle').length === 2 && $$('.air-hud').length === 2 && $('.air-maestro svg.creature--cat'));
     ok('Air Pads: círculos em fatias com as notas', $$('.air-slice').length >= 6, String($$('.air-slice').length));
     ok('Air Pads: HUD mostra os instrumentos', $('.air-hud--0').textContent.includes('Piano') && $('.air-hud--1').textContent.includes('Bateria'), $$('.air-hud').map((h) => h.textContent).join(' | '));
+    {
+      const dock = $('.dock');
+      const toggle = $('.dock__toggle');
+      const dockRoot = document.getElementById('dock-root');
+      ok('Air Pads: dock visível fora da tela cheia', dock && toggle && !dock.hidden && getComputedStyle(dockRoot).display !== 'none' && $$('#dock-root svg.creature--otter').length);
+      dock.style.left = '1023px';
+      dock.style.top = '40px';
+      dock.style.right = 'auto';
+      dock.style.bottom = 'auto';
+      toggle.click();
+      await sleep(40);
+      const tr = toggle.getBoundingClientRect();
+      ok(
+        'Air Pads: + colapsado no canto inferior direito',
+        dock.classList.contains('is-collapsed') &&
+          toggle.textContent.trim() === '+' &&
+          tr.width >= 40 &&
+          tr.left > window.innerWidth - 90 &&
+          tr.bottom > window.innerHeight - 90,
+        JSON.stringify({ left: Math.round(tr.left), top: Math.round(tr.top), w: Math.round(tr.width), iw: window.innerWidth, ih: window.innerHeight })
+      );
+      toggle.click();
+      await sleep(40);
+      const fsBtn = $$('button').find((b) => /Tela cheia|Encolher palco/.test(b.textContent));
+      fsBtn.click();
+      await sleep(200);
+      const hiddenInFs =
+        dock.hidden ||
+        getComputedStyle(dockRoot).display === 'none' ||
+        getComputedStyle(dock).display === 'none' ||
+        getComputedStyle(toggle).display === 'none';
+      ok(
+        'Air Pads: dock some na tela cheia',
+        hiddenInFs && document.documentElement.classList.contains('is-airpads-fs') && $('.airx')?.classList.contains('is-arena-fs'),
+        `hidden=${dock.hidden} rootDisplay=${getComputedStyle(dockRoot).display}`
+      );
+      const back = $('.airx__fs-back');
+      const exit = $('.airx__fs-exit');
+      const bar = $('.airx__fsbar');
+      const br = back && back.getBoundingClientRect();
+      ok(
+        'Air Pads: Voltar e Sair visíveis na tela cheia',
+        bar &&
+          !bar.hidden &&
+          back &&
+          exit &&
+          /Voltar/i.test(back.textContent) &&
+          /Sair da tela cheia/i.test(exit.textContent) &&
+          br &&
+          br.height > 0 &&
+          getComputedStyle(bar).display !== 'none',
+        bar && `${bar.hidden} ${getComputedStyle(bar).display} ${back && back.textContent}`
+      );
+      fsBtn.click();
+      await sleep(200);
+      ok(
+        'Air Pads: dock volta ao sair da tela cheia',
+        !dock.hidden && getComputedStyle(dockRoot).display !== 'none' && !document.documentElement.classList.contains('is-airpads-fs')
+      );
+    }
     await ap.ready();
     ap.tap(0, 0, -0.9);
     await sleep(150);

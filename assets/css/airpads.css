@@ -36,7 +36,9 @@
   transition: opacity 0.3s ease;
 }
 .airx__arena.has-camera .airx__video {
-  opacity: 0.55;
+  opacity: 0.72;
+  object-fit: contain;
+  background: #0c0d12;
 }
 .airx__canvas {
   position: absolute;
@@ -286,6 +288,49 @@
 }
 .airx__arena:fullscreen {
   background: var(--bg);
+}
+.airx__fsbar {
+  display: none;
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  z-index: 20;
+  transform: translateX(-50%);
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  pointer-events: auto;
+  cursor: default;
+}
+.airx__arena.is-fs .airx__fsbar,
+.airx.is-arena-fs .airx__fsbar,
+.airx__arena:fullscreen .airx__fsbar {
+  display: flex;
+}
+.airx__fsbar[hidden] {
+  display: none !important;
+}
+.airx__fs-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  max-width: 42ch;
+}
+.airx__arena.is-fs .air-hud,
+.airx.is-arena-fs .air-hud,
+.airx__arena:fullscreen .air-hud {
+  top: 62px;
+}
+.airx.is-arena-fs .air-circle,
+.airx__arena.is-fs .air-circle,
+.airx__arena:fullscreen .air-circle {
+  top: 50%;
+  width: min(40%, 60cqh, 48%);
 }
 .airx__dist {
   margin: 0 0 4px;

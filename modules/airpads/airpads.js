@@ -2,12 +2,12 @@
 // Sem câmera, o mouse, as teclas A/L ou o "Simular dedos" fazem o papel das pontas dos dedos.
 import { createOutputRecorder } from '../shared/audio.js';
 import { creatureSVG } from '../shared/creatures.js';
-import { dockSay, reactCreature } from '../shared/companion.js';
+import { dockSay, reactCreature, setDockVisible } from '../shared/companion.js';
 import { createEventLog, eventsSummary, openInStudio } from '../shared/events.js';
 import { gallery, getProfile, kv } from '../shared/store.js';
 import { themeTokens } from '../shared/theme.js';
 import { el, startAudio, stamp, toast } from '../shared/ui.js';
-import { loadHandLandmarker, mapHands, resetHandSmooth } from './hands.js';
+import { HAND_CONNECTIONS, loadHandLandmarker, mapHands, resetHandSmooth } from './hands.js';
 import {
   DRUM_ZONES,
   INSTRUMENTS,
@@ -60,6 +60,8 @@ export default {
     let stream = null;
     let landmarker = null;
     let lastVideoTime = -1;
+    let lastDetectTs = 0;
+    let rvfc = 0;
     let camHands = [];
     let mouseTip = null;
     let simTips = [];
@@ -100,7 +102,11 @@ export default {
       maestroCat,
       el('span', { class: 'air-maestro__name' }, profile.cat.name)
     );
-    const arena = el('div', { class: 'airx__arena' }, video, ...circles, canvas, ...huds, maestro);
+    const fsBack = el('a', { class: 'btn btn--ghost airx__fs-back', href: '#/hub', title: 'Voltar ao Hub' }, '◀ Voltar');
+    const fsExit = el('button', { class: 'btn btn--primary airx__fs-exit', type: 'button' }, 'Sair da tela cheia');
+    const fsHint = el('span', { class: 'airx__fs-hint' }, 'Mostre as palmas. Esc também sai.');
+    const fsBar = el('div', { class: 'airx__fsbar', hidden: true, 'aria-label': 'Controles da tela cheia' }, fsBack, fsExit, fsHint);
+    const arena = el('div', { class: 'airx__arena' }, video, ...circles, canvas, ...huds, maestro, fsBar);
 
     const camBtn = el('button', { class: 'btn btn--primary' }, 'Ativar câmera');
     const demoBtn = el('button', { class: 'btn btn--ghost', 'aria-pressed': 'false' }, 'Simular dedos: Não');
@@ -341,16 +347,44 @@ export default {
       return tips;
     }
 
+    function runDetect(now) {
+      if (!landmarker || !stream || !alive || video.readyState < 2) return;
+      const ts = Math.round(now);
+      if (ts <= lastDetectTs) return;
+      const frame = video.currentTime;
+      if (frame !== 0 && frame === lastVideoTime && ts - lastDetectTs < 16) return;
+      lastVideoTime = frame;
+      lastDetectTs = ts;
+      try {
+        camHands = mapHands(landmarker.detectForVideo(video, ts), video, arena.clientWidth, arena.clientHeight);
+      } catch (err) {
+        if (!/timestamp/i.test(String(err && err.message))) console.error(err);
+      }
+    }
+
+    function startHandLoop() {
+      stopHandLoop();
+      if (typeof video.requestVideoFrameCallback !== 'function') return;
+      const tick = (now) => {
+        if (!alive || !stream) return;
+        rvfc = video.requestVideoFrameCallback(tick);
+        runDetect(now);
+      };
+      rvfc = video.requestVideoFrameCallback(tick);
+    }
+
+    function stopHandLoop() {
+      if (rvfc && video.cancelVideoFrameCallback) {
+        try {
+          video.cancelVideoFrameCallback(rvfc);
+        } catch {}
+      }
+      rvfc = 0;
+    }
+
     function step(now) {
       const geoms = [geom(0), geom(1)];
-      if (landmarker && stream && video.readyState >= 2 && video.currentTime !== lastVideoTime) {
-        lastVideoTime = video.currentTime;
-        try {
-          camHands = mapHands(landmarker.detectForVideo(video, now), video, arena.clientWidth, arena.clientHeight);
-        } catch (err) {
-          console.error(err);
-        }
-      }
+      if (!rvfc) runDetect(now);
       const tips = collectTips(now, geoms);
       if (stream && camHands.length) {
         const pts = camHands.flatMap((h) => h.points || [{ x: h.x, y: h.y }]);
@@ -358,14 +392,21 @@ export default {
         const ys = pts.map((p) => p.y);
         const span = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
         const rel = span / Math.min(arena.clientWidth || 1, arena.clientHeight || 1);
-        if (rel > 0.72) distHint.textContent = 'Afaste-se um pouco da câmera. Não encoste na lente.';
-        else if (rel < 0.12) distHint.textContent = 'Chegue um pouco mais perto para a câmera pegar as mãos.';
-        else distHint.textContent = 'Boa distância. Não encoste na câmera.';
+        const msg =
+          rel > 0.72
+            ? 'Afaste-se um pouco da câmera. Não encoste na lente.'
+            : rel < 0.12
+              ? 'Chegue um pouco mais perto para a câmera pegar as mãos.'
+              : 'Boa distância. Não encoste na câmera.';
+        distHint.textContent = msg;
         distHint.classList.toggle('is-warn', rel > 0.72 || rel < 0.12);
+        if (!fsBar.hidden) fsHint.textContent = msg;
       }
       [0, 1].forEach((i) => {
         const g = geoms[i];
-        const tip = tips.find((t) => (t.hand === i || t.hand === null) && Math.hypot(t.x - g.cx, t.y - g.cy) <= g.r * 1.06);
+        const tip = tips
+          .filter((t) => (t.hand === i || t.hand === null) && Math.hypot(t.x - g.cx, t.y - g.cy) <= g.r * 1.22)
+          .sort((a, b) => Math.hypot(a.x - g.cx, a.y - g.cy) - Math.hypot(b.x - g.cx, b.y - g.cy))[0];
         const continuous = INSTRUMENT_BY_ID[config.instruments[i]].continuous;
         const bead = circles[i].querySelector('.air-bead');
         if (tip) {
@@ -428,9 +469,21 @@ export default {
       const theme = themeTokens();
 
       camHands.forEach((hand) => {
-        ctx.fillStyle = hand.hand === 0 ? theme.accentHover : theme.accent;
-        ctx.globalAlpha = 0.75;
-        hand.points.forEach((p) => ctx.fillRect(Math.round(p.x - 3), Math.round(p.y - 3), 6, 6));
+        const color = hand.hand === 0 ? theme.accentHover : theme.accent;
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        HAND_CONNECTIONS.forEach(([a, b]) => {
+          const p = hand.points[a];
+          const q = hand.points[b];
+          if (!p || !q) return;
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+        });
+        ctx.stroke();
+        (hand.points || []).forEach((p) => ctx.fillRect(Math.round(p.x - 3.5), Math.round(p.y - 3.5), 7, 7));
         ctx.globalAlpha = 1;
       });
 
@@ -500,14 +553,20 @@ export default {
         landmarker = lm;
         stream = s;
         resetHandSmooth();
+        lastVideoTime = -1;
+        lastDetectTs = 0;
         video.srcObject = s;
         await video.play();
+        if (!(video.readyState >= 2 && video.videoWidth)) {
+          await new Promise((resolve) => video.addEventListener('loadeddata', resolve, { once: true }));
+        }
         arena.classList.add('has-camera');
         root.querySelector('.airx')?.classList.add('is-cam');
         distHint.hidden = false;
         camBtn.textContent = 'Câmera ligada';
-        status.textContent = 'Mostre as palmas. Tela cheia amplia o palco para gravar.';
+        status.textContent = 'Mostre as palmas. Use Voltar ou Esc para sair da tela cheia.';
         ensureAudio().catch(() => {});
+        startHandLoop();
         setArenaSize(true);
       } catch (err) {
         console.error(err);
@@ -542,6 +601,11 @@ export default {
     });
 
     const onKeyDown = (e) => {
+      if (e.key === 'Escape' && arena.classList.contains('is-fs') && !document.fullscreenElement) {
+        e.preventDefault();
+        setArenaSize(false);
+        return;
+      }
       if (e.repeat || e.ctrlKey || e.metaKey || e.target.matches('input, select, textarea')) return;
       const i = KEYS.indexOf(e.key.toLowerCase());
       if (i >= 0) {
@@ -614,20 +678,42 @@ export default {
     function setArenaSize(on) {
       arena.classList.toggle('is-fs', on);
       root.querySelector('.airx')?.classList.toggle('is-arena-fs', on);
+      document.documentElement.classList.toggle('is-airpads-fs', on);
+      fsBar.hidden = !on;
       fsBtn.textContent = on ? 'Encolher palco' : 'Tela cheia';
       fsBtn.setAttribute('aria-pressed', String(on));
+      setDockVisible(!on);
+      resetHandSmooth();
+      lastVideoTime = -1;
+      if (on) {
+        fsHint.textContent = stream ? 'Mostre as palmas. Esc também sai.' : 'Esc também sai.';
+        video.play().catch(() => {});
+      }
     }
-    fsBtn.addEventListener('click', async () => {
-      const on = !arena.classList.contains('is-fs');
-      setArenaSize(on);
-      try {
-        if (on && arena.requestFullscreen) await arena.requestFullscreen();
-        else if (!on && document.fullscreenElement) await document.exitFullscreen();
-      } catch {}
-    });
-    document.addEventListener('fullscreenchange', () => {
+    let fsOp = Promise.resolve();
+    async function toggleArenaSize(on) {
+      const next = typeof on === 'boolean' ? on : !arena.classList.contains('is-fs');
+      setArenaSize(next);
+      const op = fsOp.then(async () => {
+        try {
+          if (!alive) return;
+          if (next && arena.requestFullscreen && document.fullscreenElement !== arena) await arena.requestFullscreen();
+          else if (!next && document.fullscreenElement) await document.exitFullscreen();
+        } catch {}
+      });
+      fsOp = op.catch(() => {});
+      return op;
+    }
+    fsBtn.addEventListener('click', () => toggleArenaSize());
+    fsExit.addEventListener('click', () => toggleArenaSize(false));
+    const onFsChange = () => {
+      if (document.fullscreenElement === arena && !arena.classList.contains('is-fs')) {
+        document.exitFullscreen().catch(() => {});
+        return;
+      }
       if (!document.fullscreenElement && arena.classList.contains('is-fs')) setArenaSize(false);
-    });
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
     scaleSel.addEventListener('change', () => {
       config.scale = scaleSel.value;
       log.set({ scale: config.scale });
@@ -681,6 +767,7 @@ export default {
     renderAll();
     raf = requestAnimationFrame(frame);
     if (params.demo) setDemo(true);
+    if (params.fs) setArenaSize(true);
 
     window.__mmpAirPads = {
       state: () => ({
@@ -690,8 +777,11 @@ export default {
         instruments: [...config.instruments],
         theremin: theremin.map((t) => (t ? { ...t } : null)),
         recording: Boolean(rec),
-        audio: Boolean(engines)
+        audio: Boolean(engines),
+        fullscreen: arena.classList.contains('is-fs'),
+        hands: camHands.length
       }),
+      setArenaSize,
       tap(i, rx = 0, ry = 0) {
         simTips = simTips.filter((t) => t.hand !== i).concat({ hand: i, rx, ry });
       },
@@ -712,6 +802,11 @@ export default {
       },
       unmount() {
         alive = false;
+        stopHandLoop();
+        document.documentElement.classList.remove('is-airpads-fs');
+        document.removeEventListener('fullscreenchange', onFsChange);
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+        setDockVisible(true);
         cancelAnimationFrame(raf);
         clearTimeout(pointTimer);
         window.removeEventListener('keydown', onKeyDown);
