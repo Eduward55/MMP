@@ -106,18 +106,18 @@ const MAPS = {
     '............'
   ],
   cattyping: [
-    '.....vv.....',
-    '....vvvv....',
-    '...vwwwwv...',
-    '..o......o..',
-    '.omo....omo.',
-    '.oooooooooo.',
-    'oogk....kgoo',
-    '.oooowkwoo..',
-    '..n......n..',
-    '...nnnnnn...',
-    '..r......r..',
-    '............'
+    '.o.ssssss.o.',
+    '.omssssssmo.',
+    '.oovwvvvvoo.',
+    '.ovwkwwkwvo.',
+    '.ovwgwwgwvo.',
+    '.ovvvmmvvvo.',
+    '.oovvkkvvoo.',
+    '.oossssssoo.',
+    '..ooonnnoo..',
+    '...yyyyyy...',
+    '...yywwyy...',
+    '.....yy.....'
   ],
   cantar: [
     '.to......ot.',
