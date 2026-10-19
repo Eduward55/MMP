@@ -67,9 +67,9 @@ export function kartSVG(skin) {
   g.rect(cx - 6, 3, 12, 2, chrome);
   g.rect(cx - 4, 2, 8, 1, hexMix(chrome, '#ffffff', 0.35));
 
-  // Dois faróis redondos, um em cada lado do bico.
-  lamp(g, cx - 11, 3, lampHot, lampGlass, '#ffffff');
-  lamp(g, cx + 5, 3, lampHot, lampGlass, '#ffffff');
+  // Dois faróis redondos, bem separados no bico.
+  lamp(g, cx - 13, 3, lampHot, lampGlass, '#ffffff');
+  lamp(g, cx + 7, 3, lampHot, lampGlass, '#ffffff');
 
   // Entrada de ar.
   g.rect(cx - 3, 11, 6, 3, ink);

@@ -92,7 +92,7 @@ export default {
         <span class="cr-car__beam cr-car__beam--l"></span>
         <span class="cr-car__beam cr-car__beam--r"></span>
         <span class="cr-car__art">${kartSVG(s)}</span>
-        <figure class="cr-car__pilot">${creatureSVG('cat', profile.cat, { size: 56, label: profile.cat.name, viewBox: '7 5 26 23' })}</figure>
+        <figure class="cr-car__pilot">${creatureSVG('cat', profile.cat, { size: 64, label: profile.cat.name, viewBox: '6 4 28 24' })}</figure>
         <span class="cr-car__flame cr-car__flame--l"></span>
         <span class="cr-car__flame cr-car__flame--r"></span>`;
       fan.innerHTML = `
