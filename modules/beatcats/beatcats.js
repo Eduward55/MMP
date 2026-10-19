@@ -11,7 +11,20 @@ import { createStageRecorder } from './stage-recorder.js';
 
 const CAT_COUNT = 8;
 const ROUND_STEPS = 32;
-const COAT_NAMES = { tabby: 'Listrado', black: 'Breu', tuxedo: 'Frajola', white: 'Neve', orange: 'Laranjinha', gray: 'Fumaça', cream: 'Creme', chocolate: 'Chocolate' };
+const COAT_NAMES = {
+  tabby: 'Listrado',
+  black: 'Breu',
+  tuxedo: 'Frajola',
+  white: 'Neve',
+  orange: 'Laranjinha',
+  gray: 'Fumaça',
+  cream: 'Creme',
+  chocolate: 'Chocolate',
+  calico: 'Calicó',
+  siamese: 'Siamês',
+  peach: 'Pêssego',
+  ink: 'Tinta'
+};
 const V1_MAP = { kick: 'bumbo', snare: 'caixa', hat: 'chimbal', meow: 'melodia-miau' };
 const MOUTH = '<g class="bc-mouth" opacity="0"><rect x="19" y="22" width="3" height="2" fill="#3a1d2e"/><rect x="20" y="23" width="1" height="1" fill="#ff7fb0"/></g>';
 
@@ -564,7 +577,7 @@ export default {
             clearBtn,
             studioBtn
           ),
-          el('div', { class: 'form-grid form-grid--tight' }, el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome do beat'), nameInput), el('div', { class: 'field field--end' }, status))
+          el('div', { class: 'bc-name-row' }, el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome do beat'), nameInput), status)
         ),
         el(
           'section',

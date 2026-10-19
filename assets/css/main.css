@@ -719,6 +719,10 @@ svg.creature:focus-visible {
 .creature.is-conducting .acc-hand {
   animation: conduct 0.9s ease-in-out infinite alternate;
 }
+.creature .acc {
+  opacity: 1;
+  visibility: visible;
+}
 .creature .layer-heart-eyes {
   opacity: 0;
   pointer-events: none;
@@ -802,7 +806,7 @@ svg.creature:focus-visible {
   animation: hop 0.4s ease;
 }
 .creature.is-react-meow .layer-body {
-  animation: meow-mouth 0.45s ease;
+  animation: none;
 }
 .creature.is-react-splash {
   animation: react-splash 0.75s ease;
@@ -814,7 +818,7 @@ svg.creature:focus-visible {
   animation: hop 0.5s ease;
 }
 .creature--otter.is-react-clap .layer-body {
-  animation: otter-clap 0.5s ease;
+  animation: none;
 }
 .creature.is-react-zap .acc--raio {
   animation: sparkle 0.45s ease;

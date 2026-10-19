@@ -10,8 +10,8 @@ const P = {
   pink: '#ff4fd8',
   pinkDark: '#c4279f',
   rose: '#ff8fd0',
-  purple: '#9b5cff',
-  purpleDark: '#5b2aa8',
+  purple: '#c45c72',
+  purpleDark: '#7a3044',
   night: '#1d1233',
   cyan: '#5ff3ff',
   gold: '#ffd23f',
@@ -77,10 +77,10 @@ export const OUTFITS = [
       tmp.forEach((y) => {
         const dy = (y - A.bodyY) / A.bodyRy;
         const half = Math.floor(A.bodyRx * Math.sqrt(Math.max(0, 1 - dy * dy)));
-        const color = Math.floor((y - A.bodyY) / 2) % 2 === 0 ? P.purple : P.pink;
+        const color = Math.floor((y - A.bodyY) / 2) % 2 === 0 ? '#3f8f7a' : '#f3e2c4';
         g.rect(A.cx - half, y, half * 2 + 1, 1, color);
       });
-      g.rect(A.cx - 3, A.neckY, 7, 1, P.purpleDark);
+      g.rect(A.cx - 3, A.neckY, 7, 1, '#2f6f62');
     }
   },
   {
@@ -112,15 +112,15 @@ export const OUTFITS = [
       const half = A.bodyRx - 2;
       for (let x = A.cx - half; x <= A.cx + half; x++) {
         const c = Math.floor((x - A.cx + half) / 2) % 2 === 0 ? P.pink : P.white;
-        g.set(x, A.neckY - 1, c);
         g.set(x, A.neckY, c);
+        g.set(x, A.neckY + 1, c);
       }
       for (let y = 1; y <= 5; y++) {
         const c = y % 2 === 0 ? P.white : P.pink;
-        g.rect(A.cx + 2, A.neckY + y, 2, 1, c);
+        g.rect(A.cx + 2, A.neckY + 1 + y, 2, 1, c);
       }
-      g.set(A.cx + 2, A.neckY + 6, P.pinkDark);
-      g.set(A.cx + 3, A.neckY + 6, P.pinkDark);
+      g.set(A.cx + 2, A.neckY + 7, P.pinkDark);
+      g.set(A.cx + 3, A.neckY + 7, P.pinkDark);
     }
   },
   {
@@ -128,7 +128,13 @@ export const OUTFITS = [
     name: 'Gravata borboleta',
     slot: 'neck',
     front(g, A) {
-      g.map(['cc...cc', 'ccc.ccc', 'cccbccc', 'ccc.ccc', 'cc...cc'], { c: P.cyan, b: P.purpleDark }, center(A, 7), A.neckY - 2);
+      g.map(
+        ['rr...kk...rr', 'rrr..kk..rrr', 'rrrr.kk.rrrr', '.rrr.kk.rrr.', '..rr.kk.rr..'],
+        { r: P.red, k: P.gold },
+        center(A, 12),
+        A.neckY - 1
+      );
+      g.set(A.cx, A.neckY + 1, P.goldDark);
     }
   },
   {

@@ -17,6 +17,10 @@ const FX = [
   { id: 'eco', name: 'Eco' },
   { id: 'talkbox', name: 'Talkbox' },
   { id: 'coro', name: 'Coro' },
+  { id: 'radio', name: 'Rádio' },
+  { id: 'cristal', name: 'Cristal' },
+  { id: 'caverna', name: 'Caverna' },
+  { id: 'sussurro', name: 'Sussurro' },
   { id: 'mega', name: 'Mega' }
 ];
 const SCALE = [0, 2, 3, 5, 7, 8, 10];
@@ -103,13 +107,19 @@ export default {
     let chorus = null;
     let delay = null;
     let crusher = null;
+    let reverb = null;
+    let cheby = null;
     let voiceGain = null;
     let backingGain = null;
     let dryGain = null;
     let fxGain = null;
     let hpf = null;
+    let lpf = null;
+    let deEss = null;
+    let gateGain = null;
     let comp = null;
     let talkbox = null;
+    let fxTap = null;
     let rec = null;
     let recTimer = 0;
     let raf = 0;
@@ -215,19 +225,86 @@ export default {
       backing = backingSel.value;
     }
 
+    function disconnectTap() {
+      if (!comp) return;
+      try {
+        if (fxTap) comp.disconnect(fxTap);
+      } catch {}
+      try {
+        if (talkbox) comp.disconnect(talkbox.input);
+      } catch {}
+      fxTap = null;
+    }
+
+    function tap(node) {
+      if (!comp || !node) return;
+      Tone.connect(comp, node);
+      fxTap = node;
+    }
+
     function applyFx() {
-      if (!pitchShift) return;
+      if (!comp) return;
       const talk = fx === 'talkbox' || fx === 'mega';
-      const wantTune = autotune && (fx === 'autotune' || fx === 'natural' || fx === 'talkbox' || fx === 'mega' || fx === 'coro');
-      setWet(chorus, fx === 'eco' || fx === 'coro' || fx === 'mega' ? (fx === 'eco' ? 0.45 : 0.55) : 0.04);
-      setWet(delay, fx === 'eco' || fx === 'coro' || fx === 'mega' ? (fx === 'eco' ? 0.42 : 0.22) : 0);
-      setWet(crusher, fx === 'robo' || fx === 'mega' ? (fx === 'robo' ? 0.55 : 0.28) : 0);
-      if (fx === 'agudo') pitchShift.pitch = 7;
-      else if (fx === 'grave') pitchShift.pitch = -5;
-      else if (!wantTune) pitchShift.pitch = 0;
-      if (dryGain) dryGain.gain.value = fx === 'natural' && !autotune ? 0.95 : fx === 'talkbox' ? 0.12 : fx === 'robo' ? 0.18 : 0.42;
-      if (fxGain) fxGain.gain.value = fx === 'natural' && !autotune ? 0.08 : talk ? 0.15 : 0.85;
-      if (talkbox) talkbox.setWet(talk ? (fx === 'mega' ? 1.1 : 1.35) : 0);
+      const wantTune = autotune && (fx === 'natural' || fx === 'autotune' || fx === 'talkbox' || fx === 'mega' || fx === 'coro');
+      disconnectTap();
+      setWet(chorus, 0);
+      setWet(delay, 0);
+      setWet(crusher, 0);
+      setWet(reverb, 0);
+      if (pitchShift) pitchShift.pitch = 0;
+      if (deEss) deEss.gain.value = fx === 'sussurro' ? 4 : -10;
+      if (lpf) lpf.frequency.value = fx === 'radio' ? 2800 : fx === 'sussurro' ? 4200 : 7800;
+      if (hpf) hpf.frequency.value = fx === 'sussurro' ? 420 : fx === 'radio' ? 520 : 90;
+
+      if (fx === 'natural' && !autotune) {
+        if (reverb) {
+          setWet(reverb, 0.12);
+          tap(reverb);
+        }
+        if (dryGain) dryGain.gain.value = 0.96;
+        if (fxGain) fxGain.gain.value = 0.12;
+      } else if (fx === 'agudo' || fx === 'grave' || fx === 'autotune' || wantTune) {
+        if (fx === 'agudo') pitchShift.pitch = 7;
+        else if (fx === 'grave') pitchShift.pitch = -5;
+        tap(pitchShift);
+        if (dryGain) dryGain.gain.value = 0.22;
+        if (fxGain) fxGain.gain.value = 0.9;
+      } else if (fx === 'robo') {
+        setWet(crusher, 0.42);
+        tap(crusher);
+        if (dryGain) dryGain.gain.value = 0.12;
+        if (fxGain) fxGain.gain.value = 0.8;
+      } else if (fx === 'eco' || fx === 'caverna' || fx === 'coro') {
+        setWet(delay, fx === 'caverna' ? 0.48 : fx === 'eco' ? 0.4 : 0.22);
+        setWet(chorus, fx === 'coro' ? 0.55 : 0.18);
+        setWet(reverb, fx === 'caverna' ? 0.55 : 0.2);
+        tap(delay);
+        if (dryGain) dryGain.gain.value = 0.35;
+        if (fxGain) fxGain.gain.value = 0.78;
+      } else if (fx === 'radio') {
+        setWet(crusher, 0.22);
+        tap(crusher);
+        if (dryGain) dryGain.gain.value = 0.2;
+        if (fxGain) fxGain.gain.value = 0.75;
+      } else if (fx === 'cristal' && cheby) {
+        tap(cheby);
+        if (dryGain) dryGain.gain.value = 0.28;
+        if (fxGain) fxGain.gain.value = 0.7;
+      } else {
+        if (reverb) {
+          setWet(reverb, 0.1);
+          tap(reverb);
+        }
+        if (dryGain) dryGain.gain.value = 0.9;
+        if (fxGain) fxGain.gain.value = 0.15;
+      }
+      if (talk && talkbox) {
+        Tone.connect(comp, talkbox.input);
+        talkbox.setWet(fx === 'mega' ? 1.05 : 1.3);
+        if (dryGain) dryGain.gain.value = Math.min(dryGain.gain.value, 0.16);
+      } else if (talkbox) {
+        talkbox.setWet(0);
+      }
     }
 
     async function ensureAudio() {
@@ -236,17 +313,33 @@ export default {
           Tone = await startAudio();
           if (!alive) return;
           const ctx = Tone.getContext().rawContext;
-          voiceGain = new Tone.Gain(0.82).toDestination();
-          backingGain = new Tone.Gain(0.4).toDestination();
-          dryGain = new Tone.Gain(0.42).connect(voiceGain);
-          fxGain = new Tone.Gain(0.85);
-          pitchShift = new Tone.PitchShift({ pitch: 0, windowSize: 0.04 }).connect(fxGain);
-          chorus = new Tone.Chorus(3.2, 2.8, 0.35).start().connect(pitchShift);
-          delay = new Tone.FeedbackDelay('8n', 0.22).connect(chorus);
-          crusher = new Tone.BitCrusher(6).connect(delay);
-          fxGain.connect(voiceGain);
-          hpf = new Tone.Filter({ type: 'highpass', frequency: 80, Q: 0.7 });
-          comp = new Tone.Compressor({ threshold: -22, ratio: 3.2, attack: 0.004, release: 0.12, knee: 8 });
+          voiceGain = new Tone.Gain(0.86).toDestination();
+          backingGain = new Tone.Gain(0.36).toDestination();
+          dryGain = new Tone.Gain(0.96).connect(voiceGain);
+          fxGain = new Tone.Gain(0.2).connect(voiceGain);
+          hpf = new Tone.Filter({ type: 'highpass', frequency: 90, Q: 0.55 });
+          lpf = new Tone.Filter({ type: 'lowpass', frequency: 7800, Q: 0.5 });
+          deEss = new Tone.Filter({ type: 'highshelf', frequency: 6200, gain: -10 });
+          gateGain = new Tone.Gain(1);
+          comp = new Tone.Compressor({ threshold: -18, ratio: 2.6, attack: 0.008, release: 0.16, knee: 10 });
+          pitchShift = new Tone.PitchShift({ pitch: 0, windowSize: 0.1, delayTime: 0.03 }).connect(fxGain);
+          chorus = new Tone.Chorus(1.8, 2.2, 0.28).start().connect(fxGain);
+          delay = new Tone.FeedbackDelay('8n', 0.18).connect(chorus);
+          crusher = new Tone.BitCrusher(5).connect(fxGain);
+          try {
+            reverb = new Tone.JCReverb(0.25).connect(fxGain);
+          } catch {
+            try {
+              reverb = new Tone.Freeverb({ roomSize: 0.4, dampening: 4000 }).connect(fxGain);
+            } catch {
+              reverb = null;
+            }
+          }
+          try {
+            cheby = new Tone.Chebyshev(3).connect(fxGain);
+          } catch {
+            cheby = null;
+          }
           talkbox = createTalkbox(ctx);
           Tone.connect(talkbox.output, voiceGain);
           Tone.Transport.bpm.value = bpm;
@@ -264,29 +357,31 @@ export default {
       await ensureAudio();
       stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
+          echoCancellation: true,
+          noiseSuppression: true,
           autoGainControl: true,
           channelCount: 1
         },
         video: false
       });
       const src = Tone.context.createMediaStreamSource(stream);
-      micNode = new Tone.Gain(1.15);
+      micNode = new Tone.Gain(1.05);
       Tone.connect(src, micNode);
       analyser = Tone.context.createAnalyser();
       analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0.35;
+      analyser.smoothingTimeConstant = 0.42;
       micNode.connect(hpf);
-      hpf.connect(comp);
+      hpf.connect(lpf);
+      lpf.connect(deEss);
+      deEss.connect(gateGain);
+      gateGain.connect(comp);
       Tone.connect(comp, analyser);
       Tone.connect(comp, dryGain);
-      Tone.connect(comp, crusher);
-      Tone.connect(comp, talkbox.input);
       recBtn.disabled = false;
       micBtn.textContent = 'Microfone ligado';
       micBtn.disabled = true;
-      status.textContent = 'Cante perto do microfone. Natural deixa a voz limpa; Talkbox é o caninho robótico.';
+      status.textContent = 'Cante perto do microfone. Natural fica limpo; os outros chips mexem na mixagem.';
+      applyFx();
       if (sync) Tone.Transport.start('+0.05');
       tickMouth();
       await startBacking();
@@ -300,6 +395,10 @@ export default {
       const n = Math.min(buf.length, 1024);
       for (let i = 0; i < n; i++) sum += buf[i] * buf[i];
       rms = Math.sqrt(sum / n);
+      if (gateGain) {
+        const openGate = rms > 0.016;
+        gateGain.gain.rampTo(openGate ? 1 : 0.05, openGate ? 0.025 : 0.14);
+      }
       const open = rms > 0.025;
       if (open !== mouthOpen) {
         mouthOpen = open;
@@ -498,7 +597,7 @@ export default {
             el('div', { class: 'row-actions' }, syncBtn, bpmLabel, bpmInput)
           ),
           el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Mix da voz'), mixInput),
-          el('p', { class: 'hint' }, 'Talkbox é o instrumento de caninho: sua voz “canta” um teclado robótico. Grave uma frase curta em cada lontrinha para o coro.')
+          el('p', { class: 'hint' }, 'Natural usa gate, filtro e compressão para tirar o chiado. Grave no microfone; cada lontrinha pode repetir uma frase no beat.')
         )
       )
     );
@@ -547,7 +646,7 @@ export default {
         if (stream) stream.getTracks().forEach((t) => t.stop());
         if (rec) rec.dispose();
         if (talkbox) talkbox.dispose();
-        [pitchShift, chorus, delay, crusher, voiceGain, backingGain, micNode, dryGain, fxGain, hpf, comp].forEach((n) => n && n.dispose && n.dispose());
+        [pitchShift, chorus, delay, crusher, reverb, cheby, voiceGain, backingGain, micNode, dryGain, fxGain, hpf, lpf, deEss, gateGain, comp].forEach((n) => n && n.dispose && n.dispose());
         if (window.__mmpCantar) delete window.__mmpCantar;
       }
     };

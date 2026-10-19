@@ -22,6 +22,8 @@ export class Grid {
   }
 
   clear(x, y) {
+    x = Math.round(x);
+    y = Math.round(y);
     if (this.inside(x, y)) this.px[y * this.w + x] = null;
   }
 

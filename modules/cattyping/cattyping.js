@@ -10,9 +10,16 @@ const STORE_KEY = 'cattyping';
 const THEME_LABEL = { psicologia: 'Psicologia', arte: 'Arte', historia: 'História', gerais: 'Gerais' };
 const SHIPS = [
   { id: 'classic', name: 'Clássica' },
-  { id: 'neon', name: 'Neon' },
-  { id: 'gold', name: 'Ouro' },
-  { id: 'mint', name: 'Menta' }
+  { id: 'neon', name: 'Aurora' },
+  { id: 'gold', name: 'Bronze' },
+  { id: 'mint', name: 'Sálvia' }
+];
+const BOSSES = [
+  { id: 'dragon', name: 'Dragão' },
+  { id: 'squid', name: 'Lula' },
+  { id: 'saucer', name: 'Disco' },
+  { id: 'crystal', name: 'Cristal' },
+  { id: 'whale', name: 'Baleia' }
 ];
 
 export const norm = (s) =>
@@ -197,7 +204,6 @@ export default {
           <span class="ct-ship__fin ct-ship__fin--l"></span>
           <span class="ct-ship__fin ct-ship__fin--r"></span>
           <span class="ct-ship__body"></span>
-          <span class="ct-ship__canopy"></span>
           <span class="ct-ship__gun ct-ship__gun--l"></span>
           <span class="ct-ship__gun ct-ship__gun--r"></span>
           <span class="ct-ship__engine ct-ship__engine--l"></span>
@@ -359,7 +365,8 @@ export default {
     }
 
     function spawnBoss() {
-      const w = nextWord() || { word: 'dragao', display: 'DRAGÃO', theme: 'gerais' };
+      const kind = BOSSES[(Math.max(1, run.level) - 1) % BOSSES.length];
+      const w = nextWord() || { word: kind.id, display: kind.name.toUpperCase(), theme: 'gerais' };
       const rock = {
         id: idSeq++,
         word: w.word,
@@ -370,13 +377,14 @@ export default {
         vy: 0.016 + run.level * 0.002,
         rad: 0.13,
         rot: 0,
-        seed: 7,
+        seed: 7 + BOSSES.findIndex((b) => b.id === kind.id),
         boss: true,
+        bossKind: kind.id,
         flap: 0,
         pebbleIn: 1.4
       };
       rocks.push(rock);
-      toast('Boss dragão! Digite a palavra do peito.', 'ok');
+      toast(`Boss ${kind.name}! Digite a palavra do peito.`, 'ok');
       return rock;
     }
 
@@ -574,42 +582,125 @@ export default {
     }
 
     function drawRockShape(ctx, rad, seed, color, stroke) {
-      ctx.fillStyle = color;
-      ctx.strokeStyle = stroke;
-      ctx.lineWidth = 2;
+      const n = 7 + (seed % 5);
       ctx.beginPath();
-      const n = 8;
       for (let i = 0; i < n; i++) {
-        const a = (i / n) * Math.PI * 2;
-        const wob = 0.72 + ((i * 19 + seed) % 7) * 0.04;
+        const a = (i / n) * Math.PI * 2 + seed * 0.15;
+        const wob = 0.68 + ((i * 17 + seed * 3) % 11) * 0.035;
         const x = Math.cos(a) * rad * wob;
         const y = Math.sin(a) * rad * wob;
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
       ctx.closePath();
+      const g = ctx.createRadialGradient(-rad * 0.25, -rad * 0.3, rad * 0.1, 0, 0, rad);
+      g.addColorStop(0, color);
+      g.addColorStop(1, 'rgba(0,0,0,0.45)');
+      ctx.fillStyle = g;
       ctx.fill();
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fillStyle = 'rgba(255,255,255,0.16)';
       ctx.beginPath();
-      ctx.arc(-rad * 0.22, -rad * 0.2, rad * 0.22, 0, Math.PI * 2);
+      ctx.ellipse(-rad * 0.22, -rad * 0.24, rad * 0.2, rad * 0.12, -0.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = 'rgba(0,0,0,0.28)';
-      ctx.beginPath();
-      ctx.arc(rad * 0.12, rad * 0.08, rad * 0.16, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(-rad * 0.05, rad * 0.22, rad * 0.1, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.32)';
+      for (let c = 0; c < 3; c++) {
+        const a = seed * 0.7 + c * 1.7;
+        ctx.beginPath();
+        ctx.arc(Math.cos(a) * rad * 0.28, Math.sin(a) * rad * 0.22, rad * (0.08 + (c % 2) * 0.05), 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     function drawDragon(ctx, r, rad, theme) {
       const flap = Math.sin((r.flap || 0) * 6) * 0.35;
+      const kind = r.bossKind || 'dragon';
+      ctx.strokeStyle = theme.hairline;
+      ctx.lineWidth = 2;
+      if (kind === 'squid') {
+        ctx.fillStyle = '#3f5d6a';
+        ctx.beginPath();
+        ctx.ellipse(0, -rad * 0.1, rad * 0.62, rad * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        for (let t = -2; t <= 2; t++) {
+          ctx.beginPath();
+          ctx.moveTo(t * rad * 0.16, rad * 0.2);
+          ctx.quadraticCurveTo(t * rad * 0.3, rad * 0.55 + flap * rad * 0.2, t * rad * 0.1, rad * 0.85);
+          ctx.strokeStyle = '#5b7c8a';
+          ctx.lineWidth = 4;
+          ctx.stroke();
+        }
+        ctx.fillStyle = '#f4d7a8';
+        ctx.beginPath();
+        ctx.arc(-rad * 0.16, -rad * 0.16, 5, 0, Math.PI * 2);
+        ctx.arc(rad * 0.16, -rad * 0.16, 5, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+      }
+      if (kind === 'saucer') {
+        ctx.fillStyle = '#6b7280';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rad * 0.95, rad * 0.28, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.ellipse(0, -rad * 0.12, rad * 0.42, rad * 0.28, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#eab308';
+        for (let i = -2; i <= 2; i++) {
+          ctx.beginPath();
+          ctx.arc(i * rad * 0.28, rad * 0.08, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        return;
+      }
+      if (kind === 'crystal') {
+        ctx.fillStyle = '#7dd3c7';
+        ctx.beginPath();
+        ctx.moveTo(0, -rad);
+        ctx.lineTo(rad * 0.7, 0);
+        ctx.lineTo(0, rad * 0.85);
+        ctx.lineTo(-rad * 0.7, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.beginPath();
+        ctx.moveTo(0, -rad * 0.6);
+        ctx.lineTo(rad * 0.22, 0);
+        ctx.lineTo(0, rad * 0.2);
+        ctx.closePath();
+        ctx.fill();
+        return;
+      }
+      if (kind === 'whale') {
+        ctx.fillStyle = '#64748b';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rad * 0.9, rad * 0.45, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(rad * 0.7, 0);
+        ctx.quadraticCurveTo(rad * 1.15, -rad * 0.35 + flap * rad * 0.2, rad * 0.85, rad * 0.25);
+        ctx.fill();
+        ctx.fillStyle = '#cbd5e1';
+        ctx.beginPath();
+        ctx.ellipse(0, rad * 0.1, rad * 0.4, rad * 0.18, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.arc(-rad * 0.35, -rad * 0.08, 3, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+      }
       ctx.fillStyle = '#6d3d1f';
       ctx.beginPath();
       ctx.ellipse(0, 0, rad * 0.55, rad * 0.72, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = theme.hairline;
       ctx.stroke();
       const wing = (dir) => {
         ctx.save();
@@ -622,10 +713,6 @@ export default {
         ctx.quadraticCurveTo(dir * rad * 0.45, rad * 0.12, 0, 0);
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = '#c4a574';
-        ctx.font = `11px ${theme.font}`;
-        ctx.textAlign = 'center';
-        ctx.fillText(dir < 0 ? 'ASA' : 'PEDRA', dir * rad * 0.55, 4);
         ctx.restore();
       };
       wing(-1);
@@ -634,7 +721,7 @@ export default {
       ctx.beginPath();
       ctx.ellipse(0, rad * 0.18, rad * 0.28, rad * 0.32, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#e11d48';
+      ctx.fillStyle = '#be123c';
       ctx.beginPath();
       ctx.arc(-rad * 0.12, -rad * 0.22, 4, 0, Math.PI * 2);
       ctx.arc(rad * 0.12, -rad * 0.22, 4, 0, Math.PI * 2);

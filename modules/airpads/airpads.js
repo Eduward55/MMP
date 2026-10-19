@@ -19,7 +19,8 @@ import {
   drumZone,
   midiName,
   pickNote,
-  scaleNotes
+  scaleNotes,
+  sliceIndex
 } from './instruments.js';
 
 const HANDS = ['Mão esquerda', 'Mão direita'];
@@ -72,6 +73,7 @@ export default {
     const hits = [0, 0];
     const lastTrig = [0, 0];
     const lastLabel = ['', ''];
+    const lastSlice = [-1, -1];
     const theremin = [null, null];
     const effects = [];
     const log = createEventLog({ source: 'airpads', bpm: config.bpm, scale: config.scale, root: config.root });
@@ -106,7 +108,7 @@ export default {
     const timer = el('span', { class: 'pill' }, '00:00');
     const status = el('p', { class: 'muted airx__status' }, 'Mouse nos círculos ou A / L. Câmera: tela cheia ajuda.');
     const distHint = el('p', { class: 'airx__dist hint', hidden: true }, '');
-    const fsBtn = el('button', { class: 'btn btn--ghost' }, 'Tela cheia');
+    const fsBtn = el('button', { class: 'btn btn--ghost', 'aria-pressed': 'false' }, 'Tela cheia');
 
     const chipRows = [0, 1].map(() => el('div', { class: 'chips', role: 'radiogroup' }));
     const scaleSel = el('select', { class: 'input input--select', 'aria-label': 'Escala' }, ...SCALES.map((s) => el('option', { value: s.id }, s.name)));
@@ -145,9 +147,7 @@ export default {
         })
         .join(',');
       c.style.setProperty('--pie', `conic-gradient(from -90deg, ${pie})`);
-      const slices = labels
-        .map((lab, k) => `<span class="air-slice" style="--i:${k};--n:${n}">${lab}</span>`)
-        .join('');
+      const slices = labels.map((_, k) => `<span class="air-slice" style="--i:${k};--n:${n}"></span>`).join('');
       c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span><span class="air-circle__note">${lastLabel[i] || ''}</span><span class="air-bead" aria-hidden="true"></span><span class="air-circle__name">${inst.name}</span>`;
     }
 
@@ -371,13 +371,15 @@ export default {
         if (tip) {
           const rel = { rx: (tip.x - g.cx) / g.r, ry: (tip.y - g.cy) / g.r };
           pos[i] = rel;
-          if (bead) {
-            bead.classList.add('is-on');
-            bead.style.setProperty('--bx', `${rel.rx * 38}%`);
-          }
+          circles[i].style.setProperty('--bx', `${rel.rx * 42}%`);
+          circles[i].style.setProperty('--by', `${rel.ry * 42}%`);
+          if (bead) bead.classList.add('is-on');
+          const n = Math.max(1, sliceLabels(i).length);
+          const slice = sliceIndex(rel.rx, rel.ry, n);
           if (!inside[i]) {
             inside[i] = true;
             hits[i]++;
+            lastSlice[i] = slice;
             circles[i].classList.add('is-inside');
             let label;
             if (continuous) {
@@ -391,12 +393,17 @@ export default {
           } else if (continuous) {
             holdTheremin(i, rel);
             if (Math.random() < 0.25) effects.push({ kind: 'spark', x: tip.x, y: tip.y, vx: (Math.random() - 0.5) * 2, vy: -1 - Math.random() * 2, color: INSTRUMENT_BY_ID.theremin.color, t0: now, size: 4 });
+          } else if (slice !== lastSlice[i]) {
+            lastSlice[i] = slice;
+            const label = play(i, rel);
+            burst(tip.x, tip.y, INSTRUMENT_BY_ID[config.instruments[i]].color, label);
           }
-        } else {
-          if (bead) bead.classList.remove('is-on');
+        } else if (bead) {
+          bead.classList.remove('is-on');
         }
         if (!tip && inside[i]) {
           inside[i] = false;
+          lastSlice[i] = -1;
           pos[i] = null;
           circles[i].classList.remove('is-inside');
           if (continuous && engines && engines[i].release) engines[i].release();
@@ -499,11 +506,9 @@ export default {
         root.querySelector('.airx')?.classList.add('is-cam');
         distHint.hidden = false;
         camBtn.textContent = 'Câmera ligada';
-        status.textContent = 'Mostre as palmas. Qualquer ponta de dedo toca o círculo.';
+        status.textContent = 'Mostre as palmas. Tela cheia amplia o palco para gravar.';
         ensureAudio().catch(() => {});
-        try {
-          if (arena.requestFullscreen) await arena.requestFullscreen();
-        } catch {}
+        setArenaSize(true);
       } catch (err) {
         console.error(err);
         camBtn.disabled = false;
@@ -606,13 +611,22 @@ export default {
 
     camBtn.addEventListener('click', enableCamera);
     demoBtn.addEventListener('click', () => setDemo(!demo));
+    function setArenaSize(on) {
+      arena.classList.toggle('is-fs', on);
+      root.querySelector('.airx')?.classList.toggle('is-arena-fs', on);
+      fsBtn.textContent = on ? 'Encolher palco' : 'Tela cheia';
+      fsBtn.setAttribute('aria-pressed', String(on));
+    }
     fsBtn.addEventListener('click', async () => {
+      const on = !arena.classList.contains('is-fs');
+      setArenaSize(on);
       try {
-        if (document.fullscreenElement) await document.exitFullscreen();
-        else if (arena.requestFullscreen) await arena.requestFullscreen();
-      } catch {
-        arena.classList.toggle('is-fs');
-      }
+        if (on && arena.requestFullscreen) await arena.requestFullscreen();
+        else if (!on && document.fullscreenElement) await document.exitFullscreen();
+      } catch {}
+    });
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && arena.classList.contains('is-fs')) setArenaSize(false);
     });
     scaleSel.addEventListener('change', () => {
       config.scale = scaleSel.value;

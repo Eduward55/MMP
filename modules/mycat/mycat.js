@@ -22,7 +22,7 @@ export default {
   title: 'Meu Gato',
   icon: 'mycat',
   accent: '#f28a3b',
-  desc: 'Pelagem, olhos, nomes e 20 roupinhas para o gato e a lontra — cada um com a sua cor.',
+  desc: 'Pelagem, olhos, nomes e 20 roupinhas para o gato e a lontra — cada um com a sua cor e mais variações de pelo.',
   hideDock: true,
   async mount(root) {
     let draft = structuredClone(getProfile());

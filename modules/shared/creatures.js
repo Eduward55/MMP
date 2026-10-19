@@ -3,16 +3,21 @@ import { Grid, gridToPaths } from './pixel.js';
 import { OUTFIT_BY_ID, SLOTS, OUTLINE } from './outfits.js';
 
 export const SIZE = 40;
+const WARM_LINE = '#6b5344';
 
 export const COATS = [
   { id: 'tabby', name: 'Tigresa', fur: '#a88a6a', stripe: '#5e4634', light: '#e6d3b6', paw: '#e6d3b6', ear: '#ff9ccf', outline: OUTLINE, stripes: true },
-  { id: 'black', name: 'Preto', fur: '#2c2438', stripe: '#2c2438', light: '#3b3149', paw: '#3b3149', ear: '#ff7fc2', outline: '#05020a', stripes: false },
-  { id: 'tuxedo', name: 'Frajola', fur: '#231d2e', stripe: '#231d2e', light: '#f6f2ff', paw: '#f6f2ff', ear: '#ff7fc2', outline: '#05020a', stripes: false },
-  { id: 'white', name: 'Branco', fur: '#f5f0ff', stripe: '#e3dcf3', light: '#ffffff', paw: '#ffffff', ear: '#ffa6d6', outline: '#5e4a8a', stripes: false },
+  { id: 'black', name: 'Preto', fur: '#2a2428', stripe: '#2a2428', light: '#3d353c', paw: '#3d353c', ear: '#ff7fc2', outline: '#05020a', stripes: false },
+  { id: 'tuxedo', name: 'Frajola', fur: '#231d2e', stripe: '#231d2e', light: '#f6f2ea', paw: '#f6f2ea', ear: '#ff7fc2', outline: '#05020a', stripes: false },
+  { id: 'white', name: 'Branco', fur: '#f4efe4', stripe: '#e4d8c4', light: '#fffdf8', paw: '#fffdf8', ear: '#ffa6d6', outline: WARM_LINE, stripes: false },
   { id: 'orange', name: 'Laranja', fur: '#f28a3b', stripe: '#c25c1c', light: '#ffd8a8', paw: '#ffd8a8', ear: '#ff9ccf', outline: OUTLINE, stripes: true },
   { id: 'gray', name: 'Cinza', fur: '#8f8ba3', stripe: '#6b667f', light: '#c9c5da', paw: '#c9c5da', ear: '#ff9ccf', outline: OUTLINE, stripes: true },
-  { id: 'cream', name: 'Creme', fur: '#ead7b4', stripe: '#c4a574', light: '#fff6e4', paw: '#fff6e4', ear: '#ff9ccf', outline: '#5e4a8a', stripes: true },
-  { id: 'chocolate', name: 'Chocolate', fur: '#6b3a22', stripe: '#3d1f12', light: '#d4a574', paw: '#d4a574', ear: '#ff7fc2', outline: '#1a0c08', stripes: true }
+  { id: 'cream', name: 'Creme', fur: '#ead7b4', stripe: '#c4a574', light: '#fff6e4', paw: '#fff6e4', ear: '#ff9ccf', outline: WARM_LINE, stripes: true },
+  { id: 'chocolate', name: 'Chocolate', fur: '#6b3a22', stripe: '#3d1f12', light: '#d4a574', paw: '#d4a574', ear: '#ff7fc2', outline: '#1a0c08', stripes: true },
+  { id: 'calico', name: 'Calicó', fur: '#f2d2b0', stripe: '#c45c28', light: '#fff8ee', paw: '#fff8ee', ear: '#ff9ccf', outline: OUTLINE, stripes: false, patches: true },
+  { id: 'siamese', name: 'Siamês', fur: '#f3e2c8', stripe: '#6b4630', light: '#fff8ee', paw: '#5c3a28', ear: '#ff9ccf', outline: WARM_LINE, stripes: false, points: true },
+  { id: 'peach', name: 'Pêssego', fur: '#f0b48a', stripe: '#d07a52', light: '#ffe2c8', paw: '#ffe2c8', ear: '#ff9ccf', outline: '#7a3f28', stripes: true },
+  { id: 'ink', name: 'Tinta', fur: '#1c2430', stripe: '#0f141b', light: '#334155', paw: '#cbd5e1', ear: '#ff7fc2', outline: '#05080c', stripes: false }
 ];
 
 export const COAT_BY_ID = Object.fromEntries(COATS.map((c) => [c.id, c]));
@@ -22,18 +27,20 @@ export const OTTER_COATS = [
   { id: 'honey', name: 'Mel', fur: '#c9893a', light: '#ffe4b0', dark: '#8a5520', outline: OUTLINE },
   { id: 'cinnamon', name: 'Canela', fur: '#7a3f28', light: '#e8c4a0', dark: '#4e2416', outline: OUTLINE },
   { id: 'charcoal', name: 'Carvão', fur: '#3d3430', light: '#cfc4b8', dark: '#1f1a18', outline: '#05020a' },
-  { id: 'cream', name: 'Creme', fur: '#e8d5b5', light: '#fff8ea', dark: '#b08968', outline: '#5e4a8a' },
-  { id: 'silver', name: 'Prata', fur: '#9aa3ad', light: '#e8eef4', dark: '#5c6670', outline: OUTLINE }
+  { id: 'cream', name: 'Creme', fur: '#e8d5b5', light: '#fff8ea', dark: '#b08968', outline: WARM_LINE },
+  { id: 'silver', name: 'Prata', fur: '#9aa3ad', light: '#e8eef4', dark: '#5c6670', outline: OUTLINE },
+  { id: 'sand', name: 'Areia', fur: '#d2b48a', light: '#fff1d4', dark: '#8b6948', outline: WARM_LINE },
+  { id: 'mocha', name: 'Moca', fur: '#5c3d2e', light: '#e6c8a8', dark: '#2f1c14', outline: '#140a08' }
 ];
 export const OTTER_COAT_BY_ID = Object.fromEntries(OTTER_COATS.map((c) => [c.id, c]));
 
 export const EYE_COLORS = [
   { id: '#4ade80', name: 'Verde menta' },
-  { id: '#93c5fd', name: 'Azul' },
+  { id: '#38bdf8', name: 'Céu' },
   { id: '#eab308', name: 'Âmbar' },
-  { id: '#c4b5fd', name: 'Lilás' },
-  { id: '#8b5cf6', name: 'Violeta' },
-  { id: '#d4a574', name: 'Cobre' }
+  { id: '#d97706', name: 'Mel' },
+  { id: '#d4a574', name: 'Cobre' },
+  { id: '#0f766e', name: 'Petróleo' }
 ];
 
 const BLUSH = 'rgba(255, 110, 190, 0.55)';
@@ -43,31 +50,135 @@ function otterLook(look = {}) {
   return OTTER_COAT_BY_ID[look.coat] || OTTER_COATS[0];
 }
 
+function clearCrotch(body) {
+  for (let y = 27; y <= 39; y++) {
+    const inset = y <= 27 ? 19 : y <= 29 ? 18 : 16;
+    for (let x = inset; x <= 40 - inset; x++) body.clear(x, y);
+  }
+}
+
 function drawHindPaws(body, y, paw, pad) {
-  body.ellipse(10, y, 3.1, 1.8, paw);
-  body.ellipse(30, y, 3.1, 1.8, paw);
-  body.points([[9, y - 1], [11, y - 1], [29, y - 1], [31, y - 1]], pad);
+  body.ellipse(8.5, y, 3.4, 2.1, paw);
+  body.ellipse(31.5, y, 3.4, 2.1, paw);
+  body.points(
+    [
+      [7, y],
+      [8, y - 1],
+      [10, y],
+      [30, y],
+      [32, y - 1],
+      [33, y]
+    ],
+    pad
+  );
 }
 
 function drawFrontPaws(body, y, fur, paw) {
-  body.ellipse(9, y, 2.8, 2.6, fur);
-  body.ellipse(31, y, 2.8, 2.6, fur);
-  body.ellipse(9, y + 1.4, 2.4, 1.6, paw);
-  body.ellipse(31, y + 1.4, 2.4, 1.6, paw);
-  body.points([[8, y], [10, y], [30, y], [32, y]], paw);
+  body.ellipse(8.2, y, 2.6, 2.4, fur);
+  body.ellipse(31.8, y, 2.6, 2.4, fur);
+  body.ellipse(8.2, y + 1.5, 2.2, 1.5, paw);
+  body.ellipse(31.8, y + 1.5, 2.2, 1.5, paw);
+  body.points(
+    [
+      [7, y + 1],
+      [9, y + 1],
+      [31, y + 1],
+      [33, y + 1]
+    ],
+    paw
+  );
+}
+
+function drawEyes(eyes, leftX, rightX, y, color) {
+  for (const ex of [leftX, rightX]) {
+    eyes.rect(ex, y, 3, 3, color);
+    eyes.set(ex + 1, y + 1, '#1a1020');
+    eyes.set(ex, y, '#ffffff');
+  }
 }
 
 const CAT_ANCHORS = {
-  cx: 20, headTop: 10, earTopY: 7, headL: 10, headR: 30, headCy: 18,
-  eyeY: 17.5, eyeLX: 15, eyeRX: 25, neckY: 24, bodyY: 30, bodyRx: 9, bodyRy: 7,
-  earLX: 13, earRX: 27, handX: 28, handY: 31, tailPivot: [29, 36]
+  cx: 20,
+  headTop: 10,
+  earTopY: 7,
+  headL: 10,
+  headR: 30,
+  headCy: 18,
+  eyeY: 17,
+  eyeLX: 14,
+  eyeRX: 23,
+  neckY: 24,
+  bodyY: 26.8,
+  bodyRx: 8.4,
+  bodyRy: 4.2,
+  earLX: 13,
+  earRX: 27,
+  handX: 29,
+  handY: 30,
+  tailPivot: [29, 36]
 };
 
 const OTTER_ANCHORS = {
-  cx: 20, headTop: 10, earTopY: 9, headL: 12, headR: 28, headCy: 17,
-  eyeY: 16.5, eyeLX: 15.5, eyeRX: 24.5, neckY: 23, bodyY: 29, bodyRx: 7, bodyRy: 9,
-  earLX: 13, earRX: 27, handX: 23, handY: 25, tailPivot: [14, 37]
+  cx: 20,
+  headTop: 10,
+  earTopY: 9,
+  headL: 12,
+  headR: 28,
+  headCy: 17,
+  eyeY: 16.5,
+  eyeLX: 14.5,
+  eyeRX: 23.5,
+  neckY: 27,
+  bodyY: 26.4,
+  bodyRx: 6.6,
+  bodyRy: 4.1,
+  earLX: 13,
+  earRX: 27,
+  handX: 23,
+  handY: 26,
+  tailPivot: [14, 37]
 };
+
+function paintCatPatches(body, coat) {
+  if (coat.patches) {
+    body.points(
+      [
+        [12, 16],
+        [13, 16],
+        [12, 17],
+        [26, 15],
+        [27, 16],
+        [27, 17],
+        [14, 28],
+        [15, 28],
+        [26, 29]
+      ],
+      '#c45c28'
+    );
+    body.points(
+      [
+        [27, 18],
+        [28, 19],
+        [11, 20],
+        [12, 21]
+      ],
+      '#2a2428'
+    );
+  }
+  if (coat.points) {
+    body.tri([11, 15], [13, 7], [18, 11], coat.stripe);
+    body.tri([29, 15], [27, 7], [22, 11], coat.stripe);
+    body.points(
+      [
+        [12, 18],
+        [13, 19],
+        [27, 18],
+        [26, 19]
+      ],
+      coat.stripe
+    );
+  }
+}
 
 function drawCat(look) {
   const coat = COAT_BY_ID[look.coat] || COATS[0];
@@ -76,29 +187,37 @@ function drawCat(look) {
   const tail = new Grid(SIZE, SIZE);
   const eyes = new Grid(SIZE, SIZE);
 
-  const tailPts = [[27, 36], [29, 35], [30, 34], [31, 33], [32, 31], [32, 29], [32, 27], [31, 25], [30, 24]];
+  const tailPts = [
+    [27, 36],
+    [29, 35],
+    [30, 34],
+    [31, 33],
+    [32, 31],
+    [32, 29],
+    [32, 27],
+    [31, 25],
+    [30, 24]
+  ];
   tail.points(tailPts, coat.fur, 2);
   if (coat.stripes) tail.points([[31, 33], [32, 29], [31, 25]], coat.stripe, 2);
   if (coat.id === 'tuxedo') tail.points([[30, 24]], coat.light, 2);
 
-  body.ellipse(20, 29.5, 9, 6.6, coat.fur);
-  body.ellipse(20, 18, 10, 8, coat.fur);
+  body.ellipse(20, 26.6, 8.4, 4.2, coat.fur);
+  body.ellipse(20, 17.4, 10, 7.8, coat.fur);
   body.tri([11, 15], [13, 7], [18, 11], coat.fur);
   body.tri([29, 15], [27, 7], [22, 11], coat.fur);
   body.tri([13, 13], [14, 9], [16, 12], coat.ear);
   body.tri([27, 13], [26, 9], [24, 12], coat.ear);
-  body.ellipse(20, 21, 4, 2.5, coat.light);
-  drawFrontPaws(body, 32, coat.fur, coat.paw);
-  drawHindPaws(body, 37, coat.paw, coat.ear);
-  for (let x = 16; x <= 24; x++) {
-    for (let y = 33; y <= 36; y++) {
-      if (x >= 18 && x <= 22) body.set(x, y, coat.fur);
-    }
-  }
+  body.ellipse(20, 20.5, 4, 2.3, coat.light);
+  clearCrotch(body);
+  drawFrontPaws(body, 30.5, coat.fur, coat.paw);
+  drawHindPaws(body, 36.2, coat.paw, coat.ear);
+  clearCrotch(body);
+  paintCatPatches(body, coat);
   if (coat.stripes) {
     body.points([[17, 12], [17, 13], [20, 11], [20, 12], [20, 13], [23, 12], [23, 13]], coat.stripe);
     body.points([[11, 18], [12, 18], [11, 20], [12, 20], [28, 18], [29, 18], [28, 20], [29, 20]], coat.stripe);
-    body.points([[12, 28], [13, 28], [27, 28], [28, 28], [12, 31], [13, 31], [27, 31], [28, 31]], coat.stripe);
+    body.points([[12, 27], [13, 27], [27, 27], [28, 27]], coat.stripe);
   }
   if (coat.id === 'tuxedo') body.tri([18, 15], [20, 12], [22, 15], coat.light);
   body.set(20, 21, coat.ear);
@@ -107,12 +226,7 @@ function drawCat(look) {
   body.set(20, 22, MOUTH);
   body.points([[19, 23], [21, 23]], MOUTH);
   body.points([[13, 21], [14, 21], [26, 21], [27, 21]], BLUSH);
-
-  for (const ex of [15, 24]) {
-    eyes.rect(ex, 16, 2, 2, eye);
-    eyes.set(ex + 1, 17, '#140a1e');
-    eyes.set(ex, 16, '#ffffff');
-  }
+  drawEyes(eyes, 14, 23, 16, eye);
 
   return { coat, body, tail, eyes, anchors: CAT_ANCHORS, outline: coat.outline, glow: coat.glow };
 }
@@ -137,21 +251,33 @@ function drawCatRear(look) {
   const tail = new Grid(SIZE, SIZE);
   const eyes = new Grid(SIZE, SIZE);
 
-  const tailPts = [[12, 35], [10, 34], [8, 32], [7, 30], [6, 27], [7, 24], [8, 22], [10, 20]];
+  const tailPts = [
+    [12, 35],
+    [10, 34],
+    [8, 32],
+    [7, 30],
+    [6, 27],
+    [7, 24],
+    [8, 22],
+    [10, 20]
+  ];
   tail.points(tailPts, coat.fur, 2);
   if (coat.stripes) tail.points([[8, 32], [7, 27], [8, 22]], coat.stripe, 2);
 
-  body.ellipse(20, 30, 9, 6.6, coat.fur);
-  body.ellipse(20, 18, 10, 8, coat.fur);
+  body.ellipse(20, 26.6, 8.4, 4.2, coat.fur);
+  body.ellipse(20, 17.4, 10, 7.8, coat.fur);
   body.tri([11, 14], [13, 5], [18, 11], coat.fur);
   body.tri([29, 14], [27, 5], [22, 11], coat.fur);
   body.tri([13, 12], [14, 7], [16, 11], coat.ear);
   body.tri([27, 12], [26, 7], [24, 11], coat.ear);
-  drawFrontPaws(body, 32, coat.fur, coat.paw);
-  drawHindPaws(body, 37, coat.paw, coat.ear);
+  clearCrotch(body);
+  drawFrontPaws(body, 30.5, coat.fur, coat.paw);
+  drawHindPaws(body, 36.2, coat.paw, coat.ear);
+  clearCrotch(body);
+  paintCatPatches(body, coat);
   if (coat.stripes) {
     body.points([[17, 11], [17, 12], [20, 10], [20, 11], [23, 11], [23, 12]], coat.stripe);
-    body.points([[12, 28], [13, 28], [27, 28], [28, 28]], coat.stripe);
+    body.points([[12, 27], [13, 27], [27, 27], [28, 27]], coat.stripe);
   }
 
   return { coat, body, tail, eyes, anchors: CAT_ANCHORS, outline: coat.outline };
@@ -166,19 +292,21 @@ function drawOtterRear(look = {}) {
   tail.points([[14, 36], [11, 36], [8, 35], [5, 33], [3, 31], [2, 28], [3, 25]], c.fur, 2);
   tail.points([[2, 28], [3, 31]], c.dark, 2);
 
-  body.ellipse(20, 30, 7, 9, c.fur);
+  body.ellipse(20, 26.2, 6.6, 4.1, c.fur);
   body.ellipse(20, 17, 8.5, 7, c.fur);
   body.ellipse(12.5, 11, 1.8, 1.8, c.dark);
   body.ellipse(27.5, 11, 1.8, 1.8, c.dark);
-  drawFrontPaws(body, 27, c.fur, c.dark);
-  drawHindPaws(body, 37, c.dark, c.light);
+  clearCrotch(body);
+  drawFrontPaws(body, 26.5, c.fur, c.dark);
+  drawHindPaws(body, 36.2, c.dark, c.light);
+  clearCrotch(body);
 
   return { body, tail, eyes, anchors: OTTER_ANCHORS, outline: c.outline };
 }
 
 function drawOtter(look = {}) {
   const c = otterLook(look);
-  const eye = look.eyes || '#93c5fd';
+  const eye = look.eyes || '#38bdf8';
   const body = new Grid(SIZE, SIZE);
   const tail = new Grid(SIZE, SIZE);
   const eyes = new Grid(SIZE, SIZE);
@@ -186,28 +314,25 @@ function drawOtter(look = {}) {
   tail.points([[15, 36], [13, 36], [11, 36], [9, 35], [7, 34]], c.fur, 2);
   tail.points([[5, 33]], c.dark, 2);
 
-  body.ellipse(20, 29, 7, 9, c.fur);
+  body.ellipse(20, 26.2, 6.6, 4.1, c.fur);
   body.ellipse(20, 17, 8.5, 7, c.fur);
   body.ellipse(12.5, 11.5, 1.8, 1.8, c.dark);
   body.ellipse(27.5, 11.5, 1.8, 1.8, c.dark);
-  body.ellipse(20, 20, 4.5, 2.6, c.light);
-  body.ellipse(20, 26.5, 3, 3.6, c.light);
-  body.ellipse(12, 26, 2.6, 2.2, c.fur);
-  body.ellipse(28, 26, 2.6, 2.2, c.fur);
-  body.ellipse(12, 27.4, 2.4, 1.6, c.dark);
-  body.ellipse(28, 27.4, 2.4, 1.6, c.dark);
+  body.ellipse(20, 20, 4.4, 2.4, c.light);
+  body.ellipse(20, 23.4, 3.1, 1.8, c.light);
+  clearCrotch(body);
+  body.ellipse(11.5, 26.2, 2.5, 2.1, c.fur);
+  body.ellipse(28.5, 26.2, 2.5, 2.1, c.fur);
+  body.ellipse(11.5, 27.5, 2.2, 1.5, c.dark);
+  body.ellipse(28.5, 27.5, 2.2, 1.5, c.dark);
   body.points([[11, 25], [13, 25], [27, 25], [29, 25]], c.light);
-  drawHindPaws(body, 37, c.dark, c.light);
+  drawHindPaws(body, 36.2, c.dark, c.light);
+  clearCrotch(body);
   body.points([[20, 18], [20, 19]], MOUTH);
   body.points([[19, 21], [20, 22], [21, 21]], MOUTH);
   body.points([[15, 20], [25, 20]], c.dark);
   body.points([[13, 19], [14, 19], [26, 19], [27, 19]], BLUSH);
-
-  for (const ex of [15, 24]) {
-    eyes.rect(ex, 15, 2, 2, eye);
-    eyes.set(ex + 1, 16, '#140a1e');
-    eyes.set(ex, 15, '#ffffff');
-  }
+  drawEyes(eyes, 14, 23, 15, eye);
 
   return { body, tail, eyes, anchors: OTTER_ANCHORS, outline: c.outline };
 }
@@ -269,7 +394,10 @@ export function accessorySVG(id, { size = 48, kind = 'cat', label = '' } = {}) {
   if (def.back) def.back(back, A);
   if (def.front) def.front(front, A);
   const all = new Grid(SIZE, SIZE).stamp(back).stamp(front);
-  let x0 = SIZE, y0 = SIZE, x1 = 0, y1 = 0;
+  let x0 = SIZE,
+    y0 = SIZE,
+    x1 = 0,
+    y1 = 0;
   for (let y = 0; y < SIZE; y++) {
     for (let x = 0; x < SIZE; x++) {
       if (!all.get(x, y)) continue;

@@ -3,8 +3,8 @@ import { creatureSVG } from './creatures.js';
 import { getProfile, onProfile, kv } from './store.js';
 import { el, esc } from './ui.js';
 
-const CAT_MOODS = ['heart', 'wink', 'bounce', 'spin', 'stretch', 'meow'];
-const OTTER_MOODS = ['splash', 'wiggle', 'bounce', 'peek', 'clap', 'spin'];
+const CAT_MOODS = ['heart', 'wink', 'bounce', 'meow'];
+const OTTER_MOODS = ['splash', 'wiggle', 'bounce', 'peek', 'clap'];
 const ALL_REACTS = [...new Set([...CAT_MOODS, ...OTTER_MOODS, 'sparkle', 'bob', 'sway', 'bow', 'conduct', 'sing', 'float', 'party', 'bloom', 'jingle', 'zap', 'flutter'])];
 const OUTFIT_REACT = {
   coroa: 'sparkle',
@@ -56,8 +56,9 @@ export function reactCreature(fig, svg) {
   const moods = otter ? OTTER_MOODS : CAT_MOODS;
   const kinds = outfitKinds(svg);
   const fromOutfit = kinds.map((id) => OUTFIT_REACT[id]).filter(Boolean);
-  const pool = [...new Set([...fromOutfit, ...moods])].filter((k) => k !== lastReact);
-  const pick = pool.length ? pool : moods;
+  const face = moods.filter((k) => k !== 'spin' && k !== 'stretch');
+  const pool = [...new Set(fromOutfit.length ? fromOutfit : face)].filter((k) => k !== lastReact);
+  const pick = pool.length ? pool : face;
   const kind = pick[Math.floor(Math.random() * pick.length)];
   lastReact = kind;
   const host = fig || svg.parentElement;

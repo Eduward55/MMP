@@ -41,7 +41,7 @@
   bottom: 28px;
   left: 50%;
   width: 92px;
-  height: 118px;
+  height: 124px;
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 3;
@@ -50,62 +50,64 @@
   animation: ct-shake 0.35s ease;
 }
 .cr-car.is-boost .cr-car__body {
-  box-shadow: 0 18px 18px color-mix(in srgb, var(--car) 45%, transparent);
-}
-.cr-car__spoiler {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 6px;
-  height: 8px;
-  background: var(--trim);
-  border-radius: 4px;
-}
-.cr-car__body {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  top: 14px;
-  bottom: 22px;
-  background: var(--car);
-  border: 2px solid var(--trim);
-  border-radius: 18px 18px 12px 12px;
-}
-.cr-car__hood {
-  position: absolute;
-  left: 22px;
-  right: 22px;
-  bottom: 28px;
-  height: 16px;
-  background: color-mix(in srgb, var(--car) 70%, #111);
-  border-radius: 8px 8px 4px 4px;
-}
-.cr-car__glass {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  top: 22px;
-  height: 28px;
-  background: color-mix(in srgb, #9bd7ff 55%, var(--car));
-  border: 2px solid var(--trim);
-  border-radius: 14px 14px 6px 6px;
-  opacity: 0.7;
-  z-index: 2;
+  box-shadow: 0 -10px 18px color-mix(in srgb, var(--car) 45%, transparent);
 }
 .cr-car__light {
   position: absolute;
-  bottom: 24px;
-  width: 10px;
+  top: 10px;
+  width: 12px;
   height: 8px;
-  background: #fef08a;
-  border-radius: 2px;
-  box-shadow: 0 0 8px #fde047;
+  background: #fef9c3;
+  border-radius: 3px 3px 2px 2px;
+  box-shadow: 0 -6px 10px #fde047;
+  z-index: 4;
 }
 .cr-car__light--l {
   left: 16px;
 }
 .cr-car__light--r {
   right: 16px;
+}
+.cr-car__hood {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 16px;
+  height: 18px;
+  background: color-mix(in srgb, var(--car) 62%, #111);
+  border-radius: 8px 8px 4px 4px;
+  z-index: 2;
+}
+.cr-car__body {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 20px;
+  bottom: 16px;
+  background: var(--car);
+  border: 2px solid var(--trim);
+  border-radius: 14px 14px 18px 18px;
+}
+.cr-car__glass {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 36px;
+  height: 28px;
+  background: color-mix(in srgb, #9bd7ff 42%, var(--car));
+  border: 2px solid var(--trim);
+  border-radius: 8px 8px 10px 10px;
+  opacity: 0.55;
+  z-index: 2;
+}
+.cr-car__spoiler {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 6px;
+  height: 8px;
+  background: var(--trim);
+  border-radius: 4px;
 }
 .cr-car__wheel {
   position: absolute;
@@ -117,24 +119,24 @@
 }
 .cr-car__wheel--fl {
   left: 4px;
-  bottom: 28px;
+  top: 22px;
 }
 .cr-car__wheel--fr {
   right: 4px;
-  bottom: 28px;
+  top: 22px;
 }
 .cr-car__wheel--bl {
   left: 4px;
-  top: 22px;
+  bottom: 18px;
 }
 .cr-car__wheel--br {
   right: 4px;
-  top: 22px;
+  bottom: 18px;
 }
 .cr-car__pilot {
   position: absolute;
   left: 50%;
-  top: 18px;
+  top: 38px;
   z-index: 4;
   margin: 0;
   line-height: 0;

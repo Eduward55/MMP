@@ -2,14 +2,14 @@
 import { creatureSVG } from '../shared/creatures.js';
 import { getProfile, kv } from '../shared/store.js';
 import { themeTokens, hexToRgba } from '../shared/theme.js';
-import { el, toast } from '../shared/ui.js';
+import { el, startAudio, toast } from '../shared/ui.js';
 
 const KEY = 'corrida';
 const CARS = [
-  { id: 'laranja', name: 'Laranja', body: '#fb923c', trim: '#9a3412' },
-  { id: 'roxo', name: 'Roxo', body: '#9b5cff', trim: '#5b2aa8' },
-  { id: 'menta', name: 'Menta', body: '#34d399', trim: '#047857' },
-  { id: 'ouro', name: 'Ouro', body: '#fbbf24', trim: '#92400e' }
+  { id: 'laranja', name: 'Laranja', body: '#e8954a', trim: '#9a3412' },
+  { id: 'azul', name: 'Azul', body: '#5b7c9a', trim: '#1e3a5f' },
+  { id: 'menta', name: 'Menta', body: '#4f9d82', trim: '#14532d' },
+  { id: 'ouro', name: 'Ouro', body: '#d4a017', trim: '#7c4a12' }
 ];
 
 export default {
@@ -23,7 +23,9 @@ export default {
     const profile = getProfile();
     const saved = (await kv.get(KEY).catch(() => null)) || {};
     let best = Number(saved.best) || 0;
-    let carSkin = CARS.some((c) => c.id === saved.car) ? saved.car : 'laranja';
+    let carSkin = CARS.some((c) => c.id === saved.car) ? saved.car : saved.car === 'roxo' ? 'azul' : 'laranja';
+    let chip = null;
+    let musicOn = saved.sound !== false;
     let x = 0.5;
     let vx = 0;
     let dist = 0;
@@ -50,6 +52,7 @@ export default {
     const stage = el('div', { class: 'cr-stage panel' }, canvas, car, overlay);
     const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Pausar');
     const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => newGame() }, 'Nova corrida');
+    const soundBtn = el('button', { class: 'btn btn--ghost btn--sm', onclick: () => toggleSound() }, '');
 
     function skin() {
       return CARS.find((c) => c.id === carSkin) || CARS[0];
@@ -101,7 +104,65 @@ export default {
     }
 
     function persist() {
-      return kv.set(KEY, { best: Math.max(best, Math.floor(dist)), car: carSkin }).catch(() => {});
+      return kv.set(KEY, { best: Math.max(best, Math.floor(dist)), car: carSkin, sound: musicOn }).catch(() => {});
+    }
+
+    async function ensureSound() {
+      if (!musicOn || chip) return chip;
+      try {
+        const Tone = await startAudio();
+        const out = new Tone.Gain(0.55).toDestination();
+        const kick = new Tone.MembraneSynth({ pitchDecay: 0.03, octaves: 4, envelope: { attack: 0.001, decay: 0.18, sustain: 0 }, volume: -16 }).connect(out);
+        const bass = new Tone.MonoSynth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.1 }, volume: -18 }).connect(out);
+        const lead = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.005, decay: 0.12, sustain: 0, release: 0.08 }, volume: -22 }).connect(out);
+        const noise = new Tone.Noise('brown').start();
+        const nf = new Tone.Filter(420, 'lowpass').connect(out);
+        const ng = new Tone.Gain(0.02).connect(nf);
+        noise.connect(ng);
+        const notes = ['G3', 'Bb3', 'C4', 'D4', 'F4', 'D4', 'C4', 'Bb3'];
+        let i = 0;
+        const loop = new Tone.Loop((time) => {
+          if (over || paused) return;
+          kick.triggerAttackRelease('C1', '8n', time);
+          bass.triggerAttackRelease(notes[i % notes.length], '8n', time);
+          if (i % 2 === 0) lead.triggerAttackRelease(notes[(i + 2) % notes.length], '16n', time);
+          i++;
+        }, '8n');
+        Tone.Transport.bpm.value = 118;
+        loop.start(0);
+        if (Tone.Transport.state !== 'started') Tone.Transport.start();
+        chip = {
+          crash() {
+            try {
+              lead.triggerAttackRelease('G2', 0.28);
+            } catch {}
+          },
+          setEngine(v) {
+            ng.gain.rampTo(0.015 + v * 0.05, 0.08);
+          },
+          dispose() {
+            try {
+              loop.dispose();
+              noise.stop();
+            } catch {}
+            [kick, bass, lead, noise, nf, ng, out].forEach((n) => n.dispose && n.dispose());
+          }
+        };
+      } catch {
+        chip = { crash() {}, setEngine() {}, dispose() {} };
+      }
+      return chip;
+    }
+
+    function toggleSound() {
+      musicOn = !musicOn;
+      soundBtn.textContent = `Som: ${musicOn ? 'ligado' : 'desligado'}`;
+      if (musicOn) ensureSound().catch(() => {});
+      else if (chip) {
+        chip.dispose();
+        chip = null;
+      }
+      persist();
     }
 
     root.append(
@@ -115,14 +176,15 @@ export default {
           nums,
           fan,
           el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Carrinho'), skinRow),
-          el('div', { class: 'row-actions' }, pauseBtn, newBtn),
-          el('p', { class: 'hint' }, 'W/↑ acelera. A/D ou ← → desviam. Esc pausa. A hitbox agora é o bico do carro.')
+          el('div', { class: 'row-actions' }, pauseBtn, newBtn, soundBtn),
+          el('p', { class: 'hint' }, 'W/↑ acelera. A/D ou ← → desviam. Esc pausa. O bico do carro aponta para cima da pista.')
         ),
         stage
       )
     );
     renderCar();
     renderSkins();
+    soundBtn.textContent = `Som: ${musicOn ? 'ligado' : 'desligado'}`;
 
     const ctx = canvas.getContext('2d');
     let lastHud = '';
@@ -150,6 +212,7 @@ export default {
         ].forEach(([k, v]) => nums.append(el('div', { class: 'stat' }, el('b', {}, String(v)), el('span', {}, k))));
         pauseBtn.textContent = paused ? 'Continuar' : 'Pausar';
         pauseBtn.disabled = over;
+        soundBtn.textContent = `Som: ${musicOn ? 'ligado' : 'desligado'}`;
       }
       const left = `${(x * 100).toFixed(2)}%`;
       if (car.style.left !== left) car.style.left = left;
@@ -196,6 +259,7 @@ export default {
       over = true;
       paused = false;
       hitFlash = 0.5;
+      if (chip) chip.crash();
       if (dist > best) {
         best = Math.floor(dist);
         toast(`Novo recorde: ${best} m!`, 'ok');
@@ -224,6 +288,8 @@ export default {
       x = Math.max(0.22, Math.min(0.78, x + vx * dt * 0.85));
       if (up) speed = Math.min(360, speed + dt * 48);
       else speed = Math.max(160, speed - dt * 18);
+      if (musicOn && !chip) ensureSound().catch(() => {});
+      if (chip) chip.setEngine((speed - 160) / 200);
       dist += (speed * dt) / 40;
       roadY += (speed / 90) * dt;
       spawnIn -= dt;
@@ -385,6 +451,7 @@ export default {
         window.removeEventListener('keyup', onKey);
         ro.disconnect();
         persist();
+        if (chip) chip.dispose();
         if (window.__mmpCorrida) delete window.__mmpCorrida;
       }
     };

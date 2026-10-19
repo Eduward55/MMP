@@ -6,7 +6,7 @@ const api = ensureMmp();
 const DEFAULT_PROFILE = {
   version: 1,
   cat: { name: 'Pirrinha', coat: 'tabby', eyes: '#4ade80', outfit: { ear: 'lacinho' } },
-  otter: { name: 'Manhoso', coat: 'chocolate', eyes: '#93c5fd', outfit: { neck: 'cachecol' } }
+  otter: { name: 'Manhoso', coat: 'chocolate', eyes: '#38bdf8', outfit: { neck: 'cachecol' } }
 };
 
 function migrateDefaultNames(cat, otter) {

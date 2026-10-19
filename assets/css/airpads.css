@@ -1,8 +1,12 @@
 /* ---------- AIR PADS ---------- */
+.page--airpads .page__main {
+  padding-bottom: 24px;
+  max-width: 1360px;
+}
 .airx {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 10px;
 }
 .airx__status {
   margin: 0;
@@ -92,17 +96,9 @@
 }
 .air-slice {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 2.6em;
-  margin-left: -1.3em;
-  margin-top: -0.6em;
-  text-align: center;
-  font-size: clamp(0.58rem, 1.1cqw, 0.78rem);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--text) 92%, var(--c));
-  transform: rotate(calc((var(--i) + 0.5) * 360deg / var(--n))) translateY(-38%) rotate(calc((var(--i) + 0.5) * -360deg / var(--n)));
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
 .air-circle__name {
   position: relative;
@@ -118,10 +114,10 @@
 }
 .air-circle__note {
   position: absolute;
-  top: 8%;
-  left: 50%;
+  top: calc(50% + var(--by, 0%));
+  left: calc(50% + var(--bx, 0%));
   z-index: 2;
-  transform: translateX(-50%);
+  transform: translate(-50%, -140%);
   min-height: 1.1em;
   font-family: var(--font);
   font-size: clamp(0.68rem, 1vw, 0.8rem);
@@ -138,11 +134,11 @@
 }
 .air-bead {
   position: absolute;
-  top: 6%;
+  top: calc(50% + var(--by, 0%));
   left: calc(50% + var(--bx, 0%));
   z-index: 3;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: var(--c);
@@ -181,10 +177,10 @@
   z-index: 5;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 132px;
-  max-width: 42%;
-  padding: 8px 10px;
+  gap: 1px;
+  min-width: 108px;
+  max-width: 36%;
+  padding: 6px 8px;
   background: var(--bg);
   border: 1px solid var(--c);
   border-radius: 10px;
@@ -270,18 +266,26 @@
   border-radius: 999px;
 }
 
-.airx.is-cam .airx__arena,
+.airx.is-cam .airx__arena {
+  max-height: none;
+  height: min(72vh, 760px);
+  aspect-ratio: auto;
+}
+.airx.is-arena-fs .airx__arena,
 .airx__arena.is-fs,
 .airx__arena:fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  width: 100vw;
+  height: 100vh;
   max-height: none;
-  height: min(86vh, 920px);
   aspect-ratio: auto;
   border-radius: 0;
+  background: var(--bg);
 }
 .airx__arena:fullscreen {
-  height: 100vh;
-  width: 100vw;
-  background: #0c0c10;
+  background: var(--bg);
 }
 .airx__dist {
   margin: 0 0 4px;
@@ -292,8 +296,12 @@
 }
 .airx__pick {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 0 20px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0 16px;
+}
+.airx__stage .toolbar {
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .airx__pick .chip.is-on {
   border-color: var(--c, var(--accent));

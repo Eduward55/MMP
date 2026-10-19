@@ -7,14 +7,17 @@ export const COLOR_THEMES = [
   { id: 'night', name: 'Noite', swatch: '#0f0f12', accent: '#7c9cff' },
   { id: 'ocean', name: 'Oceano', swatch: '#0b1220', accent: '#38bdf8' },
   { id: 'day', name: 'Dia', swatch: '#f4f7fb', accent: '#2563eb' },
-  { id: 'grape', name: 'Uva', swatch: '#16111f', accent: '#8b5cf6' },
-  { id: 'cream', name: 'Creme', swatch: '#faf6ef', accent: '#c2410c' },
   { id: 'forest', name: 'Floresta', swatch: '#0f1712', accent: '#34d399' },
-  { id: 'sunset', name: 'Pôr do sol', swatch: '#1a1014', accent: '#fb7185' },
-  { id: 'candy', name: 'Doce', swatch: '#1a1020', accent: '#f472b6' },
-  { id: 'mint', name: 'Menta', swatch: '#ecfdf5', accent: '#0d9488' },
-  { id: 'rose', name: 'Rosa', swatch: '#fff1f2', accent: '#e11d48' }
+  { id: 'cream', name: 'Creme', swatch: '#f7f1e4', accent: '#b45309' },
+  { id: 'rose', name: 'Rosa', swatch: '#fdf2f8', accent: '#db2777' },
+  { id: 'mint', name: 'Menta', swatch: '#eef7f3', accent: '#0f766e' },
+  { id: 'grape', name: 'Uva', swatch: '#1a1424', accent: '#a78bfa' },
+  { id: 'gold', name: 'Dourado', swatch: '#1c1610', accent: '#eab308' },
+  { id: 'dusk', name: 'Pôr do sol', swatch: '#1a1418', accent: '#f59e6c' },
+  { id: 'beach', name: 'Praia', swatch: '#0f1c22', accent: '#2dd4bf' }
 ];
+
+const THEME_ALIAS = { candy: 'rose', sunset: 'dusk' };
 
 const KEY = 'ui-theme';
 let current = 'night';
@@ -55,7 +58,8 @@ export function currentTheme() {
 }
 
 export function applyTheme(id) {
-  const t = COLOR_THEMES.find((x) => x.id === id) || COLOR_THEMES[0];
+  const wanted = THEME_ALIAS[id] || id;
+  const t = COLOR_THEMES.find((x) => x.id === wanted) || COLOR_THEMES[0];
   current = t.id;
   document.documentElement.dataset.theme = t.id;
   try {

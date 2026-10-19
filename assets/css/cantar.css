@@ -5,6 +5,9 @@
   max-width: 1400px;
   margin: 0 auto;
 }
+.cantar .chips {
+  flex-wrap: wrap;
+}
 .cantar__stage {
   display: flex;
   flex-direction: column;
@@ -34,8 +37,7 @@
   animation: hop 0.28s ease;
 }
 .cantar__cat svg.creature.is-sing-open .layer-body {
-  transform-origin: 20px 30px;
-  animation: meow-mouth 0.28s ease;
+  animation: none;
 }
 .cantar__otters {
   display: grid;
