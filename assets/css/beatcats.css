@@ -48,12 +48,6 @@
   margin-bottom: 8px;
   gap: 8px;
 }
-.bc-vol--master {
-  gap: 8px;
-}
-.bc-vol--master .bc-vol__fader {
-  width: 108px;
-}
 .bc-mute.is-on {
   background: color-mix(in srgb, var(--danger) 16%, var(--surface));
   border-color: var(--danger);
@@ -69,6 +63,15 @@
   min-width: 0;
   touch-action: manipulation;
   cursor: default;
+}
+.bc-vol--master {
+  width: auto;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+.bc-vol--master .bc-vol__fader {
+  flex: 0 0 108px;
+  width: 108px;
 }
 .bc-vol__lab {
   flex: 0 0 auto;

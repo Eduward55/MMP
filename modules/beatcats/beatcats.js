@@ -329,10 +329,8 @@ export default {
     }
 
     function setGain(node, value) {
-      if (!node) return;
-      const g = node.gain;
-      if (g && typeof g.rampTo === 'function') g.rampTo(value, 0.03);
-      else if (g) g.value = value;
+      if (!node || !node.gain) return;
+      node.gain.value = value;
     }
 
     function applyMaster() {
