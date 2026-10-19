@@ -3,11 +3,17 @@
 // Em Linux sem tela: xvfb-run -a npm run check
 'use strict';
 
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
 const electron = require('electron');
+
+const pre = spawnSync(process.execPath, [path.join(__dirname, 'build-conexoes.mjs')], {
+  cwd: path.join(__dirname, '..'),
+  stdio: 'inherit'
+});
+if (pre.status) process.exit(pre.status || 1);
 
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mmp-check-'));
 const args = ['.'];

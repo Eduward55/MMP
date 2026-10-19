@@ -1,0 +1,6848 @@
+{
+  "version": 1,
+  "meta": {
+    "categories": 423,
+    "themes": {
+      "psicologia": 85,
+      "arte": 85,
+      "historia": 85,
+      "musica": 84,
+      "gerais": 84
+    },
+    "validFourTuples": 1295600188,
+    "builtAt": "2026-10-19T01:50:55.070Z"
+  },
+  "categories": [
+    {
+      "id": "psi-defesa",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Mecanismos de defesa",
+      "words": [
+        "REPRESSÃO",
+        "NEGAÇÃO",
+        "PROJEÇÃO",
+        "RACIONALIZAÇÃO",
+        "DESLOCAMENTO",
+        "SUBLIMAÇÃO",
+        "REGRESSÃO",
+        "INTELECTUALIZAÇÃO",
+        "COMPENSAÇÃO",
+        "ISOLAMENTO"
+      ]
+    },
+    {
+      "id": "psi-freud-inst",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Instâncias da psique (Freud)",
+      "words": [
+        "ID",
+        "EGO",
+        "SUPEREGO",
+        "CONSCIENTE",
+        "INCONSCIENTE",
+        "PRECONSCIENTE",
+        "LIBIDO",
+        "PULSÃO"
+      ]
+    },
+    {
+      "id": "psi-vieses",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Vieses cognitivos",
+      "words": [
+        "ANCORAGEM",
+        "CONFIRMAÇÃO",
+        "DISPONIBILIDADE",
+        "EFEITO HALO",
+        "AUTOSERVIR",
+        "RETROSPECTIVA",
+        "OTIMISMO",
+        "EFEITO FORER",
+        "AVERSÃO À PERDA",
+        "CUSTO AFUNDADO"
+      ]
+    },
+    {
+      "id": "psi-ekman",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Emoções básicas (Ekman)",
+      "words": [
+        "ALEGRIA",
+        "TRISTEZA",
+        "MEDO",
+        "RAIVA",
+        "NOJO",
+        "SURPRESA",
+        "CONTEMPTO",
+        "VERGONHA"
+      ]
+    },
+    {
+      "id": "psi-humor",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Transtornos do humor",
+      "words": [
+        "DEPRESSÃO",
+        "MANIA",
+        "DISTIMIA",
+        "HIPOMANIA",
+        "CICLOTIMIA",
+        "BIPOLARIDADE",
+        "MELANCOLIA",
+        "EUTIMIA"
+      ]
+    },
+    {
+      "id": "psi-ansiedade",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Transtornos de ansiedade",
+      "words": [
+        "PÂNICO",
+        "FOBIA",
+        "AGORAFOBIA",
+        "ANSIEDADE SOCIAL",
+        "TAG",
+        "ANSIEDADE DE SEPARAÇÃO",
+        "MUTISMO SELETIVO",
+        "FOBIA ESPECÍFICA"
+      ]
+    },
+    {
+      "id": "psi-escolas",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Escolas da psicologia",
+      "words": [
+        "PSICANÁLISE",
+        "BEHAVIORISMO",
+        "GESTALT",
+        "HUMANISMO",
+        "COGNITIVISMO",
+        "ESTRUTURALISMO",
+        "FUNCIONALISMO",
+        "CONSTRUTIVISMO"
+      ]
+    },
+    {
+      "id": "psi-piaget",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Estágios de Piaget",
+      "words": [
+        "SENSÓRIO-MOTOR",
+        "PRÉ-OPERATÓRIO",
+        "OPERATÓRIO CONCRETO",
+        "OPERATÓRIO FORMAL",
+        "DESCENTRAÇÃO",
+        "REVERSIBILIDADE",
+        "EGOCENTRISMO",
+        "CONSERVAÇÃO"
+      ]
+    },
+    {
+      "id": "psi-autores",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Psicólogos clássicos",
+      "words": [
+        "FREUD",
+        "JUNG",
+        "PIAGET",
+        "SKINNER",
+        "PAVLOV",
+        "VYGOTSKY",
+        "MASLOW",
+        "WUNDT",
+        "BANDURA",
+        "ROGERS",
+        "WATSON",
+        "ADLER"
+      ]
+    },
+    {
+      "id": "psi-experimentos",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Experimentos clássicos",
+      "words": [
+        "MILGRAM",
+        "ASCH",
+        "STANFORD",
+        "LITTLE ALBERT",
+        "BONECO BOBO",
+        "HARLOW",
+        "ROSENHAN",
+        "HAWTHORNE"
+      ]
+    },
+    {
+      "id": "psi-maslow",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Pirâmide de Maslow",
+      "words": [
+        "FISIOLOGIA",
+        "SEGURANÇA",
+        "PERTENCIMENTO",
+        "ESTIMA",
+        "AUTORREALIZAÇÃO",
+        "COGNIÇÃO",
+        "ESTÉTICA",
+        "TRANSCENDÊNCIA"
+      ]
+    },
+    {
+      "id": "psi-memoria-tipos",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Tipos de memória",
+      "words": [
+        "SENSORIAL",
+        "CURTO PRAZO",
+        "LONGO PRAZO",
+        "DE TRABALHO",
+        "EPISÓDICA",
+        "SEMÂNTICA",
+        "PROCEDURAL",
+        "IMPLÍCITA",
+        "EXPLÍCITA"
+      ]
+    },
+    {
+      "id": "psi-operante",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Condicionamento operante",
+      "words": [
+        "REFORÇO POSITIVO",
+        "REFORÇO NEGATIVO",
+        "PUNIÇÃO POSITIVA",
+        "PUNIÇÃO NEGATIVA",
+        "MODELAGEM",
+        "DISCRIMINAÇÃO",
+        "ESQUEMA DE REFORÇO",
+        "CONTINGÊNCIA"
+      ]
+    },
+    {
+      "id": "psi-testes",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Testes psicológicos",
+      "words": [
+        "WISC",
+        "WAIS",
+        "RORSCHACH",
+        "MMPI",
+        "TAT",
+        "BIG FIVE",
+        "INVENTÁRIO DE BECK",
+        "BENDER",
+        "NEO-PI",
+        "STANFORD-BINET"
+      ]
+    },
+    {
+      "id": "psi-areas",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Áreas da psicologia",
+      "words": [
+        "CLÍNICA",
+        "SOCIAL",
+        "ESCOLAR",
+        "ORGANIZACIONAL",
+        "NEUROPSICOLOGIA",
+        "ESPORTIVA",
+        "JURÍDICA",
+        "HOSPITALAR",
+        "EXPERIMENTAL",
+        "DO DESENVOLVIMENTO"
+      ]
+    },
+    {
+      "id": "psi-psicose",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Sintomas psicóticos",
+      "words": [
+        "DELÍRIO",
+        "ALUCINAÇÃO",
+        "PARANOIA",
+        "CATATONIA",
+        "DESORGANIZAÇÃO",
+        "ANEDONIA",
+        "ALOGIA",
+        "AVOLIÇÃO"
+      ]
+    },
+    {
+      "id": "psi-tp",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Transtornos de personalidade",
+      "words": [
+        "BORDERLINE",
+        "ANTISSOCIAL",
+        "NARCÍSICA",
+        "ESQUIZOIDE",
+        "ESQUIZOTÍPICA",
+        "HISTRIÔNICA",
+        "EVITATIVA",
+        "DEPENDENTE",
+        "PARANOIDE",
+        "OBSESSIVO-COMPULSIVA"
+      ]
+    },
+    {
+      "id": "psi-luto",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Fases do luto (Kübler-Ross)",
+      "words": [
+        "NEGAÇÃO",
+        "RAIVA",
+        "BARGANHA",
+        "DEPRESSÃO",
+        "ACEITAÇÃO",
+        "LUTO",
+        "ELABORAÇÃO",
+        "DUELO"
+      ]
+    },
+    {
+      "id": "psi-gardner",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Inteligências de Gardner",
+      "words": [
+        "LINGUÍSTICA",
+        "LÓGICO-MATEMÁTICA",
+        "ESPACIAL",
+        "MUSICAL",
+        "CORPORAL-CINESTÉSICA",
+        "INTERPESSOAL",
+        "INTRAPESSOAL",
+        "NATURALISTA"
+      ]
+    },
+    {
+      "id": "psi-bigfive",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Traços do Big Five",
+      "words": [
+        "ABERTURA",
+        "CONSCIENCIOSIDADE",
+        "EXTROVERSÃO",
+        "AMABILIDADE",
+        "NEUROTICISMO",
+        "ESTABILIDADE EMOCIONAL",
+        "TRAÇO",
+        "FATOR"
+      ]
+    },
+    {
+      "id": "psi-sonho",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Trabalho do sonho (Freud)",
+      "words": [
+        "CONTEÚDO MANIFESTO",
+        "CONTEÚDO LATENTE",
+        "CONDENSAÇÃO",
+        "DESLOCAMENTO",
+        "ELABORAÇÃO SECUNDÁRIA",
+        "CENSURA ONÍRICA",
+        "SÍMBOLO",
+        "REALIZAÇÃO DE DESEJO"
+      ]
+    },
+    {
+      "id": "psi-apego",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Estilos de apego",
+      "words": [
+        "SEGURO",
+        "ANSIOSO-AMBIVALENTE",
+        "EVITATIVO",
+        "DESORGANIZADO",
+        "BASE SEGURA",
+        "VÍNCULO",
+        "SITUAÇÃO ESTRANHA",
+        "BOWLBY"
+      ]
+    },
+    {
+      "id": "psi-heuristica",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Heurísticas de julgamento",
+      "words": [
+        "DISPONIBILIDADE",
+        "REPRESENTATIVIDADE",
+        "ANCORAGEM",
+        "AFETO",
+        "RECONHECIMENTO",
+        "SATISFICIÊNCIA",
+        "SIMULAÇÃO",
+        "AJUSTE"
+      ]
+    },
+    {
+      "id": "psi-consciencia",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Estados de consciência",
+      "words": [
+        "VIGÍLIA",
+        "SONO",
+        "SONHO",
+        "HIPNOSE",
+        "MEDITAÇÃO",
+        "TRANSE",
+        "COMA",
+        "DELIRIUM"
+      ]
+    },
+    {
+      "id": "psi-sono",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Fases do sono",
+      "words": [
+        "N1",
+        "N2",
+        "N3",
+        "REM",
+        "FUSOS DO SONO",
+        "COMPLEXO K",
+        "ONDA DELTA",
+        "SONO PARADOXAL"
+      ]
+    },
+    {
+      "id": "psi-dependencia",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Dependência e recaída",
+      "words": [
+        "TOLERÂNCIA",
+        "ABSTINÊNCIA",
+        "FISSURA",
+        "RELAPSO",
+        "DEPENDÊNCIA",
+        "ABUSO",
+        "DESINTOXICAÇÃO",
+        "COMPULSÃO"
+      ]
+    },
+    {
+      "id": "psi-terapias",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Abordagens terapêuticas",
+      "words": [
+        "TCC",
+        "EMDR",
+        "ACT",
+        "DBT",
+        "PSICODRAMA",
+        "MINDFULNESS",
+        "SISTÊMICA",
+        "FOCAL",
+        "NARRATIVA",
+        "EXISTENCIAL"
+      ]
+    },
+    {
+      "id": "psi-estat",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Estatística em pesquisa",
+      "words": [
+        "MÉDIA",
+        "MEDIANA",
+        "MODA",
+        "DESVIO-PADRÃO",
+        "CORRELAÇÃO",
+        "VARIÂNCIA",
+        "AMOSTRA",
+        "P-VALOR",
+        "CURVA NORMAL",
+        "HIPÓTESE NULA"
+      ]
+    },
+    {
+      "id": "psi-metodo",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Método experimental",
+      "words": [
+        "HIPÓTESE",
+        "VARIÁVEL INDEPENDENTE",
+        "VARIÁVEL DEPENDENTE",
+        "GRUPO CONTROLE",
+        "PLACEBO",
+        "RANDOMIZAÇÃO",
+        "DUPLO-CEGO",
+        "VALIDADE",
+        "CONFIABILIDADE",
+        "RÉPLICA"
+      ]
+    },
+    {
+      "id": "psi-neurodev",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Neurodesenvolvimento",
+      "words": [
+        "AUTISMO",
+        "TDAH",
+        "DISLEXIA",
+        "DISCALCULIA",
+        "DISPRAXIA",
+        "TOURETTE",
+        "DEFICIÊNCIA INTELECTUAL",
+        "ATRASO GLOBAL"
+      ]
+    },
+    {
+      "id": "psi-toc",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "TOC e relacionados",
+      "words": [
+        "TOC",
+        "DISMORFIA",
+        "ACUMULAÇÃO",
+        "TRICOTILOMANIA",
+        "ESCORIAÇÃO",
+        "RUMINAÇÃO",
+        "RITUAL",
+        "OBSESSÃO"
+      ]
+    },
+    {
+      "id": "psi-trauma",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Trauma e estresse",
+      "words": [
+        "TEPT",
+        "ESTRESSE AGUDO",
+        "FLASHBACK",
+        "EVITAÇÃO",
+        "HIPERVIGILÊNCIA",
+        "DISSOCIAÇÃO",
+        "TRAUMA",
+        "RESILIÊNCIA"
+      ]
+    },
+    {
+      "id": "psi-dissoc",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Fenômenos dissociativos",
+      "words": [
+        "DESPERSONALIZAÇÃO",
+        "DESREALIZAÇÃO",
+        "FUGA",
+        "AMNÉSIA DISSOCIATIVA",
+        "TRANSE",
+        "CONVERSÃO",
+        "SOMATIZAÇÃO",
+        "IDENTIDADE DISSOCIATIVA"
+      ]
+    },
+    {
+      "id": "psi-aprend",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Tipos de aprendizagem",
+      "words": [
+        "CLÁSSICA",
+        "OPERANTE",
+        "OBSERVACIONAL",
+        "INSIGHT",
+        "LATENTE",
+        "VERBAL",
+        "SOCIAL",
+        "TENTATIVA E ERRO"
+      ]
+    },
+    {
+      "id": "psi-atencao",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Processos de atenção",
+      "words": [
+        "SELETIVA",
+        "SUSTENTADA",
+        "DIVIDIDA",
+        "ALTERNADA",
+        "VIGILÂNCIA",
+        "ORIENTAÇÃO",
+        "FOCO",
+        "DISTRAÇÃO"
+      ]
+    },
+    {
+      "id": "psi-lingua",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Linguagem e cérebro",
+      "words": [
+        "FONEMAS",
+        "MORFEMAS",
+        "SINTAXE",
+        "SEMÂNTICA",
+        "PRAGMÁTICA",
+        "AFASIA",
+        "ÁREA DE BROCA",
+        "ÁREA DE WERNICKE"
+      ]
+    },
+    {
+      "id": "psi-emocao-teo",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Teorias da emoção",
+      "words": [
+        "JAMES-LANGE",
+        "CANNON-BARD",
+        "SCHACHTER-SINGER",
+        "LAZARUS",
+        "ZAJONC",
+        "TOMKINS",
+        "AVALIAÇÃO COGNITIVA",
+        "FEEDBACK FACIAL"
+      ]
+    },
+    {
+      "id": "psi-motivacao",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Teorias da motivação",
+      "words": [
+        "INSTINTO",
+        "DRIVE",
+        "INCENTIVO",
+        "AUTODETERMINAÇÃO",
+        "EXPECTATIVA",
+        "META",
+        "INTRÍNSECA",
+        "EXTRÍNSECA"
+      ]
+    },
+    {
+      "id": "psi-social",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Psicologia social",
+      "words": [
+        "CONFORMIDADE",
+        "OBEDIÊNCIA",
+        "PERSUASÃO",
+        "PRECONCEITO",
+        "ESTEREÓTIPO",
+        "DISSONÂNCIA",
+        "FACILITAÇÃO SOCIAL",
+        "FOLGA SOCIAL"
+      ]
+    },
+    {
+      "id": "psi-grupos",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Dinâmica de grupos",
+      "words": [
+        "NORMA",
+        "PAPEL",
+        "STATUS",
+        "COESÃO",
+        "LIDERANÇA",
+        "POLARIZAÇÃO",
+        "PENSAMENTO DE GRUPO",
+        "ENDOGRUPO"
+      ]
+    },
+    {
+      "id": "psi-ciclo-vida",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Ciclo de vida",
+      "words": [
+        "INFÂNCIA",
+        "ADOLESCÊNCIA",
+        "ADULTEZ",
+        "VELHICE",
+        "PUBERDADE",
+        "MENARCA",
+        "CLIMATÉRIO",
+        "ENVELHECIMENTO"
+      ]
+    },
+    {
+      "id": "psi-kohlberg",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Estágios morais de Kohlberg",
+      "words": [
+        "PRÉ-CONVENCIONAL",
+        "CONVENCIONAL",
+        "PÓS-CONVENCIONAL",
+        "OBEDIÊNCIA",
+        "TROCA INSTRUMENTAL",
+        "BOM MENINO",
+        "CONTRATO SOCIAL",
+        "PRINCÍPIOS UNIVERSAIS"
+      ]
+    },
+    {
+      "id": "psi-erikson",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Crises de Erikson",
+      "words": [
+        "CONFIANÇA",
+        "AUTONOMIA",
+        "INICIATIVA",
+        "INDUSTRIOSIDADE",
+        "IDENTIDADE",
+        "INTIMIDADE",
+        "GENERATIVIDADE",
+        "INTEGRIDADE"
+      ]
+    },
+    {
+      "id": "psi-jung",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Conceitos junguianos",
+      "words": [
+        "ARQUÉTIPO",
+        "SOMBRA",
+        "ANIMA",
+        "ANIMUS",
+        "PERSONA",
+        "SELF",
+        "INCONSCIENTE COLETIVO",
+        "INDIVIDUAÇÃO"
+      ]
+    },
+    {
+      "id": "psi-estresse-fisio",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Fisiologia do estresse",
+      "words": [
+        "CORTISOL",
+        "ADRENALINA",
+        "EIXO HHA",
+        "LUTA-OU-FUGA",
+        "HOMEOSTASE",
+        "ALOSTASE",
+        "SÍNDROME GERAL DE ADAPTAÇÃO",
+        "ADAPTAÇÃO"
+      ]
+    },
+    {
+      "id": "psi-lobos",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Lobos cerebrais",
+      "words": [
+        "FRONTAL",
+        "PARIETAL",
+        "TEMPORAL",
+        "OCCIPITAL",
+        "ÍNSULA",
+        "SISTEMA LÍMBICO",
+        "CÓRTEX",
+        "HEMISFÉRIO"
+      ]
+    },
+    {
+      "id": "psi-neurotrans",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Neurotransmissores",
+      "words": [
+        "DOPAMINA",
+        "SEROTONINA",
+        "NORADRENALINA",
+        "GABA",
+        "GLUTAMATO",
+        "ACETILCOLINA",
+        "ENDORFINA",
+        "OXITOCINA"
+      ]
+    },
+    {
+      "id": "psi-farmaco",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Classes de psicofármacos",
+      "words": [
+        "ISRS",
+        "IMAO",
+        "BENZODIAZEPÍNICO",
+        "ANTIPSICÓTICO",
+        "LÍTIO",
+        "ESTABILIZADOR DE HUMOR",
+        "ESTIMULANTE",
+        "ANTIDEPRESSIVO",
+        "ANTICONVULSIVANTE",
+        "HIPNÓTICO"
+      ]
+    },
+    {
+      "id": "psi-percepcao",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Percepção",
+      "words": [
+        "SENSAÇÃO",
+        "LIMIAR",
+        "ADAPTAÇÃO SENSORIAL",
+        "ILUSÃO",
+        "CONSTÂNCIA",
+        "FIGURA-FUNDO",
+        "AGRUPAMENTO",
+        "LIMIAR DIFERENCIAL"
+      ]
+    },
+    {
+      "id": "psi-ilusoes",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Ilusões clássicas",
+      "words": [
+        "MÜLLER-LYER",
+        "PONZO",
+        "EHRENSTEIN",
+        "KANIZSA",
+        "QUARTO DE AMES",
+        "RUBIN",
+        "NECKER",
+        "EBINGHAUS"
+      ]
+    },
+    {
+      "id": "psi-qi",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Teorias da inteligência",
+      "words": [
+        "QI",
+        "FATOR G",
+        "INTELIGÊNCIA FLUIDA",
+        "INTELIGÊNCIA CRISTALIZADA",
+        "TRIÁRQUICA",
+        "INTELIGÊNCIAS MÚLTIPLAS",
+        "DESVIO-QI",
+        "FATOR S"
+      ]
+    },
+    {
+      "id": "psi-perso-teo",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Teorias da personalidade",
+      "words": [
+        "TRAÇO",
+        "TIPO",
+        "PSICODINÂMICA",
+        "HUMANISTA",
+        "SOCIAL-COGNITIVA",
+        "BIOLÓGICA",
+        "IDIOGRÁFICA",
+        "NOMOTÉTICA"
+      ]
+    },
+    {
+      "id": "psi-entrevista",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Técnicas de entrevista",
+      "words": [
+        "ANAMNESE",
+        "ESCUTA ATIVA",
+        "RAPPORT",
+        "PERGUNTA ABERTA",
+        "TRANSFERÊNCIA",
+        "CONTRATRANSFERÊNCIA",
+        "SIGILO",
+        "ENQUADRE"
+      ]
+    },
+    {
+      "id": "psi-etica",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Ética profissional",
+      "words": [
+        "SIGILO PROFISSIONAL",
+        "CONSENTIMENTO LIVRE",
+        "COMPETÊNCIA",
+        "BENEFICÊNCIA",
+        "NÃO MALEFICÊNCIA",
+        "AUTONOMIA DO PACIENTE",
+        "JUSTIÇA",
+        "CÓDIGO DE ÉTICA"
+      ]
+    },
+    {
+      "id": "psi-psicometria",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Psicometria",
+      "words": [
+        "VALIDADE DE CONSTRUTO",
+        "VALIDADE DE CONTEÚDO",
+        "FIDEDIGNIDADE",
+        "ALFA DE CRONBACH",
+        "NORMA",
+        "PADRONIZAÇÃO",
+        "ITEM",
+        "ESCALA LIKERT"
+      ]
+    },
+    {
+      "id": "psi-vies-pesq",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Vieses de pesquisa",
+      "words": [
+        "EFEITO DEMANDA",
+        "EFEITO EXPERIMENTADOR",
+        "VIÉS DE SELEÇÃO",
+        "ATRIÇÃO",
+        "VIÉS DE PUBLICAÇÃO",
+        "VARIÁVEL CONFUSA",
+        "ERRO TIPO I",
+        "ERRO TIPO II"
+      ]
+    },
+    {
+      "id": "psi-mem-erros",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Erros de memória",
+      "words": [
+        "FALSA MEMÓRIA",
+        "VIÉS RETROSPECTIVO",
+        "AMNÉSIA",
+        "PARAMNÉSIA",
+        "CONFABULAÇÃO",
+        "PRIMING",
+        "INTERFERÊNCIA",
+        "DECAIMENTO"
+      ]
+    },
+    {
+      "id": "psi-corpo-emo",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Sinais corporais da emoção",
+      "words": [
+        "TAQUICARDIA",
+        "SUDORESE",
+        "TREMOR",
+        "RUBOR",
+        "HIPERVENTILAÇÃO",
+        "TENSÃO MUSCULAR",
+        "CHORO",
+        "NÁUSEA"
+      ]
+    },
+    {
+      "id": "psi-vygotsky",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Conceitos de Vygotsky",
+      "words": [
+        "ZONA DE DESENVOLVIMENTO PROXIMAL",
+        "MEDIAÇÃO",
+        "ANDAIME",
+        "INTERNALIZAÇÃO",
+        "FALA INTERIOR",
+        "INSTRUMENTO",
+        "SIGNO",
+        "SOCIOCULTURAL"
+      ]
+    },
+    {
+      "id": "psi-skinner",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Vocabulário skinneriano",
+      "words": [
+        "OPERANTE",
+        "RESPONDENTE",
+        "REFORÇADOR",
+        "CADEIA",
+        "MOLDE",
+        "ESTÍMULO DISCRIMINATIVO",
+        "MAGNITUDE",
+        "CAIXA DE SKINNER"
+      ]
+    },
+    {
+      "id": "psi-pavlov",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Condicionamento clássico",
+      "words": [
+        "ESTÍMULO INCONDICIONADO",
+        "ESTÍMULO CONDICIONADO",
+        "RESPOSTA INCONDICIONADA",
+        "RESPOSTA CONDICIONADA",
+        "EXTINÇÃO",
+        "RECUPERAÇÃO ESPONTÂNEA",
+        "GENERALIZAÇÃO",
+        "CONTIGUIDADE"
+      ]
+    },
+    {
+      "id": "psi-fobias",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Fobias específicas",
+      "words": [
+        "ARACNOFOBIA",
+        "CLAUSTROFOBIA",
+        "ACROFOBIA",
+        "AEROFOBIA",
+        "HIDROFOBIA",
+        "GLOSOFOBIA",
+        "TRIPANOFOBIA",
+        "HEMATOFOBIA"
+      ]
+    },
+    {
+      "id": "psi-diagnostico",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Vocabulário diagnóstico",
+      "words": [
+        "TRANSTORNO",
+        "SÍNDROME",
+        "SINTOMA",
+        "SINAL",
+        "COMORBIDADE",
+        "PROGNÓSTICO",
+        "DIAGNÓSTICO DIFERENCIAL",
+        "EPIDEMIOLOGIA"
+      ]
+    },
+    {
+      "id": "psi-distorcoes",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Distorções cognitivas",
+      "words": [
+        "TUDO-OU-NADA",
+        "CATASTROFIZAÇÃO",
+        "LEITURA MENTAL",
+        "PERSONALIZAÇÃO",
+        "FILTRO MENTAL",
+        "DEVERIAS",
+        "ROTULAÇÃO",
+        "SUPERGENERALIZAÇÃO"
+      ]
+    },
+    {
+      "id": "psi-self",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Self e identidade",
+      "words": [
+        "AUTOESTIMA",
+        "AUTOIMAGEM",
+        "AUTOCONCEITO",
+        "AUTOEFICÁCIA",
+        "IDENTIDADE",
+        "AUTOAPRESENTAÇÃO",
+        "ESPELHO SOCIAL",
+        "AUTOCONHECIMENTO"
+      ]
+    },
+    {
+      "id": "psi-trabalho",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Psicologia do trabalho",
+      "words": [
+        "BURNOUT",
+        "ESTRESSE OCUPACIONAL",
+        "ENGAJAMENTO",
+        "ASSÉDIO MORAL",
+        "SATISFAÇÃO",
+        "ABSENTEÍSMO",
+        "PRESENTEÍSMO",
+        "CLIMA ORGANIZACIONAL"
+      ]
+    },
+    {
+      "id": "psi-sono-tx",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Transtornos do sono",
+      "words": [
+        "INSÔNIA",
+        "NARCOLEPSIA",
+        "APNEIA",
+        "SONAMBULISMO",
+        "TERROR NOTURNO",
+        "JET LAG",
+        "SÍNDROME DAS PERNAS INQUIETAS",
+        "HIPERSONIA"
+      ]
+    },
+    {
+      "id": "psi-alimentar",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Transtornos alimentares",
+      "words": [
+        "ANOREXIA",
+        "BULIMIA",
+        "COMPULSÃO ALIMENTAR",
+        "ORTOREXIA",
+        "VIGOREXIA",
+        "RESTRIÇÃO",
+        "PURGAÇÃO",
+        "EPISÓDIO COMPULSIVO"
+      ]
+    },
+    {
+      "id": "psi-psicossexual",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Fases psicossexuais (Freud)",
+      "words": [
+        "ORAL",
+        "ANAL",
+        "FÁLICA",
+        "LATÊNCIA",
+        "GENITAL",
+        "COMPLEXO DE ÉDIPO",
+        "ANGÚSTIA DE CASTRAÇÃO",
+        "LIBIDO INFANTIL"
+      ]
+    },
+    {
+      "id": "psi-winnicott",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Conceitos de Winnicott",
+      "words": [
+        "OBJETO TRANSICIONAL",
+        "MÃE SUFICIENTEMENTE BOA",
+        "FALSO SELF",
+        "VERDADEIRO SELF",
+        "HOLDING",
+        "ESPAÇO POTENCIAL",
+        "CONCERN",
+        "BRINCADEIRA CRIATIVA"
+      ]
+    },
+    {
+      "id": "psi-lacan",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Conceitos lacanianos",
+      "words": [
+        "IMAGINÁRIO",
+        "SIMBÓLICO",
+        "REAL",
+        "GRANDE OUTRO",
+        "ESTÁDIO DO ESPELHO",
+        "SIGNIFICANTE",
+        "FALTA",
+        "GOZO"
+      ]
+    },
+    {
+      "id": "psi-gestalt-leis",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Leis da Gestalt",
+      "words": [
+        "PROXIMIDADE",
+        "SIMILARIDADE",
+        "CONTINUIDADE",
+        "FECHAMENTO",
+        "PREGNÂNCIA",
+        "FIGURA E FUNDO",
+        "DESTINO COMUM",
+        "SIMPLICIDADE"
+      ]
+    },
+    {
+      "id": "psi-atitudes",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Atitudes e persuasão",
+      "words": [
+        "COMPONENTE COGNITIVO",
+        "COMPONENTE AFETIVO",
+        "COMPONENTE COMPORTAMENTAL",
+        "ROTA CENTRAL",
+        "ROTA PERIFÉRICA",
+        "EXPOSIÇÃO",
+        "ELABORAÇÃO",
+        "HEURÍSTICO"
+      ]
+    },
+    {
+      "id": "psi-mem-proc",
+      "theme": "psicologia",
+      "difficulty": 0,
+      "title": "Processos da memória",
+      "words": [
+        "CODIFICAÇÃO",
+        "ARMAZENAMENTO",
+        "RECUPERAÇÃO",
+        "RECONHECIMENTO",
+        "EVOCAÇÃO",
+        "ESQUECIMENTO",
+        "CONSOLIDAÇÃO",
+        "RECONSOLIDAÇÃO"
+      ]
+    },
+    {
+      "id": "psi-piaget-proc",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Processos piagetianos",
+      "words": [
+        "ASSIMILAÇÃO",
+        "ACOMODAÇÃO",
+        "EQUILIBRAÇÃO",
+        "ESQUEMA",
+        "ORGANIZAÇÃO",
+        "ADAPTAÇÃO",
+        "INTERIORIZAÇÃO",
+        "ABSTRAÇÃO REFLEXIVA"
+      ]
+    },
+    {
+      "id": "psi-fluxo",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Estados de fluxo",
+      "words": [
+        "FLUXO",
+        "EXPERIÊNCIA DE PICO",
+        "ATENÇÃO PLENA",
+        "ENGAJAMENTO",
+        "AUTOTÉLICO",
+        "ABSORÇÃO",
+        "ÓTIMO",
+        "IMERSÃO"
+      ]
+    },
+    {
+      "id": "psi-executivas",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Funções executivas",
+      "words": [
+        "INIBIÇÃO",
+        "FLEXIBILIDADE",
+        "MEMÓRIA DE TRABALHO",
+        "PLANEJAMENTO",
+        "MONITORAMENTO",
+        "INICIAÇÃO",
+        "CONTROLE EMOCIONAL",
+        "ORGANIZAÇÃO"
+      ]
+    },
+    {
+      "id": "psi-ritmos",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Ritmos biológicos",
+      "words": [
+        "CIRCADIANO",
+        "ULTRADIANO",
+        "SAZONAL",
+        "MELATONINA",
+        "CRONOTIPO",
+        "MATUTINO",
+        "VESPERTINO",
+        "NÚCLEO SUPRAQUIASMÁTICO"
+      ]
+    },
+    {
+      "id": "psi-eem",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Exame do estado mental",
+      "words": [
+        "APARÊNCIA",
+        "COMPORTAMENTO",
+        "FALA",
+        "HUMOR",
+        "AFETO",
+        "PENSAMENTO",
+        "INSIGHT",
+        "JUÍZO"
+      ]
+    },
+    {
+      "id": "psi-alianca",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Aliança terapêutica",
+      "words": [
+        "EMPATIA",
+        "CONGRUÊNCIA",
+        "ACEITAÇÃO INCONDICIONAL",
+        "SETTING",
+        "CONTRATO TERAPÊUTICO",
+        "VÍNCULO TERAPÊUTICO",
+        "PRESENÇA",
+        "VALIDAÇÃO"
+      ]
+    },
+    {
+      "id": "psi-sociais-det",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Determinantes psicossociais",
+      "words": [
+        "CLASSE",
+        "GÊNERO",
+        "RAÇA",
+        "CULTURA",
+        "ESTIGMA",
+        "REDE DE APOIO",
+        "VULNERABILIDADE",
+        "FATOR DE PROTEÇÃO"
+      ]
+    },
+    {
+      "id": "psi-crise",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Crise e emergência",
+      "words": [
+        "SUICÍDIO",
+        "AUTOLESÃO",
+        "SURTO",
+        "AGITAÇÃO",
+        "CONTENÇÃO",
+        "ACOLHIMENTO",
+        "RISCO",
+        "PLANO DE SEGURANÇA"
+      ]
+    },
+    {
+      "id": "psi-infancia",
+      "theme": "psicologia",
+      "difficulty": 1,
+      "title": "Infância (conceitos)",
+      "words": [
+        "BRINCADEIRA",
+        "TEMPERAMENTO",
+        "SOCIALIZAÇÃO",
+        "IMITAÇÃO",
+        "FALA EGOCÊNTRICA",
+        "JOGO SIMBÓLICO",
+        "VÍNCULO PRIMÁRIO",
+        "CUIDADO"
+      ]
+    },
+    {
+      "id": "psi-afeto-clin",
+      "theme": "psicologia",
+      "difficulty": 2,
+      "title": "Afeto na clínica",
+      "words": [
+        "AFETO PLANO",
+        "AFETO LÁBIL",
+        "DISFORIA",
+        "EUFORIA",
+        "APATIA",
+        "IRRITABILIDADE",
+        "EMBOTAMENTO",
+        "RESTRIÇÃO AFETIVA"
+      ]
+    },
+    {
+      "id": "psi-narcisismo",
+      "theme": "psicologia",
+      "difficulty": 3,
+      "title": "Narcisismo (clínica)",
+      "words": [
+        "GRANDIOSIDADE",
+        "IDEALIZAÇÃO",
+        "DESVALORIZAÇÃO",
+        "EXIBICIONISMO",
+        "VAIDADE",
+        "INVEJA",
+        "EXPLORAÇÃO",
+        "SELF FRÁGIL"
+      ]
+    },
+    {
+      "id": "art-moderna",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Movimentos da arte moderna",
+      "words": [
+        "IMPRESSIONISMO",
+        "CUBISMO",
+        "SURREALISMO",
+        "EXPRESSIONISMO",
+        "FUTURISMO",
+        "DADAÍSMO",
+        "FAUVISMO",
+        "ABSTRACIONISMO"
+      ]
+    },
+    {
+      "id": "art-estilos",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Estilos históricos",
+      "words": [
+        "ROMÂNICO",
+        "GÓTICO",
+        "RENASCIMENTO",
+        "BARROCO",
+        "ROCOCÓ",
+        "NEOCLASSICISMO",
+        "ROMANTISMO",
+        "REALISMO"
+      ]
+    },
+    {
+      "id": "art-pintura",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Técnicas de pintura",
+      "words": [
+        "ÓLEO",
+        "AQUARELA",
+        "GUACHE",
+        "ACRÍLICA",
+        "AFRESCO",
+        "TÊMPERA",
+        "ENCÁUSTICA",
+        "PASTEL"
+      ]
+    },
+    {
+      "id": "art-elementos",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Elementos visuais",
+      "words": [
+        "LINHA",
+        "FORMA",
+        "COR",
+        "TEXTURA",
+        "VOLUME",
+        "ESPAÇO",
+        "VALOR TONAL",
+        "COMPOSIÇÃO"
+      ]
+    },
+    {
+      "id": "art-primarias",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Cores primárias e secundárias",
+      "words": [
+        "VERMELHO",
+        "AZUL",
+        "AMARELO",
+        "VERDE",
+        "LARANJA",
+        "VIOLETA",
+        "CIANO",
+        "MAGENTA"
+      ]
+    },
+    {
+      "id": "art-renasc-artistas",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Artistas do Renascimento",
+      "words": [
+        "LEONARDO",
+        "MICHELANGELO",
+        "RAFAEL",
+        "DONATELLO",
+        "BOTTICELLI",
+        "TIZIANO",
+        "BRUNELLESCHI",
+        "DÜRER",
+        "VAN EYCK",
+        "GIORGIONE"
+      ]
+    },
+    {
+      "id": "art-impress",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Impressionistas",
+      "words": [
+        "MONET",
+        "RENOIR",
+        "DEGAS",
+        "CÉZANNE",
+        "PISSARRO",
+        "SISLEY",
+        "MORISOT",
+        "CASSATT",
+        "MANET",
+        "BAZILLE"
+      ]
+    },
+    {
+      "id": "art-cubistas",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Cubistas e afins",
+      "words": [
+        "PICASSO",
+        "BRAQUE",
+        "JUAN GRIS",
+        "LÉGER",
+        "DELAUNAY",
+        "DUCHAMP",
+        "PICABIA",
+        "GLEIZES"
+      ]
+    },
+    {
+      "id": "art-museus",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Museus célebres",
+      "words": [
+        "LOUVRE",
+        "PRADO",
+        "UFFIZI",
+        "MOMA",
+        "TATE",
+        "ERMITAGE",
+        "GUGGENHEIM",
+        "MASP",
+        "ORSAY",
+        "MET"
+      ]
+    },
+    {
+      "id": "art-obras",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Obras célebres",
+      "words": [
+        "MONALISA",
+        "DAVI",
+        "GUERNICA",
+        "O GRITO",
+        "NOITE ESTRELADA",
+        "ÚLTIMA CEIA",
+        "NASCIMENTO DE VÊNUS",
+        "MOÇA COM BRINCO"
+      ]
+    },
+    {
+      "id": "art-templo",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Partes de um templo clássico",
+      "words": [
+        "FRONTÃO",
+        "COLUNA",
+        "CAPITEL",
+        "ARQUITRAVE",
+        "FRISO",
+        "CORNIJA",
+        "METOPA",
+        "TRÍGLIFO"
+      ]
+    },
+    {
+      "id": "art-ordens",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Ordens clássicas",
+      "words": [
+        "DÓRICA",
+        "JÔNICA",
+        "CORÍNTIA",
+        "TOSCANA",
+        "COMPOSTA",
+        "ÊNTASE",
+        "VOLUTA",
+        "ACANTO"
+      ]
+    },
+    {
+      "id": "art-escultura",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Técnicas de escultura",
+      "words": [
+        "ENTALHE",
+        "MODELAGEM",
+        "FUNDIÇÃO",
+        "ASSEMBLAGEM",
+        "RELEVO",
+        "TALHA",
+        "CINZEL",
+        "TERRACOTA"
+      ]
+    },
+    {
+      "id": "art-foto",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Vocabulário fotográfico",
+      "words": [
+        "OBTURADOR",
+        "DIAFRAGMA",
+        "ISO",
+        "ABERTURA",
+        "FOCO",
+        "EXPOSIÇÃO",
+        "GRANULAÇÃO",
+        "ENQUADRAMENTO",
+        "PROFUNDIDADE DE CAMPO"
+      ]
+    },
+    {
+      "id": "art-gravura",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Técnicas de gravura",
+      "words": [
+        "XILOGRAVURA",
+        "LITOGRAFIA",
+        "ÁGUA-FORTE",
+        "ÁGUA-TINTA",
+        "SERIGRAFIA",
+        "PONTA-SECA",
+        "MEIA-TINTA",
+        "LINÓLEO"
+      ]
+    },
+    {
+      "id": "art-barroco-br",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Barroco mineiro",
+      "words": [
+        "ALEIJADINHO",
+        "CONGONHAS",
+        "OURO PRETO",
+        "SABARÁ",
+        "MARIANA",
+        "TALHA DOURADA",
+        "ROCAILLE",
+        "PASSOS DA PAIXÃO"
+      ]
+    },
+    {
+      "id": "art-semana22",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Semana de 22",
+      "words": [
+        "ANTROPOFAGIA",
+        "MACUNAÍMA",
+        "ABAPORU",
+        "TARSILA",
+        "ANITA MALFATTI",
+        "MÁRIO DE ANDRADE",
+        "OSWALD",
+        "DI CAVALCANTI"
+      ]
+    },
+    {
+      "id": "art-cor-teo",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Teoria da cor",
+      "words": [
+        "MATIZ",
+        "SATURAÇÃO",
+        "LUMINOSIDADE",
+        "COMPLEMENTAR",
+        "ANÁLOGA",
+        "QUENTE",
+        "FRIA",
+        "CÍRCULO CROMÁTICO"
+      ]
+    },
+    {
+      "id": "art-perspectiva",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Perspectiva",
+      "words": [
+        "PONTO DE FUGA",
+        "LINHA DO HORIZONTE",
+        "LINEAR",
+        "ATMOSFÉRICA",
+        "ISOMÉTRICA",
+        "OBLÍQUA",
+        "ESCORÇO",
+        "DIMINUIÇÃO"
+      ]
+    },
+    {
+      "id": "art-suportes",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Suportes",
+      "words": [
+        "TELA",
+        "MADEIRA",
+        "PAPEL",
+        "MURO",
+        "LINHO",
+        "PAPELÃO",
+        "COBRE",
+        "PERGAMINHO"
+      ]
+    },
+    {
+      "id": "art-pinceis",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Pincéis e ferramentas",
+      "words": [
+        "CHATO",
+        "REDONDO",
+        "LEQUE",
+        "LÍNGUA DE GATO",
+        "ESPÁTULA",
+        "PALETA",
+        "CAVALETE",
+        "SOLVENTE"
+      ]
+    },
+    {
+      "id": "art-bauhaus",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Bauhaus",
+      "words": [
+        "GROPIUS",
+        "KANDINSKY",
+        "KLEE",
+        "ITTEN",
+        "MOHOLY-NAGY",
+        "ALBERS",
+        "FORMA",
+        "FUNÇÃO"
+      ]
+    },
+    {
+      "id": "art-surreal",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Surrealistas",
+      "words": [
+        "DALÍ",
+        "MAGRITTE",
+        "ERNST",
+        "MIRÓ",
+        "TANGUY",
+        "KAHLO",
+        "BRETON",
+        "DELVAUX"
+      ]
+    },
+    {
+      "id": "art-expression",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Expressionistas",
+      "words": [
+        "MUNCH",
+        "KIRCHNER",
+        "MARC",
+        "NOLDE",
+        "SCHIELE",
+        "KOKOSCHKA",
+        "BECKMANN",
+        "DIE BRÜCKE"
+      ]
+    },
+    {
+      "id": "art-abstratos",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Abstracionistas",
+      "words": [
+        "MONDRIAN",
+        "MALEVITCH",
+        "POLLOCK",
+        "ROTHKO",
+        "NEWMAN",
+        "KLEIN",
+        "DE KOONING",
+        "KUPKA"
+      ]
+    },
+    {
+      "id": "art-pop",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Pop Art",
+      "words": [
+        "WARHOL",
+        "LICHTENSTEIN",
+        "OLDENBURG",
+        "HAMILTON",
+        "PETER BLAKE",
+        "MEL RAMOS",
+        "ROBERT INDIANA",
+        "JASPER JOHNS"
+      ]
+    },
+    {
+      "id": "art-fotografos",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Fotógrafos célebres",
+      "words": [
+        "CARTIER-BRESSON",
+        "ANSEL ADAMS",
+        "SEBASTIÃO SALGADO",
+        "CINDY SHERMAN",
+        "MAN RAY",
+        "DOISNEAU",
+        "ARBUS",
+        "AVEDON"
+      ]
+    },
+    {
+      "id": "art-cinema-ling",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Linguagem do cinema",
+      "words": [
+        "PLANO",
+        "CORTE",
+        "MONTAGEM",
+        "TRAVELLING",
+        "FORA DE CAMPO",
+        "CONTINUIDADE",
+        "RACCORD",
+        "ELIPSE"
+      ]
+    },
+    {
+      "id": "art-teatro",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Espaço cênico",
+      "words": [
+        "PALCO",
+        "PLATEIA",
+        "BASTIDORES",
+        "RIBALTA",
+        "FOSSO",
+        "CAMARIM",
+        "CORTINA",
+        "PROSCÊNIO"
+      ]
+    },
+    {
+      "id": "art-ceramica",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Cerâmica",
+      "words": [
+        "TORNO",
+        "FORNO",
+        "ESMALTE",
+        "ENGOBE",
+        "BISCOITO",
+        "ARGILA",
+        "FAIANÇA",
+        "PORCELANA",
+        "GRÉS"
+      ]
+    },
+    {
+      "id": "art-sacra",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Arte sacra",
+      "words": [
+        "VITRAL",
+        "ÍCONE",
+        "RETÁBULO",
+        "MOSAICO",
+        "AURÉOLA",
+        "MANDORLA",
+        "RELICÁRIO",
+        "CAPELA"
+      ]
+    },
+    {
+      "id": "art-iluminura",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Livro iluminado",
+      "words": [
+        "ILUMINURA",
+        "CALIGRAFIA",
+        "INICIAIS",
+        "CÓDICE",
+        "MINIATURA",
+        "OURO LÍQUIDO",
+        "SCRIPTORIUM",
+        "MARGINALIA"
+      ]
+    },
+    {
+      "id": "art-rua",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Arte urbana",
+      "words": [
+        "GRAFITE",
+        "ESTÊNCIL",
+        "MURAL",
+        "PICHACÃO",
+        "LAMBE-LAMBE",
+        "TAG",
+        "LETTERING",
+        "PERSONAGEM"
+      ]
+    },
+    {
+      "id": "art-brasileiros",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Artistas brasileiros",
+      "words": [
+        "PORTINARI",
+        "VOLPI",
+        "BURLE MARX",
+        "LYGIA CLARK",
+        "HÉLIO OITICICA",
+        "ALMEIDA JÚNIOR",
+        "LASAR SEGALL",
+        "IBERÊ CAMARGO",
+        "GUIGNARD",
+        "FRANS POST"
+      ]
+    },
+    {
+      "id": "art-neoconcreto",
+      "theme": "arte",
+      "difficulty": 3,
+      "title": "Concretismo e neoconcreto",
+      "words": [
+        "MANIFESTO RUPTURA",
+        "NÃO-OBJETO",
+        "BILATERAL",
+        "GRUPO FRENTE",
+        "NEOCONCRETO",
+        "POEMA CONCRETO",
+        "LYGIA PAPE",
+        "CÍRCULO DE GIZ"
+      ]
+    },
+    {
+      "id": "art-pigmentos",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Pigmentos clássicos",
+      "words": [
+        "OCRE",
+        "SIENA",
+        "ÚMBRIA",
+        "LÁPIS-LAZÚLI",
+        "VERMELHÃO",
+        "ALVAIADE",
+        "CARMIM",
+        "ÍNDIGO",
+        "VERDIGRIS",
+        "TERRA VERDE"
+      ]
+    },
+    {
+      "id": "art-desenho",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Vocabulário do desenho",
+      "words": [
+        "CROQUI",
+        "ESBOÇO",
+        "ESTUDO",
+        "HACHURA",
+        "SFUMATO",
+        "CONTORNO",
+        "PROPORÇÃO",
+        "GESTUAL"
+      ]
+    },
+    {
+      "id": "art-anatomia",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Cânone e anatomia",
+      "words": [
+        "CONTRAPPOSTO",
+        "CÂNONE",
+        "PROPORÇÃO ÁUREA",
+        "NU",
+        "DRAPEADO",
+        "EIXO",
+        "ESCORÇO",
+        "MODELO VIVO"
+      ]
+    },
+    {
+      "id": "art-iconografia",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Iconografia cristã",
+      "words": [
+        "CRUZ",
+        "CORDEIRO",
+        "POMBA",
+        "LÍRIO",
+        "CHAVES DE PEDRO",
+        "LIVRO",
+        "PEIXE",
+        "COROA DE ESPINHOS"
+      ]
+    },
+    {
+      "id": "art-japonesa",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Arte japonesa",
+      "words": [
+        "UKIYO-E",
+        "HOKUSAI",
+        "HIROSHIGE",
+        "ORIGAMI",
+        "SUMI-E",
+        "KINTSUGI",
+        "LACA",
+        "IKEBANA"
+      ]
+    },
+    {
+      "id": "art-islamica",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Arte islâmica",
+      "words": [
+        "ARABESCO",
+        "CÚFICO",
+        "AZULEJO",
+        "MIHRAB",
+        "MUÇARABIA",
+        "GEOMETRIA",
+        "ALHAMBRA",
+        "CALIGRAFIA ÁRABE"
+      ]
+    },
+    {
+      "id": "art-africana",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Arte africana clássica",
+      "words": [
+        "MÁSCARA",
+        "FEITIÇO",
+        "BRONZE DO BENIM",
+        "NOK",
+        "DOGON",
+        "IORUBÁ",
+        "ADINKRA",
+        "KENTE"
+      ]
+    },
+    {
+      "id": "art-precol",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Arte pré-colombiana",
+      "words": [
+        "MAIA",
+        "ASTECA",
+        "INCA",
+        "OLMECA",
+        "NAZCA",
+        "MOCHE",
+        "QUIPU",
+        "CHACMOOL"
+      ]
+    },
+    {
+      "id": "art-vanguardas",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Vanguardas históricas",
+      "words": [
+        "SUPREMATISMO",
+        "NEOPLASTICISMO",
+        "ORFISMO",
+        "VORTICISMO",
+        "RAYONISMO",
+        "CONSTRUTIVISMO RUSSO",
+        "PURISMO",
+        "METAFÍSICA"
+      ]
+    },
+    {
+      "id": "art-restauro",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Conservação e restauro",
+      "words": [
+        "VERNIZ",
+        "CRAQUELÊ",
+        "REENTELAGEM",
+        "LIMPEZA",
+        "REINTEGRAÇÃO",
+        "PÁTINA",
+        "UMIDADE",
+        "REVERSIBILIDADE"
+      ]
+    },
+    {
+      "id": "art-design",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Design gráfico",
+      "words": [
+        "TIPOGRAFIA",
+        "GRID",
+        "KERNING",
+        "ENTRELINHA",
+        "HIERARQUIA",
+        "LOGOTIPO",
+        "LAYOUT",
+        "MARGEM"
+      ]
+    },
+    {
+      "id": "art-camera",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Movimentos de câmera",
+      "words": [
+        "PAN",
+        "TILT",
+        "ZOOM",
+        "STEADICAM",
+        "DRONE",
+        "HANDHELD",
+        "CRANE",
+        "DOLLY"
+      ]
+    },
+    {
+      "id": "art-luz-atelie",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Luz no ateliê",
+      "words": [
+        "CLAROSCURO",
+        "LUZ NATURAL",
+        "LUZ DURA",
+        "LUZ DIFUSA",
+        "REFLETOR",
+        "SOMBRA PROJETADA",
+        "CONTRALUZ",
+        "REMONTE"
+      ]
+    },
+    {
+      "id": "art-papeis",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Papéis de artista",
+      "words": [
+        "CANSON",
+        "ARCHES",
+        "KOZO",
+        "VEGETAL",
+        "CARTÃO",
+        "KRAFT",
+        "ALGODÃO",
+        "AQUARELA PRENSADA"
+      ]
+    },
+    {
+      "id": "art-contemp",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Arte contemporânea",
+      "words": [
+        "INSTALAÇÃO",
+        "PERFORMANCE",
+        "VIDEOARTE",
+        "APROPRIAÇÃO",
+        "SITE-SPECIFIC",
+        "RELACIONAL",
+        "CONCEITUAL",
+        "HAPPENING"
+      ]
+    },
+    {
+      "id": "art-conceitual",
+      "theme": "arte",
+      "difficulty": 3,
+      "title": "Arte conceitual",
+      "words": [
+        "READY-MADE",
+        "FONTE",
+        "CAIXA BRILLO",
+        "UMA E TRÊS CADEIRAS",
+        "INSTRUÇÕES",
+        "CERTIFICADO",
+        "DOCUMENTAÇÃO",
+        "CONCEITO"
+      ]
+    },
+    {
+      "id": "art-arq-br",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Arquitetura brasileira",
+      "words": [
+        "NIEMEYER",
+        "LÚCIO COSTA",
+        "VILANOVA ARTIGAS",
+        "LINA BO BARDI",
+        "PAULO MENDES DA ROCHA",
+        "BRASÍLIA",
+        "PAMPULHA",
+        "COPAN"
+      ]
+    },
+    {
+      "id": "art-arq-mod",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Arquitetura moderna",
+      "words": [
+        "LE CORBUSIER",
+        "MIES",
+        "WRIGHT",
+        "AALTO",
+        "PILOTIS",
+        "TERRAÇO-JARDIM",
+        "PLANTA LIVRE",
+        "JANELA EM FITA"
+      ]
+    },
+    {
+      "id": "art-gotico",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Elementos góticos",
+      "words": [
+        "OGIVA",
+        "ARCABOITANTE",
+        "ROSÁCEA",
+        "GÁRGULA",
+        "PINÁCULO",
+        "CLERESTÓRIO",
+        "NARTHEX",
+        "ABÓBADA NERVURADA"
+      ]
+    },
+    {
+      "id": "art-generos",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Gêneros pictóricos",
+      "words": [
+        "RETRATO",
+        "PAISAGEM",
+        "NATUREZA-MORTA",
+        "HISTÓRIA",
+        "MARINHA",
+        "INTERIOR",
+        "VANITAS",
+        "CENA DE GÊNERO"
+      ]
+    },
+    {
+      "id": "art-vanitas",
+      "theme": "arte",
+      "difficulty": 3,
+      "title": "Símbolos de vanitas",
+      "words": [
+        "CAVEIRA",
+        "VELA",
+        "AMPULHETA",
+        "FLOR MURCHA",
+        "BOLHA DE SABÃO",
+        "ESPELHO",
+        "RELOGIO",
+        "FUMO"
+      ]
+    },
+    {
+      "id": "art-mito",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Temas mitológicos",
+      "words": [
+        "VÊNUS",
+        "APOLO",
+        "DÁFNE",
+        "MEDEIA",
+        "ORFEU",
+        "NARCISO",
+        "MINOTAURO",
+        "EUROPA"
+      ]
+    },
+    {
+      "id": "art-escolas",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Escolas nacionais",
+      "words": [
+        "FLORENTINA",
+        "VENEZIANA",
+        "FLAMENGA",
+        "HOLANDESA",
+        "ESPANHOLA",
+        "FRANCESA",
+        "SIENESA",
+        "BOLONHESA"
+      ]
+    },
+    {
+      "id": "art-ukiyo-temas",
+      "theme": "arte",
+      "difficulty": 3,
+      "title": "Temas do ukiyo-e",
+      "words": [
+        "BELEZA",
+        "ATOR DE KABUKI",
+        "LUTADOR DE SUMÔ",
+        "PAISAGEM",
+        "FLOR DE CEREJEIRA",
+        "ONDA",
+        "PONTE",
+        "MONTE FUJI"
+      ]
+    },
+    {
+      "id": "art-restauro-prin",
+      "theme": "arte",
+      "difficulty": 3,
+      "title": "Princípios do restauro",
+      "words": [
+        "REVERSIBILIDADE",
+        "LEGIBILIDADE",
+        "MÍNIMA INTERVENÇÃO",
+        "COMPATIBILIDADE",
+        "DOCUMENTAÇÃO",
+        "DISTINGUIBILIDADE",
+        "ESTABILIDADE",
+        "AUTENTICIDADE"
+      ]
+    },
+    {
+      "id": "art-cinema-mov",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Movimentos de cinema",
+      "words": [
+        "NEORREALISMO",
+        "NOUVELLE VAGUE",
+        "EXPRESSIONISMO ALEMÃO",
+        "WESTERN",
+        "FILME NOIR",
+        "DOGMA 95",
+        "CINEMA NOVO",
+        "NOVO HOLLYWOOD"
+      ]
+    },
+    {
+      "id": "art-cinemanova",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Cinema Novo",
+      "words": [
+        "GLAUBER ROCHA",
+        "DEUS E O DIABO",
+        "RIO 40 GRAUS",
+        "VIDAS SECAS",
+        "TERRA EM TRANSE",
+        "ESTÉTICA DA FOME",
+        "NELSON PEREIRA",
+        "RUY GUERRA"
+      ]
+    },
+    {
+      "id": "art-cmyk",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Impressão CMYK",
+      "words": [
+        "CIANO",
+        "MAGENTA",
+        "AMARELO",
+        "PRETO",
+        "REGISTRO",
+        "RETÍCULA",
+        "OFFSET",
+        "SANGRIA"
+      ]
+    },
+    {
+      "id": "art-tipos",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Famílias tipográficas",
+      "words": [
+        "SERIFADA",
+        "SEM SERIFA",
+        "MONOESPACADA",
+        "SCRIPT",
+        "DISPLAY",
+        "GARAMOND",
+        "FUTURA",
+        "BODONI",
+        "HELVETICA",
+        "TIMES"
+      ]
+    },
+    {
+      "id": "art-luz-palco",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Luz no palco",
+      "words": [
+        "SPOT",
+        "WASH",
+        "GOBO",
+        "DIMMER",
+        "CICLORAMA",
+        "VARA DE LUZ",
+        "RIBALTA ELÉTRICA",
+        "CONTRA"
+      ]
+    },
+    {
+      "id": "art-danca",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Dança moderna",
+      "words": [
+        "MARTHA GRAHAM",
+        "CUNNINGHAM",
+        "LIMÓN",
+        "ISADORA DUNCAN",
+        "CONTACT",
+        "IMPROVISAÇÃO",
+        "CONTRAÇÃO",
+        "RELEASE"
+      ]
+    },
+    {
+      "id": "art-colagem",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Colagem e assemblagem",
+      "words": [
+        "COLAGEM",
+        "FOTOMONTAGEM",
+        "DÉCOLLAGE",
+        "COMBINE",
+        "RECORTES",
+        "FRAGMENTO",
+        "PAPIER COLLÉ",
+        "ASSEMBLAGE"
+      ]
+    },
+    {
+      "id": "art-harmonia-cor",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Harmonias de cor",
+      "words": [
+        "MONOCROMÁTICA",
+        "TRIÁDE",
+        "TETRÁDE",
+        "SPLIT-COMPLEMENTAR",
+        "NEUTRA",
+        "SATURADA",
+        "TOM SOBRE TOM",
+        "COMPLEMENTAR DUPLA"
+      ]
+    },
+    {
+      "id": "art-museologia",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Museologia",
+      "words": [
+        "ACERVO",
+        "CURADORIA",
+        "RESERVA TÉCNICA",
+        "EXPOGRAFIA",
+        "CATALOGAÇÃO",
+        "CONSERVAÇÃO PREVENTIVA",
+        "MONTAGEM",
+        "FICHA CATALOGRÁFICA"
+      ]
+    },
+    {
+      "id": "art-patrimonio",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Patrimônio",
+      "words": [
+        "UNESCO",
+        "IPHAN",
+        "TOMBAMENTO",
+        "SÍTIO",
+        "IMATERIAL",
+        "MATERIAL",
+        "SALVAGUARDA",
+        "BENS CULTURAIS"
+      ]
+    },
+    {
+      "id": "art-planos",
+      "theme": "arte",
+      "difficulty": 0,
+      "title": "Tipos de plano",
+      "words": [
+        "PLANO GERAL",
+        "PLANO MÉDIO",
+        "CLOSE-UP",
+        "PRIMEIRÍSSIMO PLANO",
+        "PLANO DETALHE",
+        "PLANO AMERICANO",
+        "PLANO-SEQUÊNCIA",
+        "PLANO AÉREO"
+      ]
+    },
+    {
+      "id": "art-sintese-cor",
+      "theme": "arte",
+      "difficulty": 3,
+      "title": "Síntese de cor",
+      "words": [
+        "ADITIVA",
+        "SUBTRATIVA",
+        "RGB",
+        "PRISMA",
+        "ESPECTRO",
+        "COMPLEMENTAR ÓPTICO",
+        "SÍNTESE",
+        "FILTRO"
+      ]
+    },
+    {
+      "id": "art-rupestre",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Arte rupestre",
+      "words": [
+        "LASCAUX",
+        "ALTAMIRA",
+        "SERRA DA CAPIVARA",
+        "CHAUVET",
+        "PICTOGRAMA",
+        "MÃO NEGATIVA",
+        "POLICROMIA RUPESTRE",
+        "ABRIGO"
+      ]
+    },
+    {
+      "id": "art-bizantina",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Arte bizantina",
+      "words": [
+        "PANTOCRATOR",
+        "TEÓTOKOS",
+        "ÁBSIDE",
+        "CÚPULA",
+        "OURO MOSAICO",
+        "ÍCONE BIZANTINO",
+        "NÁRTEX",
+        "ICONÓSTASE"
+      ]
+    },
+    {
+      "id": "art-romanico",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Arte românica",
+      "words": [
+        "ABADIA",
+        "CLAUSTRO",
+        "TÍMPANO",
+        "CAPITEL HISTORIADO",
+        "ABÓBADA DE BERÇO",
+        "PILASTRA",
+        "FRESCO ROMÂNICO",
+        "CRIPTA"
+      ]
+    },
+    {
+      "id": "art-texteis",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Têxteis de arte",
+      "words": [
+        "TAPEÇARIA",
+        "GOBELIN",
+        "BORDADO",
+        "BATIK",
+        "IKAT",
+        "TEAR",
+        "URDUME",
+        "TRAMA"
+      ]
+    },
+    {
+      "id": "art-ourives",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Ourivesaria",
+      "words": [
+        "FILIGRANA",
+        "ESMALTE CLOISONNÉ",
+        "CRAVAÇÃO",
+        "PRATA",
+        "GEMA",
+        "CAMAFEU",
+        "NIELLO",
+        "OURIVES"
+      ]
+    },
+    {
+      "id": "art-cartaz",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Cartaz moderno",
+      "words": [
+        "TOULOUSE-LAUTREC",
+        "MUCHA",
+        "CASSANDRE",
+        "CONSTRUTIVISTA",
+        "PROPAGANDA",
+        "TIPOGRAFIA DE CARTAZ",
+        "LITOGRAFIA A CORES",
+        "AFFICHE"
+      ]
+    },
+    {
+      "id": "art-academismo",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Academismo",
+      "words": [
+        "SALÃO",
+        "PRÊMIO DE ROMA",
+        "NU ACADÊMICO",
+        "HIERARQUIA DOS GÊNEROS",
+        "MODELO VIVO",
+        "ATLAS ANATÔMICO",
+        "CONCURSO",
+        "BEAUX-ARTS"
+      ]
+    },
+    {
+      "id": "art-barroco-eu",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Mestres do Barroco",
+      "words": [
+        "CARAVAGGIO",
+        "BERNINI",
+        "RUBENS",
+        "REMBRANDT",
+        "VELÁZQUEZ",
+        "VERMEER",
+        "POUSSIN",
+        "ARTEMISIA"
+      ]
+    },
+    {
+      "id": "art-impression-obras",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Quadros impressionistas",
+      "words": [
+        "IMPRESSÃO NASCENTE",
+        "ALMOÇO DOS BARQUEIROS",
+        "AULAS DE DANÇA",
+        "MONTE SAINTE-VICTOIRE",
+        "NENÚFARES",
+        "OLYMPIA",
+        "RUA MONTORGUEIL",
+        "A ESTAMPA JAPONESA"
+      ]
+    },
+    {
+      "id": "art-escultores",
+      "theme": "arte",
+      "difficulty": 1,
+      "title": "Escultores célebres",
+      "words": [
+        "FÍDIAS",
+        "PRÁXITELES",
+        "DONATELLO",
+        "MICHELANGELO BUONARROTI",
+        "RODIN",
+        "BRANCUSI",
+        "GIACOMETTI",
+        "CALDER"
+      ]
+    },
+    {
+      "id": "art-cor-simb",
+      "theme": "arte",
+      "difficulty": 3,
+      "title": "Cores na iconografia ocidental",
+      "words": [
+        "PÚRPURA",
+        "OURO",
+        "AZUL MARIANO",
+        "VERMELHO PAIXÃO",
+        "VERDE ESPERANÇA",
+        "BRANCO PURIDADE",
+        "NEGRO LUTO",
+        "AMARELO DIVINO"
+      ]
+    },
+    {
+      "id": "art-videoarte",
+      "theme": "arte",
+      "difficulty": 3,
+      "title": "Videoarte e novos meios",
+      "words": [
+        "NAM JUNE PAIK",
+        "BILL VIOLA",
+        "PIPILOTTI RIST",
+        "GARY HILL",
+        "LOOP",
+        "PROJEÇÃO",
+        "MONITOR",
+        "INSTALAÇÃO SONORA"
+      ]
+    },
+    {
+      "id": "art-brasilia-arq",
+      "theme": "arte",
+      "difficulty": 2,
+      "title": "Brasília (arquitetura)",
+      "words": [
+        "CONGRESSO NACIONAL",
+        "CATEDRAL",
+        "SUPERQUADRA",
+        "EIXO MONUMENTAL",
+        "PALÁCIO DA ALVORADA",
+        "ITAMARATY",
+        "TV TORRE",
+        "PILOTI CANDANGO"
+      ]
+    },
+    {
+      "id": "his-periodos",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Períodos históricos",
+      "words": [
+        "PRÉ-HISTÓRIA",
+        "IDADE ANTIGA",
+        "IDADE MÉDIA",
+        "IDADE MODERNA",
+        "IDADE CONTEMPORÂNEA",
+        "NEOLÍTICO",
+        "PALEOLÍTICO",
+        "ANTIGUIDADE TARDIA"
+      ]
+    },
+    {
+      "id": "his-civilizacoes",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Civilizações antigas",
+      "words": [
+        "EGITO",
+        "MESOPOTÂMIA",
+        "GRÉCIA",
+        "ROMA",
+        "CHINA",
+        "ÍNDIA",
+        "PÉRSIA",
+        "FENÍCIA"
+      ]
+    },
+    {
+      "id": "his-egito",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Egito antigo",
+      "words": [
+        "FARAÓ",
+        "PIRÂMIDE",
+        "NILO",
+        "HIEROGLIFO",
+        "MÚMIA",
+        "ESFINGE",
+        "SARCÓFAGO",
+        "CARTUCHO"
+      ]
+    },
+    {
+      "id": "his-mesopotamia",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Mesopotâmia",
+      "words": [
+        "SUMÉRIA",
+        "BABILÔNIA",
+        "ASSÍRIA",
+        "TIGRE",
+        "EUFRATES",
+        "CUNEIFORME",
+        "CÓDIGO DE HAMURÁBI",
+        "ZIGURATE"
+      ]
+    },
+    {
+      "id": "his-grecia",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Grécia antiga",
+      "words": [
+        "PÓLIS",
+        "ATENAS",
+        "ESPARTA",
+        "DEMOS",
+        "ÁGORA",
+        "OLIMPÍADA",
+        "HOPLITA",
+        "FALANGE"
+      ]
+    },
+    {
+      "id": "his-roma",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Roma antiga",
+      "words": [
+        "SENADO",
+        "CÔNSUL",
+        "IMPÉRIO",
+        "REPÚBLICA",
+        "LEGIÃO",
+        "FÓRUM",
+        "AQUEDUTO",
+        "PÃO E CIRCO"
+      ]
+    },
+    {
+      "id": "his-imp-romanos",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Imperadores romanos",
+      "words": [
+        "AUGUSTO",
+        "TIBÉRIO",
+        "NERO",
+        "TRAJANO",
+        "ADRIANO",
+        "MARCO AURÉLIO",
+        "CONSTANTINO",
+        "JÚLIO CÉSAR"
+      ]
+    },
+    {
+      "id": "his-idade-media",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Idade Média europeia",
+      "words": [
+        "FEUDO",
+        "SERVO",
+        "SUSERANO",
+        "CAVALEIRO",
+        "MOSTEIRO",
+        "CRUZADA",
+        "PESTE NEGRA",
+        "SENHORIO"
+      ]
+    },
+    {
+      "id": "his-cruzadas",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Cruzadas",
+      "words": [
+        "JERUSALÉM",
+        "CONSTANTINOPLA",
+        "SALADINO",
+        "RICARDO CORAÇÃO DE LEÃO",
+        "ORDEM DO TEMPLO",
+        "ANTIOQUIA",
+        "ACRE",
+        "TERRA SANTA"
+      ]
+    },
+    {
+      "id": "his-renasc",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Renascimento (contexto)",
+      "words": [
+        "HUMANISMO",
+        "MECENATO",
+        "IMPRENSA",
+        "FLORENÇA",
+        "MÉDICI",
+        "REFORMA",
+        "CONTRARREFORMA",
+        "QUATTROCENTO"
+      ]
+    },
+    {
+      "id": "his-reforma",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Reforma protestante",
+      "words": [
+        "LUTERO",
+        "CALVINO",
+        "HENRIQUE VIII",
+        "95 TESES",
+        "INDULGÊNCIA",
+        "ANGLICANISMO",
+        "PRESBITERIANISMO",
+        "CONCÍLIO DE TRENTO"
+      ]
+    },
+    {
+      "id": "his-descobertas",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Grandes navegações",
+      "words": [
+        "CARAVELA",
+        "ASTROLÁBIO",
+        "BÚSSOLA",
+        "VASCO DA GAMA",
+        "CABRAL",
+        "COLOMBO",
+        "MAGALHÃES",
+        "TRATADO DE TORDESILHAS"
+      ]
+    },
+    {
+      "id": "his-colonias-br",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Brasil colônia",
+      "words": [
+        "CAPITANIA",
+        "GOVERNO-GERAL",
+        "ENGENHO",
+        "SENHOR DE ENGENHO",
+        "SESMARIA",
+        "BANDEIRANTE",
+        "ENTRADA",
+        "PADROADO"
+      ]
+    },
+    {
+      "id": "his-escravidao",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Escravidão no Brasil",
+      "words": [
+        "TRÁFICO",
+        "SENZALA",
+        "QUILOMBO",
+        "PELOURINHO",
+        "TRABALHO FORÇADO",
+        "ALFORRIA",
+        "LEI ÁUREA",
+        "LEI DO VENTRE LIVRE"
+      ]
+    },
+    {
+      "id": "his-inconfidencia",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Inconfidência Mineira",
+      "words": [
+        "TIRADENTES",
+        "OURO PRETO",
+        "DERRAMA",
+        "ALFERES",
+        "CONJURAÇÃO",
+        "FORCA",
+        "VILA RICA",
+        "CASA DOS CONTOS"
+      ]
+    },
+    {
+      "id": "his-independencia",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Independência do Brasil",
+      "words": [
+        "DOM PEDRO I",
+        "7 DE SETEMBRO",
+        "GRITO DO IPIRANGA",
+        "JOSÉ BONIFÁCIO",
+        "DIA DO FICO",
+        "CÂMARA",
+        "CONSTITUIÇÃO DE 1824",
+        "PRIMEIRO REINADO"
+      ]
+    },
+    {
+      "id": "his-imperio-br",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Império do Brasil",
+      "words": [
+        "DOM PEDRO II",
+        "REGÊNCIA",
+        "PARLAMENTARISMO",
+        "GUERRA DO PARAGUAI",
+        "CAFÉ",
+        "LEI DE TERRAS",
+        "QUESTÃO RELIGIOSA",
+        "PATRONATO"
+      ]
+    },
+    {
+      "id": "his-republica",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "República Velha",
+      "words": [
+        "CAFÉ COM LEITE",
+        "CORONELISMO",
+        "VOTO DE CABRESTO",
+        "POLÍTICA DOS GOVERNADORES",
+        "TENENTISMO",
+        "REVOLUÇÃO DE 1930",
+        "ENCILHAMENTO",
+        "CONVÊNIO DE TAUBATÉ"
+      ]
+    },
+    {
+      "id": "his-vargas",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Era Vargas",
+      "words": [
+        "ESTADO NOVO",
+        "CLT",
+        "GETÚLIO",
+        "INTENTONA COMUNISTA",
+        "INTEGRALISMO",
+        "PETRÓLEO É NOSSO",
+        "SUICÍDIO DE 1954",
+        "CONSTITUIÇÃO DE 1937"
+      ]
+    },
+    {
+      "id": "his-ditadura",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Ditadura militar (Brasil)",
+      "words": [
+        "AI-5",
+        "INSTITUCIONAL",
+        "CENSURA",
+        "DOI-CODI",
+        "ANISTIA",
+        "DIRETAS JÁ",
+        "ATO INSTITUCIONAL",
+        "ABERTURA"
+      ]
+    },
+    {
+      "id": "his-redemocr",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Redemocratização",
+      "words": [
+        "CONSTITUIÇÃO DE 1988",
+        "TANCREDO",
+        "SARNEY",
+        "COLLOR",
+        "IMPEACHMENT",
+        "PLANO REAL",
+        "LULA",
+        "FHC"
+      ]
+    },
+    {
+      "id": "his-franca-rev",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Revolução Francesa",
+      "words": [
+        "BASTILHA",
+        "JACOBINOS",
+        "GIRONDINOS",
+        "TERROR",
+        "ROBESPIERRE",
+        "LUÍS XVI",
+        "DECLARAÇÃO DOS DIREITOS",
+        "CONVENÇÃO"
+      ]
+    },
+    {
+      "id": "his-napoleao",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Era napoleônica",
+      "words": [
+        "CONSULADO",
+        "IMPÉRIO",
+        "WATERLOO",
+        "AUSTERLITZ",
+        "BLOQUEIO CONTINENTAL",
+        "CÓDIGO CIVIL",
+        "ELBA",
+        "SANTA HELENA"
+      ]
+    },
+    {
+      "id": "his-industrial",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Revolução Industrial",
+      "words": [
+        "MÁQUINA A VAPOR",
+        "TEAR MECÂNICO",
+        "CARVÃO",
+        "FÁBRICA",
+        "URBANIZAÇÃO",
+        "LUDITAS",
+        "FERROVIA",
+        "OPERARIADO"
+      ]
+    },
+    {
+      "id": "his-eua-indep",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Independência dos EUA",
+      "words": [
+        "BOSTON",
+        "13 COLÔNIAS",
+        "WASHINGTON",
+        "JEFFERSON",
+        "DECLARAÇÃO DE 1776",
+        "YORKTOWN",
+        "FEDERALISTAS",
+        "CONSTITUIÇÃO AMERICANA"
+      ]
+    },
+    {
+      "id": "his-civil-eua",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Guerra Civil americana",
+      "words": [
+        "LINCOLN",
+        "CONFEDERAÇÃO",
+        "UNIÃO",
+        "GETTYSBURG",
+        "EMANCIPAÇÃO",
+        "GRANT",
+        "LEE",
+        "APPOMATTOX"
+      ]
+    },
+    {
+      "id": "his-g1",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Primeira Guerra Mundial",
+      "words": [
+        "TRINCHEIRA",
+        "FRANZ FERDINAND",
+        "TRÍPLICE ENTENTE",
+        "TRÍPLICE ALIANÇA",
+        "VERSALHES",
+        "GASES",
+        "SOMME",
+        "ARMISTÍCIO"
+      ]
+    },
+    {
+      "id": "his-g2",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Segunda Guerra Mundial",
+      "words": [
+        "HITLER",
+        "STALIN",
+        "CHURCHILL",
+        "PEARL HARBOR",
+        "NORMANDIA",
+        "HOLOCAUSTO",
+        "HIROSHIMA",
+        "EIXO"
+      ]
+    },
+    {
+      "id": "his-frio",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Guerra Fria",
+      "words": [
+        "OTAN",
+        "PACTO DE VÁRSOVIA",
+        "MURO DE BERLIM",
+        "CUBA",
+        "CORRIDA ESPACIAL",
+        "MCCARTHY",
+        "PLANO MARSHALL",
+        "CORTINA DE FERRO"
+      ]
+    },
+    {
+      "id": "his-revol-russa",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Revolução Russa",
+      "words": [
+        "CZAR",
+        "LÊNIN",
+        "TROTSKI",
+        "BOLCHEVIQUE",
+        "MENCHEVIQUE",
+        "SOVIETE",
+        "REVOLUÇÃO DE OUTUBRO",
+        "REVOLUÇÃO DE FEVEREIRO"
+      ]
+    },
+    {
+      "id": "his-china",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "China no século XX",
+      "words": [
+        "MAO",
+        "KUOMINTANG",
+        "LONGA MARCHA",
+        "REVOLUÇÃO CULTURAL",
+        "GRANDE SALTO",
+        "DENG XIAOPING",
+        "TIANANMEN",
+        "REPÚBLICA POPULAR"
+      ]
+    },
+    {
+      "id": "his-africa",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "África contemporânea",
+      "words": [
+        "DESCOLONIZAÇÃO",
+        "APARTHEID",
+        "MANDELA",
+        "NKRUMAH",
+        "CONFERÊNCIA DE BERLIM",
+        "UNIÃO AFRICANA",
+        "NEOCOLONIALISMO",
+        "PAN-AFRICANISMO"
+      ]
+    },
+    {
+      "id": "his-amerindia",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "América indígena",
+      "words": [
+        "TUPÍ",
+        "GUARANI",
+        "TAMOIO",
+        "AIMORÉ",
+        "ANDES",
+        "MAIAS",
+        "ASTECAS",
+        "INCAS"
+      ]
+    },
+    {
+      "id": "his-incas",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Império Inca",
+      "words": [
+        "CUSCO",
+        "TAWANTINSUYU",
+        "QUIPU",
+        "SACSÁYHUAMAN",
+        "ATAHUALPA",
+        "PACHACÚTEC",
+        "MACHU PICCHU",
+        "CHASQUI"
+      ]
+    },
+    {
+      "id": "his-astecas",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Império Asteca",
+      "words": [
+        "TENOCHTITLÁN",
+        "MOCTEZUMA",
+        "HUITZILOPOCHTLI",
+        "CHINAMPA",
+        "CALPULLI",
+        "CORTÉS",
+        "NÁHUATL",
+        "TEMPLO MAIOR"
+      ]
+    },
+    {
+      "id": "his-maias",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Civilização maia",
+      "words": [
+        "TIKAL",
+        "CHICHÉN ITZÁ",
+        "CÓDICE MAIA",
+        "CALENDÁRIO",
+        "ZERO MAIA",
+        "PALENQUE",
+        "COPAN",
+        "SACBÉ"
+      ]
+    },
+    {
+      "id": "his-islam",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Expansão islâmica",
+      "words": [
+        "MAOMÉ",
+        "MÉCA",
+        "MEDINA",
+        "CALIFADO",
+        "OMÍADAS",
+        "ABÁSSIDAS",
+        "AL-ANDALUS",
+        "HÉGIRA"
+      ]
+    },
+    {
+      "id": "his-otomanos",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Império Otomano",
+      "words": [
+        "ISTAMBUL",
+        "SULTÃO",
+        "JANÍZARO",
+        "SOLIMÃO",
+        "PORTA SUBLIME",
+        "QUEDA DE CONSTANTINOPLA",
+        "ATATÜRK",
+        "TANZIMAT"
+      ]
+    },
+    {
+      "id": "his-japao",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Japão histórico",
+      "words": [
+        "XOGUNATO",
+        "SAMURAI",
+        "MEIJI",
+        "EDO",
+        "SAKOKU",
+        "RESTAURAÇÃO",
+        "DAIMIÔ",
+        "BUSHIDÔ"
+      ]
+    },
+    {
+      "id": "his-india",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Índia histórica",
+      "words": [
+        "MAURIA",
+        "GUPTA",
+        "MOGHUL",
+        "ASHOKA",
+        "GANDHI",
+        "PARTIÇÃO",
+        "RAJ BRITÂNICO",
+        "CONGRESSO NACIONAL"
+      ]
+    },
+    {
+      "id": "his-docs",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Documentos históricos",
+      "words": [
+        "MAGNA CARTA",
+        "DECLARAÇÃO DOS DIREITOS DO HOMEM",
+        "BILL OF RIGHTS",
+        "CARTA DEL REI",
+        "TRATADO DE TORDESILHAS",
+        "AI-5",
+        "LEI ÁUREA",
+        "CONSTITUIÇÃO"
+      ]
+    },
+    {
+      "id": "his-exploradores",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Exploradores",
+      "words": [
+        "MARCO POLO",
+        "IBN BATTUTA",
+        "ZHENG HE",
+        "COOK",
+        "AMUNDSEN",
+        "SANTOS DUMONT",
+        "GAGARIN",
+        "NEIL ARMSTRONG"
+      ]
+    },
+    {
+      "id": "his-iluminismo",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Iluminismo",
+      "words": [
+        "VOLTAIRE",
+        "MONTESQUIEU",
+        "ROUSSEAU",
+        "DIDEROT",
+        "KANT",
+        "ENCICLOPÉDIA",
+        "SEPARAÇÃO DOS PODERES",
+        "CONTRATO SOCIAL"
+      ]
+    },
+    {
+      "id": "his-liberal",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Revoluções liberais do séc. XIX",
+      "words": [
+        "1820",
+        "1830",
+        "1848",
+        "PRIMAVERA DOS POVOS",
+        "UNIFICAÇÃO ITALIANA",
+        "UNIFICAÇÃO ALEMÃ",
+        "CÁVOUR",
+        "BISMARCK"
+      ]
+    },
+    {
+      "id": "his-trabalhista",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Movimento operário",
+      "words": [
+        "SINDICATO",
+        "GREVE",
+        "INTERNACIONAL",
+        "MARX",
+        "ENGELS",
+        "COMUNA DE PARIS",
+        "ANARQUISMO",
+        "CARTISMO"
+      ]
+    },
+    {
+      "id": "his-economia-br",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Ciclos econômicos do Brasil",
+      "words": [
+        "PAU-BRASIL",
+        "AÇÚCAR",
+        "OURO",
+        "CAFÉ",
+        "BORRACHA",
+        "ALGODÃO",
+        "CACAU",
+        "MINERAÇÃO"
+      ]
+    },
+    {
+      "id": "his-revoltas-br",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Revoltas coloniais e imperiais",
+      "words": [
+        "BECKMAN",
+        "VILA RICA",
+        "CONJURAÇÃO BAIANA",
+        "CABANAGEM",
+        "BALAIADA",
+        "SABINADA",
+        "FARROUPILHA",
+        "PRAIEIRA"
+      ]
+    },
+    {
+      "id": "his-guerras-br",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Guerras do Brasil",
+      "words": [
+        "CISPLATINA",
+        "PARAGUAI",
+        "CANUDOS",
+        "CONTESTADO",
+        "FEB",
+        "ITAMARACA",
+        "PRATA",
+        "ACRE"
+      ]
+    },
+    {
+      "id": "his-canudos",
+      "theme": "historia",
+      "difficulty": 3,
+      "title": "Canudos",
+      "words": [
+        "ANTÔNIO CONSELHEIRO",
+        "BELO MONTE",
+        "CUNHA",
+        "OS SERTÕES",
+        "BAHIA",
+        "JAGUNÇO",
+        "3ª EXPEDIÇÃO",
+        "MONTE SANTO"
+      ]
+    },
+    {
+      "id": "his-farroupilha",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Revolução Farroupilha",
+      "words": [
+        "BENTO GONÇALVES",
+        "ANITA GARIBALDI",
+        "PIRATINI",
+        "LAGUNA",
+        "CAVALO",
+        "CHARQUE",
+        "RÊPUBLICA RIO-GRANDENSE",
+        "POITREIRO"
+      ]
+    },
+    {
+      "id": "his-pre-hist",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Pré-história",
+      "words": [
+        "PALEOLÍTICO",
+        "NEOLÍTICO",
+        "IDADE DO BRONZE",
+        "IDADE DO FERRO",
+        "FOGO",
+        "AGRICULTURA",
+        "SEDENTARIZAÇÃO",
+        "MEGALITO"
+      ]
+    },
+    {
+      "id": "his-escrita",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Sistemas de escrita",
+      "words": [
+        "CUNEIFORME",
+        "HIEROGLIFO",
+        "ALFABETO FENÍCIO",
+        "LINEAR B",
+        "LATIM",
+        "CIRÍLICO",
+        "HANZI",
+        "DEVANÁGARI"
+      ]
+    },
+    {
+      "id": "his-religioes",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Religiões do mundo antigo",
+      "words": [
+        "JUDAÍSMO",
+        "CRISTIANISMO",
+        "ISLAMISMO",
+        "HINDUÍSMO",
+        "BUDISMO",
+        "ZOROASTRISMO",
+        "XINTOÍSMO",
+        "TAOISMO"
+      ]
+    },
+    {
+      "id": "his-concilios",
+      "theme": "historia",
+      "difficulty": 3,
+      "title": "Concílios cristãos",
+      "words": [
+        "NICEIA",
+        "CONSTANTINOPLA",
+        "ÉFESO",
+        "CALCEDÔNIA",
+        "TRENTO",
+        "VATICANO I",
+        "VATICANO II",
+        "CONSTANÇA"
+      ]
+    },
+    {
+      "id": "his-peste",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Pandemias históricas",
+      "words": [
+        "PESTE NEGRA",
+        "GRIPE ESPANHOLA",
+        "VARÍOLA",
+        "CÓLERA",
+        "AIDS",
+        "COVID-19",
+        "TIFO",
+        "MALÁRIA"
+      ]
+    },
+    {
+      "id": "his-muros",
+      "theme": "historia",
+      "difficulty": 3,
+      "title": "Muros e fronteiras famosas",
+      "words": [
+        "MURALHA DA CHINA",
+        "LÍMES",
+        "HADRIANO",
+        "BERLIM",
+        "CISJORDÂNIA",
+        "CEUTA",
+        "RIO BRAVO",
+        "CORTINA"
+      ]
+    },
+    {
+      "id": "his-capitais-imp",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Capitais de impérios",
+      "words": [
+        "ROMA",
+        "CONSTANTINOPLA",
+        "BAGDÁ",
+        "CUSCO",
+        "TENOCHTITLÁN",
+        "PEQUIM",
+        "VIENA",
+        "LONDRES"
+      ]
+    },
+    {
+      "id": "his-tratados",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Tratados célebres",
+      "words": [
+        "TORDESILHAS",
+        "MADRID",
+        "VERSALHES",
+        "WESTFÁLIA",
+        "CONGRESSO DE VIENA",
+        "PARIS 1783",
+        "UTRECHT",
+        "LATRÃO"
+      ]
+    },
+    {
+      "id": "his-nacoes-unidas",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Ordem mundial pós-1945",
+      "words": [
+        "ONU",
+        "UNESCO",
+        "FMI",
+        "BANCO MUNDIAL",
+        "OTAN",
+        "OEA",
+        "OMC",
+        "DECLARACÃO UNIVERSAL"
+      ]
+    },
+    {
+      "id": "his-descolon",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Descolonização afro-asiática",
+      "words": [
+        "ÍNDIA 1947",
+        "ARGÉLIA",
+        "VIETNÃ",
+        "CONGO",
+        "SUEZ",
+        "BANDUNG",
+        "COMMONWEALTH",
+        "NEOCOLONIALISMO"
+      ]
+    },
+    {
+      "id": "his-guerra-fria-crises",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Crises da Guerra Fria",
+      "words": [
+        "BERLIM 1948",
+        "COREIA",
+        "SUEZ 1956",
+        "MÍSSEIS DE CUBA",
+        "VIETNÃ",
+        "PRAGA 1968",
+        "AFEGANISTÃO 1979",
+        "EURO MÍSSEIS"
+      ]
+    },
+    {
+      "id": "his-br-territorio",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Formação territorial do Brasil",
+      "words": [
+        "TORDESILHAS",
+        "MADRID 1750",
+        "UTRECHT",
+        "PETRÓPOLIS",
+        "ACRE",
+        "CISPLATINA",
+        "GUIANA",
+        "MISSÕES"
+      ]
+    },
+    {
+      "id": "his-capitanias",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Capitanias hereditárias",
+      "words": [
+        "PERNAMBUCO",
+        "SÃO VICENTE",
+        "BAHÍA",
+        "ILHÉUS",
+        "PORTO SEGURO",
+        "ITAMARACÁ",
+        "ESPÍRITO SANTO",
+        "SANTANA"
+      ]
+    },
+    {
+      "id": "his-ouro-ciclo",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Ciclo do ouro",
+      "words": [
+        "MINAS GERAIS",
+        "VILA RICA",
+        "DERRAMA",
+        "QUINTO",
+        "CASAS DE FUNDIÇÃO",
+        "DIAMANTINA",
+        "ESTRADA REAL",
+        "COMARCA"
+      ]
+    },
+    {
+      "id": "his-cafe",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Ciclo do café",
+      "words": [
+        "VALE DO PARAÍBA",
+        "OESTE PAULISTA",
+        "COLONO",
+        "FAZENDA",
+        "CONVÊNIO DE TAUBATÉ",
+        "COMISSÁRIO",
+        "SACO DE CAFÉ",
+        "PORTO DE SANTOS"
+      ]
+    },
+    {
+      "id": "his-imigracao",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Imigração no Brasil",
+      "words": [
+        "ITALIANO",
+        "ALEMÃO",
+        "JAPONÊS",
+        "PORTUGUÊS",
+        "SÍRIO-LIBANÊS",
+        "ESPANHOL",
+        "COLÔNIA",
+        "NÚCLEO COLONIAL",
+        "HOSPEDARIA",
+        "NAVIO"
+      ]
+    },
+    {
+      "id": "his-feminismo",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "História das mulheres",
+      "words": [
+        "SUFRAGISMO",
+        "BERTHA LUTZ",
+        "SIMONE DE BEAUVOIR",
+        "ONU MULHERES",
+        "COTA",
+        "LEI MARIA DA PENHA",
+        "VOTO FEMININO",
+        "1979 CEDAW"
+      ]
+    },
+    {
+      "id": "his-indigena-br",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Povos indígenas do Brasil",
+      "words": [
+        "TUPINAMBÁ",
+        "GUARANI",
+        "YANOMAMI",
+        "KAYAPÓ",
+        "TIKUNA",
+        "PATAXÓ",
+        "KAINGANG",
+        "TERENA"
+      ]
+    },
+    {
+      "id": "his-africa-br",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "África e o Brasil",
+      "words": [
+        "BENGUELA",
+        "LUANDA",
+        "COSTA DA MINA",
+        "DAOMÉ",
+        "IJEXÁ",
+        "NAGÔ",
+        "QUILOMBO DOS PALMARES",
+        "ZUMBI"
+      ]
+    },
+    {
+      "id": "his-palmares",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Palmares",
+      "words": [
+        "ZUMBI",
+        "GANGA ZUMBA",
+        "SERRA DA BARRIGA",
+        "ALAGOAS",
+        "MOCAMBO",
+        "QUILOMBOLA",
+        "DOMINGOS JORGE VELHO",
+        "SÉCULO XVII"
+      ]
+    },
+    {
+      "id": "his-paraguai",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Guerra do Paraguai",
+      "words": [
+        "SOLANO LÓPEZ",
+        "TRÍPLICE ALIANÇA",
+        "TUYUTÍ",
+        "HUMAITÁ",
+        "DUQUE DE CAXIAS",
+        "MARINHA",
+        "ASSUNÇÃO",
+        "PASSO DA PÁTRIA"
+      ]
+    },
+    {
+      "id": "his-tenentismo",
+      "theme": "historia",
+      "difficulty": 3,
+      "title": "Tenentismo",
+      "words": [
+        "18 DO FORTE",
+        "COLUNA PRESTES",
+        "TENENTES",
+        "SÃO PAULO 1924",
+        "COPACABANA",
+        "LUÍS CARLOS PRESTES",
+        "JOÃO PESSOA",
+        "REVOLUÇÃO DE 1930"
+      ]
+    },
+    {
+      "id": "his-1930",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Revolução de 1930",
+      "words": [
+        "GETÚLIO VARGAS",
+        "JOÃO PESSOA",
+        "ALIANÇA LIBERAL",
+        "JUNTO DE GOVERNO",
+        "GAÚCHOS",
+        "MINEIROS",
+        "FIM DA REPÚBLICA VELHA",
+        "POSSE"
+      ]
+    },
+    {
+      "id": "his-1964",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Golpe de 1964",
+      "words": [
+        "JANGO",
+        "MARCHA DA FAMÍLIA",
+        "IPÊS",
+        "CASTELO BRANCO",
+        "COMANDO SUPREMO",
+        "BASE DE RÁDIO",
+        "INSTITUCIONAL-1",
+        "EXÍLIO"
+      ]
+    },
+    {
+      "id": "his-diretas",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Diretas Já",
+      "words": [
+        "DANTE DE OLIVEIRA",
+        "TANCREDO NEVES",
+        "ULYSSES GUIMARÃES",
+        "COMÍCIO",
+        "AMARELINHO",
+        "DIRETAS",
+        "1984",
+        "EMENDA"
+      ]
+    },
+    {
+      "id": "his-ilhas",
+      "theme": "historia",
+      "difficulty": 3,
+      "title": "Conferências da 2ª Guerra",
+      "words": [
+        "TEERÃ",
+        "YALTA",
+        "POTSDAM",
+        "CASABLANCA",
+        "ATLÂNTICO",
+        "BRETTON WOODS",
+        "DUMBARTON OAKS",
+        "SÃO FRANCISCO"
+      ]
+    },
+    {
+      "id": "his-ciencia",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Marcos científicos",
+      "words": [
+        "COPERNICO",
+        "GALILEU",
+        "NEWTON",
+        "DARWIN",
+        "EINSTEIN",
+        "PASTEUR",
+        "CURIE",
+        "CRICK"
+      ]
+    },
+    {
+      "id": "his-imprensa",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Imprensa e opinião",
+      "words": [
+        "GUTENBERG",
+        "GAZETA",
+        "FOLHA",
+        "PASQUIM",
+        "RADIO",
+        "TELEVISÃO",
+        "CENSURA PRÉVIA",
+        "INTERNET"
+      ]
+    },
+    {
+      "id": "his-moedas-br",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Moedas do Brasil",
+      "words": [
+        "RÉIS",
+        "CRUZEIRO",
+        "CRUZADO",
+        "CRUZEIRO REAL",
+        "REAL",
+        "CONTO DE RÉIS",
+        "MIL-RÉIS",
+        "URV"
+      ]
+    },
+    {
+      "id": "his-bandeira",
+      "theme": "historia",
+      "difficulty": 3,
+      "title": "Símbolos da República",
+      "words": [
+        "BANDEIRA",
+        "ARMAS",
+        "SELO NACIONAL",
+        "HINO",
+        "POSSE",
+        "FAIXA",
+        "ESTRELAS",
+        "ORDEM E PROGRESSO"
+      ]
+    },
+    {
+      "id": "his-capitais-br",
+      "theme": "historia",
+      "difficulty": 0,
+      "title": "Siglas de estados brasileiros",
+      "words": [
+        "AC",
+        "AL",
+        "AP",
+        "AM",
+        "BA",
+        "CE",
+        "DF",
+        "ES",
+        "GO",
+        "MA",
+        "MG",
+        "SP"
+      ]
+    },
+    {
+      "id": "his-leis-abolicao",
+      "theme": "historia",
+      "difficulty": 1,
+      "title": "Leis abolicionistas",
+      "words": [
+        "EUSÉBIO DE QUEIRÓS",
+        "VENTRE LIVRE",
+        "SEXAGENÁRIOS",
+        "ÁUREA",
+        "NABUCO",
+        "PATROCÍNIO",
+        "QUILOMBO",
+        "ABOLIÇÃO"
+      ]
+    },
+    {
+      "id": "his-primeiro-reinado",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Primeiro Reinado",
+      "words": [
+        "CONSTITUINTE",
+        "NOITE DA AGONIA",
+        "CONFEDERAÇÃO DO EQUADOR",
+        "CISPLATINA",
+        "ABDICAÇÃO",
+        "1824",
+        "PORTO",
+        "BONIFÁCIO"
+      ]
+    },
+    {
+      "id": "his-regencias",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Período regencial",
+      "words": [
+        "REGÊNCIA TRINA",
+        "ARAÚJO LIMA",
+        "FEIJÓ",
+        "CÓDIGO DE PROCESSO",
+        "ATO ADICIONAL",
+        "REVOLTAS REGENCIAIS",
+        "EXALTADOS",
+        "MODERADOS"
+      ]
+    },
+    {
+      "id": "his-segunda-guerra-br",
+      "theme": "historia",
+      "difficulty": 2,
+      "title": "Brasil na 2ª Guerra",
+      "words": [
+        "FEB",
+        "PRACINHAS",
+        "MONTE CASTELO",
+        "MONTESE",
+        "NAVIOS AFUNDADOS",
+        "FORÇA EXPEDICIONÁRIA",
+        "CASTELNUOVO",
+        "COLLECCHIO"
+      ]
+    },
+    {
+      "id": "mus-notas",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Notas musicais",
+      "words": [
+        "DÓ",
+        "RÉ",
+        "MI",
+        "FÁ",
+        "SOL",
+        "LÁ",
+        "SI",
+        "DÓ SUSTENIDO"
+      ]
+    },
+    {
+      "id": "mus-figuras",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Figuras de ritmo",
+      "words": [
+        "SEMIBREVE",
+        "MÍNIMA",
+        "SEMÍNIMA",
+        "COLCHEIA",
+        "SEMICOLCHEIA",
+        "FUSA",
+        "SEMIFUSA",
+        "PAUSA"
+      ]
+    },
+    {
+      "id": "mus-dinamicas",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Dinâmicas",
+      "words": [
+        "PIANO",
+        "FORTE",
+        "MEZZOFORTE",
+        "PIANÍSSIMO",
+        "FORTÍSSIMO",
+        "CRESCENDO",
+        "DIMINUENDO",
+        "SFORZANDO"
+      ]
+    },
+    {
+      "id": "mus-andamentos",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Andamentos",
+      "words": [
+        "LARGO",
+        "ADÁGIO",
+        "ANDANTE",
+        "MODERATO",
+        "ALLEGRO",
+        "PRESTO",
+        "VIVACE",
+        "LENTO"
+      ]
+    },
+    {
+      "id": "mus-claves",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Claves",
+      "words": [
+        "CLAVE DE SOL",
+        "CLAVE DE FÁ",
+        "CLAVE DE DÓ",
+        "CLAVE DE PERCUSSÃO",
+        "OITAVA ACIMA",
+        "OITAVA ABAIXO",
+        "15ª ACIMA",
+        "15ª ABAIXO"
+      ]
+    },
+    {
+      "id": "mus-intervalos",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Intervalos",
+      "words": [
+        "UNÍSSONO",
+        "SEGUNDA",
+        "TERÇA",
+        "QUARTA",
+        "QUINTA",
+        "SEXTA",
+        "SÉTIMA",
+        "OITAVA"
+      ]
+    },
+    {
+      "id": "mus-escalas",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Tipos de escala",
+      "words": [
+        "MAIOR",
+        "MENOR NATURAL",
+        "MENOR HARMÔNICA",
+        "MENOR MELÓDICA",
+        "PENTATÔNICA",
+        "BLUES",
+        "CROMÁTICA",
+        "MODAL"
+      ]
+    },
+    {
+      "id": "mus-modos",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Modos gregos",
+      "words": [
+        "JÔNIO",
+        "DÓRIO",
+        "FRÍGIO",
+        "LÍDIO",
+        "MIXOLÍDIO",
+        "EÓLIO",
+        "LÓCRIO",
+        "HIPOEÓLIO"
+      ]
+    },
+    {
+      "id": "mus-acordes",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Tipos de acorde",
+      "words": [
+        "MAIOR",
+        "MENOR",
+        "AUMENTADO",
+        "DIMINUTO",
+        "SÉTIMA DOMINANTE",
+        "SÉTIMA MAIOR",
+        "SUS4",
+        "ACORDE COM NONA"
+      ]
+    },
+    {
+      "id": "mus-corda",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Instrumentos de corda",
+      "words": [
+        "VIOLINO",
+        "VIOLA",
+        "VIOLONCELO",
+        "CONTRABAIXO",
+        "VIOLÃO",
+        "HARPA",
+        "BANDOLIM",
+        "CAVAQUINHO"
+      ]
+    },
+    {
+      "id": "mus-sopro-madeira",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Madeiras",
+      "words": [
+        "FLAUTA",
+        "OBOÉ",
+        "CLARINETE",
+        "FAGOTE",
+        "SAXOFONE",
+        "FLAUTIM",
+        "CORNE INGLÊS",
+        "CLARONE"
+      ]
+    },
+    {
+      "id": "mus-sopro-metal",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Metais",
+      "words": [
+        "TROMPETE",
+        "TROMBONE",
+        "TROMPA",
+        "TUBA",
+        "CORNETIM",
+        "FLISCORNE",
+        "EUFÔNIO",
+        "BUGLE"
+      ]
+    },
+    {
+      "id": "mus-percussao",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Percussão clássica",
+      "words": [
+        "TÍMPANO",
+        "CAIXA",
+        "BUMBO",
+        "PRATO",
+        "GONGO",
+        "XILOFONE",
+        "VIBRAFONE",
+        "TRIÂNGULO"
+      ]
+    },
+    {
+      "id": "mus-br-perc",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Percussão brasileira",
+      "words": [
+        "SURDO",
+        "PANDEIRO",
+        "TAMBORIM",
+        "CUÍCA",
+        "AGOGO",
+        "RECO-RECO",
+        "CAXIXI",
+        "REPIQUE"
+      ]
+    },
+    {
+      "id": "mus-teclado",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Teclados",
+      "words": [
+        "PIANO",
+        "CRAVO",
+        "ÓRGÃO",
+        "CRAVINHO",
+        "CELESTA",
+        "SINTETIZADOR",
+        "PIANO DIGITAL",
+        "CLAVINET"
+      ]
+    },
+    {
+      "id": "mus-voz",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Naipes vocais",
+      "words": [
+        "SOPRANO",
+        "MEZZO-SOPRANO",
+        "CONTRALTO",
+        "TENOR",
+        "BARÍTONO",
+        "BAIXO",
+        "CONTRATENOR",
+        "BARÍTONO-BAIXO"
+      ]
+    },
+    {
+      "id": "mus-formacao",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Formações",
+      "words": [
+        "SOLO",
+        "DUO",
+        "TRIO",
+        "QUARTETO",
+        "QUINTETO",
+        "ORQUESTRA",
+        "BANDA SINFÔNICA",
+        "CORAL"
+      ]
+    },
+    {
+      "id": "mus-formas",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Formas musicais",
+      "words": [
+        "SONATA",
+        "SINFONIA",
+        "CONCERTO",
+        "SUITE",
+        "FUGA",
+        "VARIAÇÃO",
+        "RONDO",
+        "PRELÚDIO"
+      ]
+    },
+    {
+      "id": "mus-opera",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Partes da ópera",
+      "words": [
+        "ÁRIA",
+        "RECITATIVO",
+        "LIBRETO",
+        "ABERTURA",
+        "INTERMÉDIO",
+        "CORO",
+        "LEITMOTIV",
+        "CABALETTA"
+      ]
+    },
+    {
+      "id": "mus-compos-barroco",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Compositores barrocos",
+      "words": [
+        "BACH",
+        "HANDEL",
+        "VIVALDI",
+        "TELEMANN",
+        "PURCELL",
+        "RAMEAU",
+        "SCARLATTI",
+        "CORELLI"
+      ]
+    },
+    {
+      "id": "mus-compos-classico",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Compositores clássicos",
+      "words": [
+        "MOZART",
+        "HAYDN",
+        "BEETHOVEN",
+        "GLUCK",
+        "CLEMENTI",
+        "SALIERI",
+        "BOCCHERINI",
+        "STAMITZ"
+      ]
+    },
+    {
+      "id": "mus-compos-romantico",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Compositores românticos",
+      "words": [
+        "CHOPIN",
+        "LISZT",
+        "SCHUMANN",
+        "BRAHMS",
+        "TCHAIKOVSKY",
+        "WAGNER",
+        "VERDI",
+        "BERLIOZ",
+        "SCHUBERT",
+        "MENDELSSOHN"
+      ]
+    },
+    {
+      "id": "mus-compos-xx",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Compositores do século XX",
+      "words": [
+        "STRAVINSKY",
+        "SCHOENBERG",
+        "BARTÓK",
+        "DEBUSSY",
+        "RAVEL",
+        "GERSHWIN",
+        "PROKOFIEV",
+        "SHOSTAKOVICH"
+      ]
+    },
+    {
+      "id": "mus-br-erudito",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Música erudita brasileira",
+      "words": [
+        "VILLA-LOBOS",
+        "CARLOS GOMES",
+        "GUARNIERI",
+        "GUERRA-PEIXE",
+        "CLAUDIO SANTORO",
+        "FRANCISCO MIGNONE",
+        "OSCAR LORENZO FERNANDEZ",
+        "ALBERTO NEPOMUCENO"
+      ]
+    },
+    {
+      "id": "mus-samba",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Samba e afins",
+      "words": [
+        "SAMBA",
+        "PAGODE",
+        "PARTIDO-ALTO",
+        "SAMBA-ENREDO",
+        "SAMBA DE TERREIRO",
+        "SAMBA-CANÇÃO",
+        "SAMBA DE BREQUE",
+        "FUNK CARIOCA"
+      ]
+    },
+    {
+      "id": "mus-nordeste",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Gêneros nordestinos",
+      "words": [
+        "FORRÓ",
+        "BAIÃO",
+        "XAXADO",
+        "XOTE",
+        "FREVO",
+        "MARACATU",
+        "COCO",
+        "CIRANDA"
+      ]
+    },
+    {
+      "id": "mus-mpb",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "MPB (artistas)",
+      "words": [
+        "CHICO BUARQUE",
+        "CAETANO",
+        "GILBERTO GIL",
+        "ELIS REGINA",
+        "MILTON NASCIMENTO",
+        "GAL COSTA",
+        "DJAVAN",
+        "MARIA BETHÂNIA"
+      ]
+    },
+    {
+      "id": "mus-bossa",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Bossa nova",
+      "words": [
+        "JOÃO GILBERTO",
+        "TOM JOBIM",
+        "VINICIUS",
+        "NARA LEÃO",
+        "GAROTA DE IPANEMA",
+        "DESAFINADO",
+        "BATIDA",
+        "VIOLÃO"
+      ]
+    },
+    {
+      "id": "mus-tropicalia",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Tropicália",
+      "words": [
+        "CAETANO VELOSO",
+        "GIL",
+        "MUTANTES",
+        "TOM ZÉ",
+        "ROGERIO DUPRAT",
+        "PANIS ET CIRCENCIS",
+        "GELÉIA GERAL",
+        "MARGINAL"
+      ]
+    },
+    {
+      "id": "mus-choro",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Choro",
+      "words": [
+        "PIXINGUINHA",
+        "JACOB DO BANDOLIM",
+        "WALDIR AZEVEDO",
+        "NAZARETH",
+        "CHORO",
+        "REGIONAIS",
+        "RODA",
+        "CORTADO"
+      ]
+    },
+    {
+      "id": "mus-jazz",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Estilos de jazz",
+      "words": [
+        "SWING",
+        "BEBOP",
+        "COOL",
+        "HARD BOP",
+        "FREE JAZZ",
+        "FUSION",
+        "LATIN JAZZ",
+        "MODAL JAZZ"
+      ]
+    },
+    {
+      "id": "mus-rock",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Estilos de rock",
+      "words": [
+        "ROCK AND ROLL",
+        "PSYCHEDELIC",
+        "PROGRESSIVO",
+        "PUNK",
+        "NEW WAVE",
+        "GRUNGE",
+        "METAL",
+        "INDIE"
+      ]
+    },
+    {
+      "id": "mus-classicos-pop",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Gêneros populares globais",
+      "words": [
+        "POP",
+        "SOUL",
+        "FUNK",
+        "DISCO",
+        "HIP HOP",
+        "REGGAE",
+        "COUNTRY",
+        "ELECTRONIC"
+      ]
+    },
+    {
+      "id": "mus-danca",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Danças de salão",
+      "words": [
+        "VALSA",
+        "TANGO",
+        "FOXTROTE",
+        "QUICKSTEP",
+        "RUMBA",
+        "SAMBA DE GAFIEIRA",
+        "CHA-CHA-CHA",
+        "PASSO DOBLADO"
+      ]
+    },
+    {
+      "id": "mus-br-danca",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Danças brasileiras",
+      "words": [
+        "FREVO",
+        "MARACATU",
+        "CARIMBÓ",
+        "CATIRA",
+        "VANERÃO",
+        "SERTANEJO DANÇADO",
+        "FORRÓ PÉ-DE-SERRA",
+        "SAMBA DE RODA"
+      ]
+    },
+    {
+      "id": "mus-notacao",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Sinais de notação",
+      "words": [
+        "SUSTENIDO",
+        "BEMOL",
+        "BEQUADRO",
+        "FERMATA",
+        "LIGADURA",
+        "PONTO DE AUMENTO",
+        "BARRA DE COMPASSO",
+        "ARMADURA DE CLAVE"
+      ]
+    },
+    {
+      "id": "mus-compasos",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Fórmulas de compasso",
+      "words": [
+        "4/4",
+        "3/4",
+        "2/4",
+        "6/8",
+        "3/8",
+        "2/2",
+        "5/4",
+        "7/8"
+      ]
+    },
+    {
+      "id": "mus-textura",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Texturas musicais",
+      "words": [
+        "MONODIA",
+        "HOMOFONIA",
+        "POLIFONIA",
+        "HETEROFONIA",
+        "CONTRAPONTO",
+        "IMITAÇÃO",
+        "CÂNONE",
+        "FUGA"
+      ]
+    },
+    {
+      "id": "mus-harmonia",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Funções harmônicas",
+      "words": [
+        "TÔNICA",
+        "DOMINANTE",
+        "SUBDOMINANTE",
+        "RELATIVA",
+        "SENSÍVEL",
+        "CADÊNCIA",
+        "MODULAÇÃO",
+        "PREPARAÇÃO"
+      ]
+    },
+    {
+      "id": "mus-cadencias",
+      "theme": "musica",
+      "difficulty": 3,
+      "title": "Cadências",
+      "words": [
+        "PERFEITA",
+        "PLAGAL",
+        "DECEPTIVA",
+        "MEIA CADÊNCIA",
+        "FRÍGIA",
+        "TERÇA PICARDA",
+        "IMPERFEITA",
+        "AUTÊNTICA"
+      ]
+    },
+    {
+      "id": "mus-orquestra",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Naipes da orquestra",
+      "words": [
+        "CORDAS",
+        "MADEIRAS",
+        "METAIS",
+        "PERCUSSÃO",
+        "HARPA",
+        "TECLADOS",
+        "CORO",
+        "REGENTE"
+      ]
+    },
+    {
+      "id": "mus-maestro",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Regência",
+      "words": [
+        "BATUTA",
+        "ANACRUSE",
+        "ENTRADA",
+        "CORTE",
+        "RUBATO",
+        "ENSAIO",
+        "PARTITURA",
+        "REDUÇÃO"
+      ]
+    },
+    {
+      "id": "mus-estudio",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Estúdio de gravação",
+      "words": [
+        "MICROFONE",
+        "MESA",
+        "FONE",
+        "CABO",
+        "INTERFACE",
+        "MONITOR",
+        "TAKE",
+        "MIXAGEM"
+      ]
+    },
+    {
+      "id": "mus-efeitos",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Efeitos de áudio",
+      "words": [
+        "REVERB",
+        "DELAY",
+        "CHORUS",
+        "FLANGER",
+        "DISTORÇÃO",
+        "COMPRESSOR",
+        "EQUALIZADOR",
+        "WAH"
+      ]
+    },
+    {
+      "id": "mus-midi",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "MIDI e produção",
+      "words": [
+        "MIDI",
+        "DAW",
+        "VST",
+        "SAMPLE",
+        "LOOP",
+        "QUANTIZE",
+        "VELOCITY",
+        "PIANO ROLL"
+      ]
+    },
+    {
+      "id": "mus-folk-mundo",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Músicas tradicionais",
+      "words": [
+        "FLAMENCO",
+        "FADO",
+        "TANGO ARGENTINO",
+        "KLEZMER",
+        "GOSPEL",
+        "GNAWA",
+        "RAGA",
+        "GAMELÃO"
+      ]
+    },
+    {
+      "id": "mus-latina",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Música latina",
+      "words": [
+        "SALSA",
+        "MERENGUE",
+        "BACHATA",
+        "CUMBIA",
+        "RANCHERA",
+        "BOLERO",
+        "SON CUBANO",
+        "REGGAETON"
+      ]
+    },
+    {
+      "id": "mus-africa",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Música africana",
+      "words": [
+        "HIGHLIFE",
+        "AFROBEAT",
+        "MBIRA",
+        "KORA",
+        "JUJU",
+        "SOUKOUS",
+        "MBAQANGA",
+        "GRIOT"
+      ]
+    },
+    {
+      "id": "mus-asia",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Música da Ásia",
+      "words": [
+        "GAGAKU",
+        "SITAR",
+        "ERHU",
+        "PIPA",
+        "KOTO",
+        "GAMELAN",
+        "COURT MUSIC",
+        "PANSORI"
+      ]
+    },
+    {
+      "id": "mus-eletro",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Música eletrônica",
+      "words": [
+        "HOUSE",
+        "TECHNO",
+        "TRANCE",
+        "DRUM AND BASS",
+        "DUBSTEP",
+        "AMBIENT",
+        "IDM",
+        "GARAGE"
+      ]
+    },
+    {
+      "id": "mus-teoria-ritmo",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Ritmo avançado",
+      "words": [
+        "SÍNCOPE",
+        "CONTRATEMPO",
+        "POLIRRITMIA",
+        "HEMIOLA",
+        "SWING RÍTMICO",
+        "RUBATO RÍTMICO",
+        "OSTINATO",
+        "CLAVE"
+      ]
+    },
+    {
+      "id": "mus-ornamentos",
+      "theme": "musica",
+      "difficulty": 3,
+      "title": "Ornamentos",
+      "words": [
+        "TRINADO",
+        "MORDENTE",
+        "GRUPETO",
+        "APOGGIATURA",
+        "ACCIACCATURA",
+        "GLISSANDO",
+        "PORTAMENTO",
+        "FLATTÉ"
+      ]
+    },
+    {
+      "id": "mus-voz-tecnica",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Técnica vocal",
+      "words": [
+        "RESPIRAÇÃO",
+        "APOIO",
+        "VIBRATO",
+        "FALSETE",
+        "BELTING",
+        "MELISMA",
+        "DICÇÃO",
+        "RESSONÂNCIA"
+      ]
+    },
+    {
+      "id": "mus-luthier",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Partes do violão",
+      "words": [
+        "BRAÇO",
+        "ESCALA",
+        "TRASTE",
+        "CAVALETE",
+        "BOCA",
+        "TAMPO",
+        "LATERAL",
+        "CAPOTASTO"
+      ]
+    },
+    {
+      "id": "mus-piano-partes",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Partes do piano",
+      "words": [
+        "TECLA",
+        "MARTELO",
+        "CORDA",
+        "PEDAL",
+        "TÁBUA HARMÔNICA",
+        "CRAVES",
+        "AÇÃO",
+        "TAMPA"
+      ]
+    },
+    {
+      "id": "mus-partitura",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Na partitura",
+      "words": [
+        "PAUTA",
+        "LINHA",
+        "ESPAÇO",
+        "CLAVE",
+        "ARMADURA",
+        "COMPASSO",
+        "BARRA",
+        "NOTA"
+      ]
+    },
+    {
+      "id": "mus-historicos",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Instrumentos históricos",
+      "words": [
+        "ALAÚDE",
+        "VIOLA DA GAMBA",
+        "CRAVO BARROCO",
+        "SACKBUT",
+        "CHALUMEAU",
+        "SERPENTÃO",
+        "NYCKELHARPA",
+        "ORGANISTRUM"
+      ]
+    },
+    {
+      "id": "mus-br-inst",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Instrumentos brasileiros",
+      "words": [
+        "BERIMBAU",
+        "CUÍCA",
+        "CAVAQUINHO",
+        "VIOLA CAIPIRA",
+        "RABECA",
+        "ZABUMBA",
+        "TRIÂNGULO NORDESTINO",
+        "SANFONA"
+      ]
+    },
+    {
+      "id": "mus-sagrado",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Música sacra",
+      "words": [
+        "GREGORIANO",
+        "MOTETO",
+        "MISSA",
+        "REQUIEM",
+        "CÂNTICO",
+        "HINO",
+        "MAGNIFICAT",
+        "ORATÓRIO"
+      ]
+    },
+    {
+      "id": "mus-nacionalismos",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Escolas nacionais (erudito)",
+      "words": [
+        "RUSSA",
+        "TCHECA",
+        "HÚNGARA",
+        "NÓRDICA",
+        "ESPANHOLA",
+        "AMERICANA",
+        "BRASILEIRA",
+        "INGLESA"
+      ]
+    },
+    {
+      "id": "mus-serialismo",
+      "theme": "musica",
+      "difficulty": 3,
+      "title": "Técnicas do século XX",
+      "words": [
+        "SERIALISMO",
+        "DODECAFONISMO",
+        "CLUSTER",
+        "MICROPOLIFONIA",
+        "MÍNIMALISMO",
+        "ALEATORIEDADE",
+        "MÚSICA CONCRETA",
+        "ESPECTRALISMO"
+      ]
+    },
+    {
+      "id": "mus-blues",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Blues",
+      "words": [
+        "DOZE COMPASSOS",
+        "BLUE NOTE",
+        "CALL AND RESPONSE",
+        "SLIDE",
+        "HARP",
+        "DELTA",
+        "CHICAGO",
+        "SHUFFLE"
+      ]
+    },
+    {
+      "id": "mus-rap",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Hip hop",
+      "words": [
+        "RAP",
+        "GRAVE",
+        "SAMPLER",
+        "DJ",
+        "MC",
+        "BREAK",
+        "GRAFFITI",
+        "B-BOY"
+      ]
+    },
+    {
+      "id": "mus-samba-escolas",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Escola de samba",
+      "words": [
+        "BATERIA",
+        "PASSISTAS",
+        "PORTA-BANDEIRA",
+        "MESTRE-SALA",
+        "ALAS",
+        "CARRO ALEGÓRICO",
+        "COMISSÃO DE FRENTE",
+        "ENREDO"
+      ]
+    },
+    {
+      "id": "mus-forro-inst",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Trio de forró",
+      "words": [
+        "SANFONA",
+        "ZABUMBA",
+        "TRIÂNGULO",
+        "BAIÃO RITMO",
+        "XOTE RITMO",
+        "PÉ-DE-SERRA",
+        "GONZAGA",
+        "JACKSON DO PANDEIRO"
+      ]
+    },
+    {
+      "id": "mus-bossa-harmonia",
+      "theme": "musica",
+      "difficulty": 3,
+      "title": "Harmonia da bossa",
+      "words": [
+        "ACORDE COM NONA",
+        "INVERSÃO",
+        "CORDAS SOLTAS",
+        "VIOLÃO DEDILHADO",
+        "TOM MENOR",
+        "SUBSTITUTO TRITONO",
+        "II-V-I",
+        "TENSÃO"
+      ]
+    },
+    {
+      "id": "mus-concerto",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Concerto",
+      "words": [
+        "SOLISTA",
+        "RITORNELO",
+        "CADENZA",
+        "MOVIMENTO",
+        "ORQUESTRA",
+        "REDUÇÃO DE PIANO",
+        "ESTREIA",
+        "VIRTUOSISMO"
+      ]
+    },
+    {
+      "id": "mus-sinfonia-mov",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Movimentos da sinfonia clássica",
+      "words": [
+        "ALLEGRO DE SONATA",
+        "ADÁGIO LENTO",
+        "MINUETO",
+        "FINALE",
+        "SCHERZO",
+        "TRIO",
+        "REEXPOSIÇÃO",
+        "CODA"
+      ]
+    },
+    {
+      "id": "mus-sonata-forma",
+      "theme": "musica",
+      "difficulty": 3,
+      "title": "Forma-sonata",
+      "words": [
+        "EXPOSIÇÃO",
+        "DESENVOLVIMENTO",
+        "REEXPOSIÇÃO",
+        "TEMA A",
+        "TEMA B",
+        "PONTE",
+        "CODA",
+        "TONICIZAÇÃO"
+      ]
+    },
+    {
+      "id": "mus-fuga-partes",
+      "theme": "musica",
+      "difficulty": 3,
+      "title": "Fuga",
+      "words": [
+        "SUJEITO",
+        "RESPOSTA",
+        "CONTRASUJEITO",
+        "STRETO",
+        "PEDAL",
+        "EXPOSIÇÃO FUGADA",
+        "EPISÓDIO",
+        "INVERSÃO"
+      ]
+    },
+    {
+      "id": "mus-musica-cinema",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Música para cinema",
+      "words": [
+        "LEITMOTIV FÍLMICO",
+        "UNDERSCORE",
+        "SOURCE MUSIC",
+        "TEMP TRACK",
+        "SPOTTING",
+        "CUE",
+        "ORQUESTRAÇÃO",
+        "SYNC"
+      ]
+    },
+    {
+      "id": "mus-critica",
+      "theme": "musica",
+      "difficulty": 3,
+      "title": "Elementos da crítica musical",
+      "words": [
+        "TIMBRE",
+        "FORMA",
+        "TEXTURA",
+        "RITMO",
+        "HARMONIA",
+        "MELODIA",
+        "EXPRESSÃO",
+        "CONTEXTO"
+      ]
+    },
+    {
+      "id": "mus-afinacao",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Afinação",
+      "words": [
+        "LÁ 440",
+        "TEMPERAMENTO IGUAL",
+        "PITAGÓRICO",
+        "JUSTA",
+        "CORDAS SOLTAS",
+        "DIAPASÃO",
+        "TUNER",
+        "CENTS"
+      ]
+    },
+    {
+      "id": "mus-voz-coros",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Disposição coral",
+      "words": [
+        "SOPRANOS",
+        "CONTRALTOS",
+        "TENORES",
+        "BAIXOS",
+        "SATB",
+        "UNÍSSONO CORAL",
+        "DIVISI",
+        "A CAPPELLA"
+      ]
+    },
+    {
+      "id": "mus-marcha",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Marcha e hinos",
+      "words": [
+        "MARCHA",
+        "HINO",
+        "DOBRA",
+        "FANFARRA",
+        "DOBRO",
+        "TROMPA DE ORDEM",
+        "CAIXA CLARA",
+        "PASSO"
+      ]
+    },
+    {
+      "id": "mus-infantil",
+      "theme": "musica",
+      "difficulty": 0,
+      "title": "Canções infantis brasileiras",
+      "words": [
+        "CIRANDA CIRANDINHA",
+        "ATIREI O PAU NO GATO",
+        "O SAPO NÃO LAVA O PÉ",
+        "MARCHA SOLDADO",
+        "BOI DA CARA PRETA",
+        "SE ESSA RUA FOSSE MINHA",
+        "A CANOA VIROU",
+        "NANA NENÊ"
+      ]
+    },
+    {
+      "id": "mus-festivais",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Festivais históricos",
+      "words": [
+        "WOODSTOCK",
+        "MONTEREY",
+        "LIVE AID",
+        "ISLE OF WIGHT",
+        "GLASTONBURY",
+        "ROCK IN RIO",
+        "HOLLYWOOD BOWL",
+        "SALZBURGO"
+      ]
+    },
+    {
+      "id": "mus-selos",
+      "theme": "musica",
+      "difficulty": 3,
+      "title": "Selos e gravadoras",
+      "words": [
+        "BLUE NOTE",
+        "MOTOWN",
+        "DEUTSCHE GRAMMOPHON",
+        "ECM",
+        "ELEKTRA",
+        "ODEON",
+        "PHILIPS",
+        "CONTINENTAL"
+      ]
+    },
+    {
+      "id": "mus-radio",
+      "theme": "musica",
+      "difficulty": 1,
+      "title": "Rádio e canção",
+      "words": [
+        "ERA DO RÁDIO",
+        "PROGRAMA DE AUDITÓRIO",
+        "CANTOR",
+        "RADIALISTA",
+        "JINGLE",
+        "VINHETA",
+        "NOVELA DE RÁDIO",
+        "PRIMEIRO HORÁRIO"
+      ]
+    },
+    {
+      "id": "mus-vinil",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Suportes de áudio",
+      "words": [
+        "VINIL",
+        "K7",
+        "CD",
+        "DAT",
+        "MINIDISC",
+        "MP3",
+        "STREAMING",
+        "ROLO"
+      ]
+    },
+    {
+      "id": "mus-samba-rock",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Cenas paulistanas",
+      "words": [
+        "SAMBA-ROCK",
+        "BAILE BLACK",
+        "CLUBE",
+        "UIRAPURU",
+        "GROOVE PAULISTA",
+        "SOUL BR",
+        "FUNK DE BAILE",
+        "DISCOTECA"
+      ]
+    },
+    {
+      "id": "mus-congado",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Congado e folias",
+      "words": [
+        "CONGADO",
+        "FOLIA DE REIS",
+        "CATOPÊS",
+        "MOÇAMBIQUE",
+        "CAVALHADA",
+        "TAIEIRA",
+        "REISADO",
+        "FOLIA DO DIVINO"
+      ]
+    },
+    {
+      "id": "mus-orquestra-br",
+      "theme": "musica",
+      "difficulty": 2,
+      "title": "Orquestras e instituições",
+      "words": [
+        "OSB",
+        "OSESP",
+        "THEATRO MUNICIPAL",
+        "SALA SÃO PAULO",
+        "FUNARTE",
+        "CONSERVATÓRIO",
+        "ESCOLA DE MÚSICA",
+        "FESTIVAL DE CAMPOS DO JORDÃO"
+      ]
+    },
+    {
+      "id": "mus-harmonia-jazz",
+      "theme": "musica",
+      "difficulty": 3,
+      "title": "Vocabulário do jazz",
+      "words": [
+        "TURNAROUND",
+        "II-V-I JAZZ",
+        "SUBSTITUIÇÃO",
+        "VOICING",
+        "COMPING",
+        "WALKING BASS",
+        "STAB",
+        "HEAD"
+      ]
+    },
+    {
+      "id": "ger-planetas",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Planetas do Sistema Solar",
+      "words": [
+        "MERCÚRIO",
+        "VÊNUS",
+        "TERRA",
+        "MARTE",
+        "JÚPITER",
+        "SATURNO",
+        "URANO",
+        "NETUNO"
+      ]
+    },
+    {
+      "id": "ger-astro",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Corpos astronômicos",
+      "words": [
+        "SOL",
+        "LUA",
+        "ASTEROIDE",
+        "COMETA",
+        "METEORO",
+        "SATÉLITE",
+        "ESTRELA",
+        "GALÁXIA"
+      ]
+    },
+    {
+      "id": "ger-continentes",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Continentes",
+      "words": [
+        "ÁFRICA",
+        "AMÉRICA",
+        "ÁSIA",
+        "EUROPA",
+        "OCEANIA",
+        "ANTÁRTIDA",
+        "EURASIA",
+        "AMÉRICA DO SUL"
+      ]
+    },
+    {
+      "id": "ger-oceanos",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Oceanos e mares",
+      "words": [
+        "ATLÂNTICO",
+        "PACÍFICO",
+        "ÍNDICO",
+        "ÁRTICO",
+        "ANTÁRTICO",
+        "MAR DO NORTE",
+        "MAR MEDITERRÂNEO",
+        "MAR DO CARIBE"
+      ]
+    },
+    {
+      "id": "ger-clima",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Tipos de clima",
+      "words": [
+        "EQUATORIAL",
+        "TROPICAL",
+        "SEMIÁRIDO",
+        "TEMPERADO",
+        "MEDITERRÂNEO",
+        "POLAR",
+        "DESÉRTICO",
+        "SUBTROPICAL"
+      ]
+    },
+    {
+      "id": "ger-relevo",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Formas de relevo",
+      "words": [
+        "MONTANHA",
+        "PLANÍCIE",
+        "PLANALTO",
+        "DEPRESSÃO",
+        "VALE",
+        "CHAPADA",
+        "SERRA",
+        "LITORAL"
+      ]
+    },
+    {
+      "id": "ger-hidrografia",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Hidrografia",
+      "words": [
+        "RIO",
+        "LAGO",
+        "LAGOA",
+        "AFLUENTE",
+        "FOZ",
+        "NASCENTE",
+        "BACIA",
+        "DELTA"
+      ]
+    },
+    {
+      "id": "ger-biomas-br",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Biomas brasileiros",
+      "words": [
+        "AMAZÔNIA",
+        "CERRADO",
+        "CAATINGA",
+        "MATA ATLÂNTICA",
+        "PANTANAL",
+        "PAMPA",
+        "MANGUEZAL",
+        "RESTINGA"
+      ]
+    },
+    {
+      "id": "ger-estados-n",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Amazônia Legal",
+      "words": [
+        "ACRE",
+        "AMAZONAS",
+        "AMAPÁ",
+        "PARÁ",
+        "RONDÔNIA",
+        "RORAIMA",
+        "TOCANTINS",
+        "MATO GROSSO",
+        "MARANHÃO"
+      ]
+    },
+    {
+      "id": "ger-estados-ne",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Estados do Nordeste",
+      "words": [
+        "BAHIA",
+        "PERNAMBUCO",
+        "CEARÁ",
+        "MARANHÃO",
+        "PIAUÍ",
+        "PARAÍBA",
+        "RIO GRANDE DO NORTE",
+        "ALAGOAS",
+        "SERGIPE"
+      ]
+    },
+    {
+      "id": "ger-estados-se",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Cidades do Sudeste",
+      "words": [
+        "SÃO PAULO",
+        "RIO DE JANEIRO",
+        "BELO HORIZONTE",
+        "VITÓRIA",
+        "CAMPINAS",
+        "SANTOS",
+        "NITERÓI",
+        "UBERLÂNDIA"
+      ]
+    },
+    {
+      "id": "ger-estados-s",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Cidades do Sul",
+      "words": [
+        "CURITIBA",
+        "PORTO ALEGRE",
+        "FLORIANÓPOLIS",
+        "LONDRINA",
+        "JOINVILLE",
+        "CAXIAS DO SUL",
+        "PELOTAS",
+        "BLUMENAU"
+      ]
+    },
+    {
+      "id": "ger-estados-co",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Centro-Oeste",
+      "words": [
+        "GOIÁS",
+        "MATO GROSSO",
+        "MATO GROSSO DO SUL",
+        "DISTRITO FEDERAL",
+        "GOIÂNIA",
+        "CUIABÁ",
+        "CAMPO GRANDE",
+        "BRASÍLIA"
+      ]
+    },
+    {
+      "id": "ger-capitais-br",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Capitais brasileiras",
+      "words": [
+        "BRASÍLIA",
+        "SÃO PAULO",
+        "RIO DE JANEIRO",
+        "SALVADOR",
+        "FORTALEZA",
+        "BELO HORIZONTE",
+        "MANAUS",
+        "CURITIBA",
+        "RECIFE",
+        "PORTO ALEGRE"
+      ]
+    },
+    {
+      "id": "ger-paises-am",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Países da América do Sul",
+      "words": [
+        "BRASIL",
+        "ARGENTINA",
+        "CHILE",
+        "PERU",
+        "COLÔMBIA",
+        "VENEZUELA",
+        "URUGUAI",
+        "PARAGUAI",
+        "BOLÍVIA",
+        "EQUADOR"
+      ]
+    },
+    {
+      "id": "ger-paises-eu",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Países da Europa",
+      "words": [
+        "FRANÇA",
+        "ALEMANHA",
+        "ITÁLIA",
+        "ESPANHA",
+        "PORTUGAL",
+        "REINO UNIDO",
+        "GRÉCIA",
+        "POLÔNIA"
+      ]
+    },
+    {
+      "id": "ger-mamiferos",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Mamíferos",
+      "words": [
+        "CACHORRO",
+        "GATO",
+        "CAVALO",
+        "VACA",
+        "LEÃO",
+        "ELEFANTE",
+        "BALEIA",
+        "MORCEGO"
+      ]
+    },
+    {
+      "id": "ger-aves",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Aves",
+      "words": [
+        "ÁGUIA",
+        "CORUJA",
+        "PAPAGAIO",
+        "BEIJA-FLOR",
+        "PINGUIM",
+        "EMA",
+        "TUCANO",
+        "GALINHA"
+      ]
+    },
+    {
+      "id": "ger-repteis",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Répteis",
+      "words": [
+        "COBRA",
+        "JACARÉ",
+        "TARTARUGA",
+        "LAGARTO",
+        "IGUANA",
+        "JABUTI",
+        "CAMALEÃO",
+        "SUCURI"
+      ]
+    },
+    {
+      "id": "ger-peixes",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Peixes",
+      "words": [
+        "SALMÃO",
+        "ATUM",
+        "SARDINHA",
+        "BACALHAU",
+        "TUBARÃO",
+        "RAIA",
+        "TRUTA",
+        "DOURADO"
+      ]
+    },
+    {
+      "id": "ger-insetos",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Insetos",
+      "words": [
+        "BORBOLETA",
+        "ABELHA",
+        "FORMIGA",
+        "BESOURO",
+        "LIBÉLULA",
+        "GRILO",
+        "MOSQUITO",
+        "BARATA"
+      ]
+    },
+    {
+      "id": "ger-frutas",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Frutas",
+      "words": [
+        "MAÇÃ",
+        "BANANA",
+        "LARANJA",
+        "MANGA",
+        "ABACAXI",
+        "UVA",
+        "MELANCIA",
+        "MORANGO"
+      ]
+    },
+    {
+      "id": "ger-legumes",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Legumes e verduras",
+      "words": [
+        "CENOURA",
+        "BATATA",
+        "ALFACE",
+        "TOMATE",
+        "CEBOLA",
+        "BROCÓLIS",
+        "ABÓBORA",
+        "BETERRABA"
+      ]
+    },
+    {
+      "id": "ger-graos",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Grãos e cereais",
+      "words": [
+        "ARROZ",
+        "FEIJÃO",
+        "MILHO",
+        "TRIGO",
+        "AVEIA",
+        "CENTEIO",
+        "CEVADA",
+        "SOJA"
+      ]
+    },
+    {
+      "id": "ger-temperos",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Temperos",
+      "words": [
+        "SAL",
+        "PIMENTA",
+        "ALHO",
+        "MANJERICÃO",
+        "ORÉGANO",
+        "COENTRO",
+        "ALECRIM",
+        "COMINHO"
+      ]
+    },
+    {
+      "id": "ger-cozinha",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Utensílios de cozinha",
+      "words": [
+        "PANELA",
+        "FOGÃO",
+        "FACA",
+        "COLHER",
+        "GARFO",
+        "TÁBUA",
+        "PANELA DE PRESSÃO",
+        "CHALEIRA"
+      ]
+    },
+    {
+      "id": "ger-casa",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Cômodos da casa",
+      "words": [
+        "SALA",
+        "QUARTO",
+        "COZINHA",
+        "BANHEIRO",
+        "ÁREA DE SERVIÇO",
+        "VARANDA",
+        "ESCRITÓRIO",
+        "GARAGEM"
+      ]
+    },
+    {
+      "id": "ger-moveis",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Móveis",
+      "words": [
+        "MESA",
+        "CADEIRA",
+        "SOFÁ",
+        "CAMA",
+        "ARMÁRIO",
+        "ESTANTE",
+        "CRIADO-MUDO",
+        "GUARDA-ROUPA"
+      ]
+    },
+    {
+      "id": "ger-roupas",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Peças de roupa",
+      "words": [
+        "CAMISA",
+        "CALÇA",
+        "VESTIDO",
+        "SAIA",
+        "CASACO",
+        "MEIA",
+        "BLUSA",
+        "SHORT"
+      ]
+    },
+    {
+      "id": "ger-calcados",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Calçados",
+      "words": [
+        "SAPATO",
+        "TÊNIS",
+        "SANDÁLIA",
+        "BOTA",
+        "CHINELO",
+        "SCARPIN",
+        "MOCASSIM",
+        "TAMANCO"
+      ]
+    },
+    {
+      "id": "ger-corpo",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Partes do corpo",
+      "words": [
+        "CABEÇA",
+        "BRAÇO",
+        "PERNA",
+        "MÃO",
+        "PÉ",
+        "TRONCO",
+        "PESCOÇO",
+        "OMBRO"
+      ]
+    },
+    {
+      "id": "ger-orgaos",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Órgãos internos",
+      "words": [
+        "CORAÇÃO",
+        "PULMÃO",
+        "FÍGADO",
+        "RIM",
+        "ESTÔMAGO",
+        "INTESTINO",
+        "CÉREBRO",
+        "BAÇO"
+      ]
+    },
+    {
+      "id": "ger-sentidos",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Cinco sentidos",
+      "words": [
+        "VISÃO",
+        "AUDIÇÃO",
+        "OLFATO",
+        "PALADAR",
+        "TATO",
+        "EQUILÍBRIO",
+        "PROPRIOCEPÇÃO",
+        "TERMOCEPÇÃO"
+      ]
+    },
+    {
+      "id": "ger-familia",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Graus de parentesco",
+      "words": [
+        "PAI",
+        "MÃE",
+        "FILHO",
+        "IRMÃO",
+        "AVÔ",
+        "TIO",
+        "PRIMO",
+        "NETO"
+      ]
+    },
+    {
+      "id": "ger-profissoes",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Profissões",
+      "words": [
+        "MÉDICO",
+        "PROFESSOR",
+        "ENGENHEIRO",
+        "ADVOGADO",
+        "COZINHEIRO",
+        "MOTORISTA",
+        "ENFERMEIRO",
+        "JORNALISTA"
+      ]
+    },
+    {
+      "id": "ger-escola",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Material escolar",
+      "words": [
+        "LÁPIS",
+        "CANETA",
+        "BORRACHA",
+        "CADERNO",
+        "RÉGUA",
+        "MOCHILA",
+        "APONTADOR",
+        "SULFITE"
+      ]
+    },
+    {
+      "id": "ger-materias",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Disciplinas escolares",
+      "words": [
+        "MATEMÁTICA",
+        "PORTUGUÊS",
+        "HISTÓRIA",
+        "GEOGRAFIA",
+        "CIÊNCIAS",
+        "INGLÊS",
+        "EDUCAÇÃO FÍSICA",
+        "ARTES"
+      ]
+    },
+    {
+      "id": "ger-esportes",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Esportes",
+      "words": [
+        "FUTEBOL",
+        "VÔLEI",
+        "BASQUETE",
+        "NATAÇÃO",
+        "TÊNIS",
+        "HANDEBOL",
+        "ATLETISMO",
+        "JUDÔ"
+      ]
+    },
+    {
+      "id": "ger-futebol",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Posições no futebol",
+      "words": [
+        "GOLEIRO",
+        "ZAGUEIRO",
+        "LATERAL",
+        "VOLANTE",
+        "MEIA",
+        "ATACANTE",
+        "PONTA",
+        "CENTROAVANTE"
+      ]
+    },
+    {
+      "id": "ger-olimpicos",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Esportes olímpicos",
+      "words": [
+        "GINÁSTICA",
+        "NADO",
+        "ATLETISMO DE PISTA",
+        "REMO",
+        "CICLISMO",
+        "ESGRIMA",
+        "JUDÔ OLÍMPICO",
+        "LANÇAMENTO"
+      ]
+    },
+    {
+      "id": "ger-xadrez",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Peças de xadrez",
+      "words": [
+        "REI",
+        "RAINHA",
+        "TORRE",
+        "BISPO",
+        "CAVALO",
+        "PEÃO",
+        "BRANCAS",
+        "PRETAS"
+      ]
+    },
+    {
+      "id": "ger-cartas",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Naipes e figuras",
+      "words": [
+        "COPAS",
+        "OUROS",
+        "ESPADAS",
+        "PAUS",
+        "ÁS",
+        "REI",
+        "DAMA",
+        "VALETE"
+      ]
+    },
+    {
+      "id": "ger-geometria",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Formas geométricas",
+      "words": [
+        "CÍRCULO",
+        "QUADRADO",
+        "TRIÂNGULO",
+        "RETÂNGULO",
+        "PENTÁGONO",
+        "HEXÁGONO",
+        "LOSANGO",
+        "TRAPÉZIO"
+      ]
+    },
+    {
+      "id": "ger-solidos",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Sólidos geométricos",
+      "words": [
+        "CUBO",
+        "ESFERA",
+        "CILINDRO",
+        "CONE",
+        "PIRÂMIDE",
+        "PARALELEPÍPEDO",
+        "PRISMA",
+        "TORO"
+      ]
+    },
+    {
+      "id": "ger-numeros",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Operações básicas",
+      "words": [
+        "ADIÇÃO",
+        "SUBTRAÇÃO",
+        "MULTIPLICAÇÃO",
+        "DIVISÃO",
+        "POTÊNCIA",
+        "RAIZ",
+        "PORCENTAGEM",
+        "MÉDIA ARITMÉTICA"
+      ]
+    },
+    {
+      "id": "ger-unidades",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Unidades do SI",
+      "words": [
+        "METRO",
+        "QUILOGRAMA",
+        "SEGUNDO",
+        "AMPERE",
+        "KELVIN",
+        "MOL",
+        "CANDELA",
+        "LUX"
+      ]
+    },
+    {
+      "id": "ger-elementos",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Elementos químicos",
+      "words": [
+        "HIDROGÊNIO",
+        "OXIGÊNIO",
+        "CARBONO",
+        "NITROGÊNIO",
+        "FERRO",
+        "OURO",
+        "PRATA",
+        "SÓDIO",
+        "CÁLCIO",
+        "HÉLIO"
+      ]
+    },
+    {
+      "id": "ger-fisica",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Grandezas físicas",
+      "words": [
+        "FORÇA",
+        "MASSA",
+        "VELOCIDADE",
+        "ACELERAÇÃO",
+        "ENERGIA",
+        "POTÊNCIA",
+        "PRESSÃO",
+        "TEMPERATURA"
+      ]
+    },
+    {
+      "id": "ger-cores-basicas",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Cores do arco-íris",
+      "words": [
+        "VERMELHO",
+        "LARANJA",
+        "AMARELO",
+        "VERDE",
+        "AZUL",
+        "ANIL",
+        "VIOLETA",
+        "ÍNDIGO"
+      ]
+    },
+    {
+      "id": "ger-tempo",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Unidades de tempo",
+      "words": [
+        "SEGUNDO",
+        "MINUTO",
+        "HORA",
+        "DIA",
+        "SEMANA",
+        "MÊS",
+        "ANO",
+        "DÉCADA"
+      ]
+    },
+    {
+      "id": "ger-dias",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Dias da semana",
+      "words": [
+        "SEGUNDA",
+        "TERÇA",
+        "QUARTA",
+        "QUINTA",
+        "SEXTA",
+        "SÁBADO",
+        "DOMINGO",
+        "FERIADO"
+      ]
+    },
+    {
+      "id": "ger-meses",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Meses do ano",
+      "words": [
+        "JANEIRO",
+        "FEVEREIRO",
+        "MARÇO",
+        "ABRIL",
+        "MAIO",
+        "JUNHO",
+        "JULHO",
+        "AGOSTO",
+        "SETEMBRO",
+        "OUTUBRO",
+        "NOVEMBRO",
+        "DEZEMBRO"
+      ]
+    },
+    {
+      "id": "ger-estacoes",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Estações do ano",
+      "words": [
+        "PRIMAVERA",
+        "VERÃO",
+        "OUTONO",
+        "INVERNO",
+        "EQUINÓCIO",
+        "SOLSTÍCIO",
+        "ESTIAGEM",
+        "CHUVA DE VERÃO"
+      ]
+    },
+    {
+      "id": "ger-tempo-meteo",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Tempo (clima do dia)",
+      "words": [
+        "SOL",
+        "CHUVA",
+        "VENTO",
+        "NUVEM",
+        "TROVÃO",
+        "RAIO",
+        "GEADA",
+        "NEBLINA"
+      ]
+    },
+    {
+      "id": "ger-veiculos",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Meios de transporte",
+      "words": [
+        "CARRO",
+        "ÔNIBUS",
+        "TREM",
+        "AVIÃO",
+        "NAVIO",
+        "BICICLETA",
+        "METRÔ",
+        "BONDE"
+      ]
+    },
+    {
+      "id": "ger-ferramentas",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Ferramentas",
+      "words": [
+        "MARTELO",
+        "CHAVE DE FENDA",
+        "ALICATE",
+        "SERRA",
+        "FURADEIRA",
+        "TRENA",
+        "NÍVEL",
+        "CHAVE INGLESA"
+      ]
+    },
+    {
+      "id": "ger-arvores-br",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Árvores brasileiras",
+      "words": [
+        "IPÊ",
+        "PAU-BRASIL",
+        "JEQUITIBÁ",
+        "JATOBÁ",
+        "CASTANHEIRA",
+        "ARAUCÁRIA",
+        "SAMAÚMA",
+        "CEDRO",
+        "PEROBA",
+        "JACARANDÁ"
+      ]
+    },
+    {
+      "id": "ger-flores",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Flores",
+      "words": [
+        "ROSA",
+        "GIRASSOL",
+        "ORQUÍDEA",
+        "MARGARIDA",
+        "VIOLETA",
+        "LÍRIO",
+        "TULIPA",
+        "JASMIM"
+      ]
+    },
+    {
+      "id": "ger-gemas",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Pedras preciosas",
+      "words": [
+        "DIAMANTE",
+        "RUBI",
+        "SAFIRA",
+        "ESMERALDA",
+        "AMETISTA",
+        "TOPÁZIO",
+        "OPALA",
+        "TURMALINA"
+      ]
+    },
+    {
+      "id": "ger-metais",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Metais",
+      "words": [
+        "FERRO",
+        "COBRE",
+        "ALUMÍNIO",
+        "ZINCO",
+        "CHUMBO",
+        "ESTANHO",
+        "NÍQUEL",
+        "TITÂNIO"
+      ]
+    },
+    {
+      "id": "ger-informatica",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Informática básica",
+      "words": [
+        "TECLADO",
+        "MOUSE",
+        "MONITOR",
+        "CPU",
+        "MEMÓRIA",
+        "ARQUIVO",
+        "PASTA",
+        "NAVEGADOR"
+      ]
+    },
+    {
+      "id": "ger-internet",
+      "theme": "gerais",
+      "difficulty": 2,
+      "title": "Internet",
+      "words": [
+        "SITE",
+        "E-MAIL",
+        "LINK",
+        "SERVIDOR",
+        "WIFI",
+        "URL",
+        "DOWNLOAD",
+        "UPLOAD"
+      ]
+    },
+    {
+      "id": "ger-cozinha-br",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Pratos brasileiros",
+      "words": [
+        "FEIJOADA",
+        "ACARAJÉ",
+        "MOQUECA",
+        "CHURRASCO",
+        "PÃO DE QUEIJO",
+        "AÇAÍ",
+        "TACACÁ",
+        "VATAPÁ"
+      ]
+    },
+    {
+      "id": "ger-doces-br",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Doces brasileiros",
+      "words": [
+        "BRIGADEIRO",
+        "BEIJINHO",
+        "QUINDIM",
+        "PUDIM",
+        "AÇAÍ NA TIGELA",
+        "PAMONHA",
+        "COCADA",
+        "PÉ DE MOLEQUE"
+      ]
+    },
+    {
+      "id": "ger-bebidas",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Bebidas",
+      "words": [
+        "ÁGUA",
+        "SUCO",
+        "CAFÉ",
+        "CHÁ",
+        "LEITE",
+        "REFRIGERANTE",
+        "SUCO DE LARANJA",
+        "VITAMINA"
+      ]
+    },
+    {
+      "id": "ger-cafe",
+      "theme": "gerais",
+      "difficulty": 2,
+      "title": "Vocabulário do café",
+      "words": [
+        "GRÃO",
+        "TORRA",
+        "MOÍDO",
+        "ESPRESSO",
+        "COADO",
+        "XÍCARA",
+        "MOAGEM",
+        "CAFÉ TORRADO"
+      ]
+    },
+    {
+      "id": "ger-mar",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "No mar",
+      "words": [
+        "ONDA",
+        "MARÉ",
+        "CORAL",
+        "ALGA",
+        "CONCHA",
+        "AREIA",
+        "FAROL",
+        "PORTO"
+      ]
+    },
+    {
+      "id": "ger-floresta",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Na floresta",
+      "words": [
+        "COPA",
+        "TRONCO",
+        "RAIZ",
+        "SERAPILHEIRA",
+        "TRILHA",
+        "IGARAPÉ",
+        "DOSSEL",
+        "EPÍFITA"
+      ]
+    },
+    {
+      "id": "ger-cidade",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Elementos da cidade",
+      "words": [
+        "PRAÇA",
+        "AVENIDA",
+        "BAIRRO",
+        "SEMÁFORO",
+        "CALÇADA",
+        "PREFEITURA",
+        "MERCADO",
+        "PONTE"
+      ]
+    },
+    {
+      "id": "ger-escola-espacos",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Espaços da escola",
+      "words": [
+        "SALA DE AULA",
+        "PÁTIO",
+        "BIBLIOTECA",
+        "QUADRA",
+        "CANTINA",
+        "SECRETARIA",
+        "LABORATÓRIO",
+        "DIRETORIA"
+      ]
+    },
+    {
+      "id": "ger-hospital",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Hospital",
+      "words": [
+        "PRONTO-SOCORRO",
+        "ENFERMARIA",
+        "UTI",
+        "CONSULTÓRIO",
+        "FARMÁCIA",
+        "RAIO-X",
+        "CIRURGIA",
+        "RECEPÇÃO"
+      ]
+    },
+    {
+      "id": "ger-dinheiro",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Dinheiro",
+      "words": [
+        "MOEDA",
+        "CÉDULA",
+        "CARTÃO",
+        "PIX",
+        "TROCO",
+        "SALÁRIO",
+        "IMPOSTO",
+        "ORÇAMENTO"
+      ]
+    },
+    {
+      "id": "ger-direcao",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Pontos cardeais",
+      "words": [
+        "NORTE",
+        "SUL",
+        "LESTE",
+        "OESTE",
+        "NORDESTE",
+        "NOROESTE",
+        "SUDESTE",
+        "SUDOESTE"
+      ]
+    },
+    {
+      "id": "ger-signos",
+      "theme": "gerais",
+      "difficulty": 2,
+      "title": "Signos do zodíaco",
+      "words": [
+        "ÁRIES",
+        "TOURO",
+        "GÊMEOS",
+        "CÂNCER",
+        "LEÃO",
+        "VIRGEM",
+        "LIBRA",
+        "ESCORPIÃO",
+        "SAGITÁRIO",
+        "CAPRICÓRNIO",
+        "AQUÁRIO",
+        "PEIXES"
+      ]
+    },
+    {
+      "id": "ger-xadrez-lances",
+      "theme": "gerais",
+      "difficulty": 2,
+      "title": "Lances especiais do xadrez",
+      "words": [
+        "ROQUE",
+        "EN PASSANT",
+        "PROMOÇÃO",
+        "XEQUE",
+        "XEQUE-MATE",
+        "AFOGAMENTO",
+        "CAPTURA",
+        "MOVIMENTO DUPLO DO PEÃO"
+      ]
+    },
+    {
+      "id": "ger-olimpiadas-sim",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Símbolos olímpicos",
+      "words": [
+        "AROS",
+        "TOCHA",
+        "MEDALHA",
+        "PÓDIO",
+        "HINO",
+        "BANDEIRA OLÍMPICA",
+        "MASCOTE",
+        "JOGOS"
+      ]
+    },
+    {
+      "id": "ger-leitura",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Objetos de leitura",
+      "words": [
+        "LIVRO",
+        "REVISTA",
+        "JORNAL",
+        "QUADRINHO",
+        "DICIONÁRIO",
+        "ENCICLOPÉDIA",
+        "E-BOOK",
+        "FOLHETO"
+      ]
+    },
+    {
+      "id": "ger-musica-cotid",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Aparelhos de som",
+      "words": [
+        "RÁDIO",
+        "TOCA-DISCOS",
+        "WALKMAN",
+        "FONE DE OUVIDO",
+        "CAIXA DE SOM",
+        "VITROLA",
+        "MP3 PLAYER",
+        "ALTO-FALANTE"
+      ]
+    },
+    {
+      "id": "ger-cinema-sala",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Sala de cinema",
+      "words": [
+        "TELA",
+        "POLTRONA",
+        "PIPOCA",
+        "TRAILER",
+        "SESSÃO",
+        "INGRESSO",
+        "PROJETOR",
+        "ESCADA"
+      ]
+    },
+    {
+      "id": "ger-praia",
+      "theme": "gerais",
+      "difficulty": 0,
+      "title": "Na praia",
+      "words": [
+        "AREIA",
+        "GUARDA-SOL",
+        "PRANCHA",
+        "SUNGA",
+        "BIQUÍNI",
+        "QUIOSQUE",
+        "MAROLA",
+        "CONCHA"
+      ]
+    },
+    {
+      "id": "ger-campo",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "No campo",
+      "words": [
+        "CELEIRO",
+        "TRATOR",
+        "PLANTAÇÃO",
+        "CERCA",
+        "POÇO",
+        "RÉDEA",
+        "ESTÁBULO",
+        "COLHEITA"
+      ]
+    },
+    {
+      "id": "ger-nuvens",
+      "theme": "gerais",
+      "difficulty": 2,
+      "title": "Tipos de nuvem",
+      "words": [
+        "CÚMULOS",
+        "ESTRATOS",
+        "CIRROS",
+        "CÚMULO-NIMBO",
+        "ESTRATO-CÚMULO",
+        "ALTO-ESTRATO",
+        "NIMBOESTRATO",
+        "CIRROSTRATO"
+      ]
+    },
+    {
+      "id": "ger-rochas",
+      "theme": "gerais",
+      "difficulty": 2,
+      "title": "Tipos de rocha",
+      "words": [
+        "ÍGNEA",
+        "SEDIMENTAR",
+        "METAMÓRFICA",
+        "GRANITO",
+        "BASALTO",
+        "CALCÁRIO",
+        "MÁRMORE",
+        "ARENITO"
+      ]
+    },
+    {
+      "id": "ger-energia",
+      "theme": "gerais",
+      "difficulty": 1,
+      "title": "Fontes de energia",
+      "words": [
+        "SOLAR",
+        "EÓLICA",
+        "HIDRELÉTRICA",
+        "TÉRMICA",
+        "NUCLEAR",
+        "BIOMASSA",
+        "GEOTÉRMICA",
+        "MAREMOTRIZ"
+      ]
+    }
+  ]
+}

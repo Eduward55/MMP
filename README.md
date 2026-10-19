@@ -18,9 +18,10 @@ Outros comandos:
 | Comando | O que faz |
 |---|---|
 | `npm run start:local-data` | Roda salvando os dados em `./data/user` em vez do `userData` do Electron |
-| `npm run check` | Autoteste ponta a ponta dentro do Electron (Galeria, Meu Gato, Air Pads, Beat Cats, eventos, Studio com export WAV/WebM e webcam falsa, Termo, MediaPipe local, rede bloqueada) |
+| `npm run check` | Autoteste ponta a ponta dentro do Electron (Galeria, Meu Gato, Air Pads, Beat Cats, eventos, Studio com export WAV/WebM e webcam falsa, Termo, Conexões, MediaPipe local, rede bloqueada) |
 | `npm run screenshots` | Gera PNGs do Hub, Meu Gato e Galeria em `out/screenshots/` |
 | `npm run termo:words` | Regera `data/termo/answers.json` e `valid.json` a partir de dicionários Hunspell e da lista de frequência (ver `data/termo/README.md`) |
+| `npm run conexoes:check` | Valida `data/conexoes/categories.json` (400+ categorias, 8–12 palavras, gerador sem sobreposição) e conta as combinações válidas |
 | `npm run vendor` | Recria `/vendor` a partir de `node_modules` (e baixa o modelo do MediaPipe se faltar) |
 
 Em Linux sem tela (CI/servidor), use o `xvfb`: `xvfb-run -a npm run check`.
@@ -34,7 +35,7 @@ Em Linux sem tela (CI/servidor), use o `xvfb`: `xvfb-run -a npm run check`.
 - **Studio** — edita as notas tocadas nos módulos: **piano roll** (clicar cria, arrastar move, puxar a ponta estica, duplo clique apaga; fileiras fora da escala ficam escuras) e **step sequencer** (grade de semicolcheias com as notas da escala ou as peças da bateria). Muda BPM, escala/tônica (com “Encaixar na escala”), tamanho em compassos e o instrumento de cada faixa (11 instrumentos), quantiza, silencia faixas e grava pelo teclado do computador. **Exportar WAV** renderiza offline; **Exportar vídeo WebM** grava um canvas animado (linha do tempo, gato e lontra) + webcam opcional + áudio — sem webcam, sai só canvas + áudio. Tudo vai para a Galeria; **Salvar** guarda o projeto, que reabre da Galeria para continuar editando.
 - **Air Pads** — MediaPipe Hand Landmarker local (2 mãos) com vídeo espelhado e **dois círculos grandes, um por mão**, cada um com seu instrumento: piano, bateria, synth, baixo ou theremin (X = nota, Y = volume). Quando a ponta do indicador entra no círculo, toca; a altura dentro do círculo escolhe a nota (na bateria: chimbal, caixa ou bumbo) e, segurando o dedo lá dentro, o som repete no BPM. O HUD mostra o instrumento de cada círculo e o seu gato (do Meu Gato) rege com a batuta apontando para o círculo tocado. Tem escala e tônica, BPM, metrônomo, efeitos visuais e **Gravar: Sim/Não** (a gravação vai para a Galeria como áudio). **Salvar** guarda a configuração (instrumentos, escala, tônica, BPM). Sem câmera: o mouse vale como ponta do dedo, as teclas **A** e **L** “encostam” nos círculos e **Simular dedos** move duas pontas virtuais sozinhas.
 - **Termo** — palavras de 5 letras em português, **ignorando acentos** (digite `acao` ou `ação`, tanto faz; o teclado físico normaliza Á, Ç…). Modos **Simples** (1 tabuleiro), **Dueto** (2) e **Quarteto** (4), todos com **10 tentativas** por padrão (configurável de 4 a 15). Escolha o tema: psicologia, arte, história, gerais ou todos. Cores verde/amarelo/cinza com letras repetidas tratadas certinho; nos modos com vários tabuleiros cada tecla é pintada por pedaço (metades ou quadrantes). Animações de digitar, virar, balançar (palavra fora da lista) e pular ao acertar. O sorteio **não repete palavras** até esgotar o tema. Estatísticas locais por modo (jogos, % de vitórias, sequência, recorde, distribuição de tentativas), partida em andamento continua de onde parou, e o seu gato **comemora** (pulos, corações, confete) ou **chora** (lágrimas) no fim. Ao terminar aparece a forma acentuada (ÂNIMO, ÉPOCA).
-- **Conexões** — agrupe 16 palavras em 4 grupos.
+- **Conexões** — jogo de 16 palavras em **4 grupos de 4**, no espírito do Connections. O tabuleiro é gerado na hora a partir de **400+ categorias** reais (`data/conexoes/categories.json`: psicologia, arte, história, música e gerais, 8 a 12 palavras cada). O gerador escolhe 4 categorias **sem palavras ambíguas** (uma palavra não pode pertencer a duas das quatro) e pega 4 palavras de cada; isso dá **centenas de milhões** de combinações. Você seleciona 4 e manda **Enviar**: acertou, o grupo revela a categoria e a cor (amarelo/verde/azul/roxo, do mais direto ao mais obscuro); **4 erros e perde**. Tem **embaralhar**, **dica** (ilumina duas palavras do grupo mais fácil que resta), **histórico** e **recorde local** (vitórias, sequência, menos erros). O gato e a lontra do Meu Gato reagem a acerto, erro, vitória e derrota. **Salvar** guarda a partida em andamento.
 - **Cat Typing** — digite frases fofas; cada acerto toca uma nota; salva recordes.
 
 Todo módulo tem a mesma barra superior: **◀ Hub**, **Salvar** (também `Ctrl+S`) e **Galeria**.
@@ -89,10 +90,11 @@ modules/
     wav.js           AudioBuffer → WAV
     ui.js, icons.js  toasts, modais, ícones pixel
   hub/ mycat/ gallery/ beatcats/ studio/ airpads/ termo/ conexoes/ cattyping/
+                 conexoes/engine.js  gerador de puzzles (4 categorias sem palavras em comum)
 assets/              CSS e fontes pixel (Press Start 2P e VT323, licença OFL)
-data/                padrões versionados (defaults/), exemplos (demo/) e palavras do Termo (termo/)
+data/                padrões versionados (defaults/), exemplos (demo/), palavras do Termo (termo/) e categorias do Conexões (conexoes/)
 vendor/              Tone.js e MediaPipe locais (ver vendor/README.md)
-scripts/             autoteste, screenshots, setup do vendor, gerador das palavras do Termo
+scripts/             autoteste, screenshots, setup do vendor, geradores do Termo e do Conexões
 ```
 
 ## Offline de verdade
@@ -100,6 +102,10 @@ scripts/             autoteste, screenshots, setup do vendor, gerador das palavr
 - Os arquivos são servidos por um protocolo próprio (`mmp://app/…`) direto da pasta do app.
 - O processo principal **bloqueia qualquer requisição http(s)/ws(s)**; o `npm run check` falha se alguma acontecer.
 - A CSP do `index.html` só permite recursos do próprio app (`'self'`, `blob:` e `data:`).
+
+## Categorias do Conexões
+
+`data/conexoes/categories.json` (400+ categorias, 8 a 12 palavras cada, nos temas psicologia, arte, história, música e gerais) é montado por `npm run conexoes:check` a partir de `scripts/conexoes-data/`. O gerador só junta 4 categorias cujas palavras **não se sobrepõem**; o script conta as combinações válidas (são centenas de milhões). Detalhes em `data/conexoes/README.md`.
 
 ## Palavras do Termo
 

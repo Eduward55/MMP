@@ -11,7 +11,8 @@
     "vendor": "node scripts/setup-vendor.js",
     "screenshots": "node scripts/screenshots.js",
     "check": "node scripts/check.js",
-    "termo:words": "node scripts/build-termo-words.mjs"
+    "termo:words": "node scripts/build-termo-words.mjs",
+    "conexoes:check": "node scripts/build-conexoes.mjs"
   },
   "keywords": [
     "electron",

@@ -481,6 +481,90 @@
     ts = window.__mmpTermo.state();
     ok('Termo: partida em andamento continua ao voltar', ts.settings.mode === 'simples' && ts.game.guesses.length === 1 && !ts.game.done && $$('.tm-board .tm-row')[0].querySelectorAll('.tm-tile--absent, .tm-tile--present, .tm-tile--correct').length === 5);
 
+    await go('conexoes');
+    await sleep(500);
+    const C = window.__mmpConexoes;
+    const cd = C.data();
+    ok(
+      'Conexões: 400+ categorias, 5 temas, 8–12 palavras',
+      cd.categories >= 400 &&
+        cd.wordsMin >= 8 &&
+        cd.wordsMax <= 12 &&
+        ['psicologia', 'arte', 'historia', 'musica', 'gerais'].every((t) => cd.themes[t] >= 50),
+      JSON.stringify(cd)
+    );
+    ok('Conexões: milhares de combinações válidas', cd.combos >= 1000, String(cd.combos));
+    let disjointOk = 0;
+    for (let i = 0; i < 24; i++) {
+      const p = C.generate(1000 + i);
+      if (!p || p.groups.length !== 4) continue;
+      const keys = p.groups.flatMap((g) =>
+        g.words.map((w) =>
+          w
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^A-Za-z0-9]/g, '')
+            .toUpperCase()
+        )
+      );
+      if (keys.length === 16 && new Set(keys).size === 16) disjointOk++;
+    }
+    ok('Conexões: gerador sem palavras ambíguas entre as 4 categorias', disjointOk === 24, `${disjointOk}/24`);
+    C.newGame();
+    let cs = C.state();
+    ok('Conexões: 16 cartas e 4 erros', $$('.cn-tile').length === 16 && $$('.cn-pip').length === 4 && !cs.game.done, `${$$('.cn-tile').length} cartas`);
+    ok('Conexões: gato e lontra no palco', $$('.cn-stage svg.creature--cat').length && $$('.cn-stage svg.creature--otter').length);
+    const g0 = cs.game.groups[0];
+    g0.words.forEach((w) => C.select(w));
+    ok('Conexões: seleciona até 4', C.state().selected.length === 4);
+    C.submit();
+    await sleep(80);
+    cs = C.state();
+    ok(
+      'Conexões: acerto revela categoria e cor',
+      cs.game.solved[0] === g0.id && $(`.cn-group[data-color="${g0.color}"]`) && $('.cn-group b').textContent === g0.title && cs.mood === 'yay',
+      $('.cn-group') && $('.cn-group').textContent
+    );
+    const cnBefore = $$('.cn-tile').map((t) => t.textContent).join('|');
+    let cnAfter = cnBefore;
+    for (let i = 0; i < 10 && cnAfter === cnBefore; i++) {
+      C.shuffle();
+      cnAfter = $$('.cn-tile').map((t) => t.textContent).join('|');
+    }
+    ok('Conexões: embaralhar muda a ordem, não as palavras', cnBefore !== cnAfter && cnBefore.split('|').sort().join() === cnAfter.split('|').sort().join());
+    C.hint();
+    cs = C.state();
+    ok('Conexões: dica marca 2 palavras do mesmo grupo', cs.game.hintUsed && cs.game.hinted.length === 2 && $$('.cn-tile.is-hint').length === 2, JSON.stringify(cs.game.hinted));
+    for (const g of C.state().game.groups) {
+      if (C.state().game.solved.includes(g.id)) continue;
+      C.clear();
+      g.words.forEach((w) => C.select(w));
+      C.submit();
+    }
+    await sleep(400);
+    cs = C.state();
+    ok('Conexões: vitória e o gato comemora', cs.game.done && cs.game.won && cs.mood === 'win' && $('.cn-stage[data-mood="win"] .cn-heart') && !$('.cn-result').hidden);
+    ok('Conexões: recorde local', cs.stats.played === 1 && cs.stats.wins === 1 && cs.stats.streak === 1 && cs.history[0].won, JSON.stringify(cs.stats));
+    C.newGame();
+    C.state().game.groups.forEach((g) => C.select(g.words[0]));
+    for (let i = 0; i < 4; i++) C.submit();
+    await sleep(400);
+    cs = C.state();
+    const cnTear = $('.cn-tear');
+    ok('Conexões: 4 erros = derrota e o gato chora', cs.game.done && !cs.game.won && cs.mood === 'lose' && cnTear && getComputedStyle(cnTear).display === 'block' && $$('.cn-group').length === 4);
+    C.newGame();
+    C.state().game.groups[0].words.forEach((w) => C.select(w));
+    C.submit();
+    await go('hub');
+    await go('conexoes');
+    await sleep(400);
+    cs = window.__mmpConexoes.state();
+    ok('Conexões: partida em andamento continua ao voltar', !cs.game.done && cs.game.solved.length === 1);
+    $('.topbar__save').click();
+    await sleep(400);
+    const savedConn = await window.mmp.store.read('conexoes');
+    ok('Conexões: Salvar persiste a partida', savedConn && savedConn.game.solved.length === 1 && savedConn.stats.wins === 1);
+
     const base = new URL('vendor/mediapipe/', location.href).href;
     const vision = await import(`${base}vision_bundle.mjs`);
     const fileset = await vision.FilesetResolver.forVisionTasks(`${base}wasm`);
