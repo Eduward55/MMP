@@ -8,6 +8,18 @@
 .cantar .chips {
   flex-wrap: wrap;
 }
+.cantar .chip {
+  padding: 6px 14px;
+}
+.cantar .chip.is-on {
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg));
+}
+.cantar__fx-now {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
 .cantar__stage {
   display: flex;
   flex-direction: column;

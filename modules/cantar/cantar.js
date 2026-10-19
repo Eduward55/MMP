@@ -6,23 +6,8 @@ import { LOOP_STEPS, SOUND_BY_ID, makeCaptured } from '../beatcats/sounds.js';
 import { createEventLog } from '../shared/events.js';
 import { gallery, getProfile } from '../shared/store.js';
 import { el, startAudio, stamp, toast } from '../shared/ui.js';
-import { createTalkbox } from './vocoder.js';
+import { FX, OVERLAY_IDS, createVoiceFx, fingerprint, graphFor, normalizeFxId } from './voice-fx.js';
 
-const FX = [
-  { id: 'natural', name: 'Natural' },
-  { id: 'autotune', name: 'Autotune' },
-  { id: 'agudo', name: 'Agudo' },
-  { id: 'grave', name: 'Grave' },
-  { id: 'robo', name: 'Robô' },
-  { id: 'eco', name: 'Eco' },
-  { id: 'talkbox', name: 'Talkbox' },
-  { id: 'coro', name: 'Coro' },
-  { id: 'radio', name: 'Rádio' },
-  { id: 'cristal', name: 'Cristal' },
-  { id: 'caverna', name: 'Caverna' },
-  { id: 'sussurro', name: 'Sussurro' },
-  { id: 'mega', name: 'Mega' }
-];
 const SCALE = [0, 2, 3, 5, 7, 8, 10];
 const OTTER_SLOTS = 3;
 
@@ -85,10 +70,6 @@ function snapHz(hz) {
   return 440 * Math.pow(2, (nearest - 69) / 12);
 }
 
-function setWet(node, v) {
-  if (node && node.wet && typeof node.wet.value === 'number') node.wet.value = v;
-}
-
 export default {
   id: 'cantar',
   title: 'Cantar',
@@ -102,24 +83,8 @@ export default {
     let audioPromise = null;
     let stream = null;
     let micNode = null;
-    let analyser = null;
-    let pitchShift = null;
-    let chorus = null;
-    let delay = null;
-    let crusher = null;
-    let reverb = null;
-    let cheby = null;
-    let voiceGain = null;
+    let voiceFx = null;
     let backingGain = null;
-    let dryGain = null;
-    let fxGain = null;
-    let hpf = null;
-    let lpf = null;
-    let deEss = null;
-    let gateGain = null;
-    let comp = null;
-    let talkbox = null;
-    let fxTap = null;
     let rec = null;
     let recTimer = 0;
     let raf = 0;
@@ -128,7 +93,7 @@ export default {
     let pitchFrame = 0;
     let mouthOpen = false;
     let fx = 'natural';
-    let autotune = true;
+    let autotune = false;
     let backing = 'arpeggio';
     let bpm = 100;
     let sync = true;
@@ -142,9 +107,10 @@ export default {
     const micBtn = el('button', { class: 'btn btn--primary' }, 'Ligar microfone');
     const recBtn = el('button', { class: 'btn btn--rec', disabled: true }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar'));
     const timer = el('span', { class: 'pill' }, '00:00');
-    const status = el('p', { class: 'muted' }, 'Ligue o microfone e cante. O gatinho abre a boca no volume da sua voz.');
+    const status = el('p', { class: 'muted' }, 'Ligue o microfone e cante. Cada chip muda a voz de um jeito — Natural fica limpo.');
     const fxRow = el('div', { class: 'chips', role: 'radiogroup', 'aria-label': 'Modificador de voz' });
-    const autoBtn = el('button', { class: 'btn btn--ghost btn--sm', 'aria-pressed': 'true' }, 'Autotune: Sim');
+    const fxCaption = el('p', { class: 'cantar__fx-now' }, FX[0].hint);
+    const autoBtn = el('button', { class: 'btn btn--ghost btn--sm', 'aria-pressed': 'false' }, 'Autotune: Não');
     const syncBtn = el('button', { class: 'btn btn--ghost btn--sm', 'aria-pressed': 'true' }, 'Sync: Sim');
     const bpmInput = el('input', { class: 'range', type: 'range', min: '70', max: '140', value: String(bpm), 'aria-label': 'BPM' });
     const bpmLabel = el('span', { class: 'pill' }, `${bpm} BPM`);
@@ -154,6 +120,10 @@ export default {
     const ottersRow = el('div', { class: 'cantar__otters' });
     const meterFill = el('div', { class: 'cantar__meter-fill' });
     const meter = el('div', { class: 'cantar__meter', title: 'Volume da voz' }, meterFill);
+
+    function currentGraph() {
+      return voiceFx ? voiceFx.snapshot() : graphFor(fx, autotune);
+    }
 
     function paintCat() {
       const svg = catStage.querySelector('svg.creature');
@@ -203,13 +173,15 @@ export default {
               onclick: () => {
                 fx = f.id;
                 applyFx();
-                renderFx();
               }
             },
             f.name
           )
         );
       });
+      const meta = FX.find((f) => f.id === fx);
+      const extra = autotune && OVERLAY_IDS.has(fx) ? ' Autotune por cima.' : '';
+      fxCaption.textContent = `${meta ? meta.hint : ''}`.trim() + extra;
     }
 
     async function fillBacking() {
@@ -225,86 +197,11 @@ export default {
       backing = backingSel.value;
     }
 
-    function disconnectTap() {
-      if (!comp) return;
-      try {
-        if (fxTap) comp.disconnect(fxTap);
-      } catch {}
-      try {
-        if (talkbox) comp.disconnect(talkbox.input);
-      } catch {}
-      fxTap = null;
-    }
-
-    function tap(node) {
-      if (!comp || !node) return;
-      Tone.connect(comp, node);
-      fxTap = node;
-    }
-
     function applyFx() {
-      if (!comp) return;
-      const talk = fx === 'talkbox' || fx === 'mega';
-      const wantTune = autotune && (fx === 'natural' || fx === 'autotune' || fx === 'talkbox' || fx === 'mega' || fx === 'coro');
-      disconnectTap();
-      setWet(chorus, 0);
-      setWet(delay, 0);
-      setWet(crusher, 0);
-      setWet(reverb, 0);
-      if (pitchShift) pitchShift.pitch = 0;
-      if (deEss) deEss.gain.value = fx === 'sussurro' ? 4 : -10;
-      if (lpf) lpf.frequency.value = fx === 'radio' ? 2800 : fx === 'sussurro' ? 4200 : 7800;
-      if (hpf) hpf.frequency.value = fx === 'sussurro' ? 420 : fx === 'radio' ? 520 : 90;
-
-      if (fx === 'natural' && !autotune) {
-        if (reverb) {
-          setWet(reverb, 0.12);
-          tap(reverb);
-        }
-        if (dryGain) dryGain.gain.value = 0.96;
-        if (fxGain) fxGain.gain.value = 0.12;
-      } else if (fx === 'agudo' || fx === 'grave' || fx === 'autotune' || wantTune) {
-        if (fx === 'agudo') pitchShift.pitch = 7;
-        else if (fx === 'grave') pitchShift.pitch = -5;
-        tap(pitchShift);
-        if (dryGain) dryGain.gain.value = 0.22;
-        if (fxGain) fxGain.gain.value = 0.9;
-      } else if (fx === 'robo') {
-        setWet(crusher, 0.42);
-        tap(crusher);
-        if (dryGain) dryGain.gain.value = 0.12;
-        if (fxGain) fxGain.gain.value = 0.8;
-      } else if (fx === 'eco' || fx === 'caverna' || fx === 'coro') {
-        setWet(delay, fx === 'caverna' ? 0.48 : fx === 'eco' ? 0.4 : 0.22);
-        setWet(chorus, fx === 'coro' ? 0.55 : 0.18);
-        setWet(reverb, fx === 'caverna' ? 0.55 : 0.2);
-        tap(delay);
-        if (dryGain) dryGain.gain.value = 0.35;
-        if (fxGain) fxGain.gain.value = 0.78;
-      } else if (fx === 'radio') {
-        setWet(crusher, 0.22);
-        tap(crusher);
-        if (dryGain) dryGain.gain.value = 0.2;
-        if (fxGain) fxGain.gain.value = 0.75;
-      } else if (fx === 'cristal' && cheby) {
-        tap(cheby);
-        if (dryGain) dryGain.gain.value = 0.28;
-        if (fxGain) fxGain.gain.value = 0.7;
-      } else {
-        if (reverb) {
-          setWet(reverb, 0.1);
-          tap(reverb);
-        }
-        if (dryGain) dryGain.gain.value = 0.9;
-        if (fxGain) fxGain.gain.value = 0.15;
-      }
-      if (talk && talkbox) {
-        Tone.connect(comp, talkbox.input);
-        talkbox.setWet(fx === 'mega' ? 1.05 : 1.3);
-        if (dryGain) dryGain.gain.value = Math.min(dryGain.gain.value, 0.16);
-      } else if (talkbox) {
-        talkbox.setWet(0);
-      }
+      fx = normalizeFxId(fx);
+      if (voiceFx) voiceFx.apply(fx, autotune);
+      renderMix();
+      renderFx();
     }
 
     async function ensureAudio() {
@@ -312,36 +209,8 @@ export default {
         audioPromise = (async () => {
           Tone = await startAudio();
           if (!alive) return;
-          const ctx = Tone.getContext().rawContext;
-          voiceGain = new Tone.Gain(0.86).toDestination();
+          voiceFx = createVoiceFx(Tone);
           backingGain = new Tone.Gain(0.36).toDestination();
-          dryGain = new Tone.Gain(0.96).connect(voiceGain);
-          fxGain = new Tone.Gain(0.2).connect(voiceGain);
-          hpf = new Tone.Filter({ type: 'highpass', frequency: 90, Q: 0.55 });
-          lpf = new Tone.Filter({ type: 'lowpass', frequency: 7800, Q: 0.5 });
-          deEss = new Tone.Filter({ type: 'highshelf', frequency: 6200, gain: -10 });
-          gateGain = new Tone.Gain(1);
-          comp = new Tone.Compressor({ threshold: -18, ratio: 2.6, attack: 0.008, release: 0.16, knee: 10 });
-          pitchShift = new Tone.PitchShift({ pitch: 0, windowSize: 0.1, delayTime: 0.03 }).connect(fxGain);
-          chorus = new Tone.Chorus(1.8, 2.2, 0.28).start().connect(fxGain);
-          delay = new Tone.FeedbackDelay('8n', 0.18).connect(chorus);
-          crusher = new Tone.BitCrusher(5).connect(fxGain);
-          try {
-            reverb = new Tone.JCReverb(0.25).connect(fxGain);
-          } catch {
-            try {
-              reverb = new Tone.Freeverb({ roomSize: 0.4, dampening: 4000 }).connect(fxGain);
-            } catch {
-              reverb = null;
-            }
-          }
-          try {
-            cheby = new Tone.Chebyshev(3).connect(fxGain);
-          } catch {
-            cheby = null;
-          }
-          talkbox = createTalkbox(ctx);
-          Tone.connect(talkbox.output, voiceGain);
           Tone.Transport.bpm.value = bpm;
           applyFx();
         })();
@@ -367,20 +236,11 @@ export default {
       const src = Tone.context.createMediaStreamSource(stream);
       micNode = new Tone.Gain(1.05);
       Tone.connect(src, micNode);
-      analyser = Tone.context.createAnalyser();
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0.42;
-      micNode.connect(hpf);
-      hpf.connect(lpf);
-      lpf.connect(deEss);
-      deEss.connect(gateGain);
-      gateGain.connect(comp);
-      Tone.connect(comp, analyser);
-      Tone.connect(comp, dryGain);
+      Tone.connect(micNode, voiceFx.input);
       recBtn.disabled = false;
       micBtn.textContent = 'Microfone ligado';
       micBtn.disabled = true;
-      status.textContent = 'Cante perto do microfone. Natural fica limpo; os outros chips mexem na mixagem.';
+      status.textContent = 'Cante perto do microfone. Natural fica limpo; cada chip liga um efeito diferente.';
       applyFx();
       if (sync) Tone.Transport.start('+0.05');
       tickMouth();
@@ -388,17 +248,17 @@ export default {
     }
 
     function tickMouth() {
-      if (!alive || !analyser) return;
+      if (!alive || !voiceFx || !voiceFx.analyser) return;
+      const analyser = voiceFx.analyser;
       const buf = new Float32Array(analyser.fftSize);
       analyser.getFloatTimeDomainData(buf);
       let sum = 0;
       const n = Math.min(buf.length, 1024);
       for (let i = 0; i < n; i++) sum += buf[i] * buf[i];
       rms = Math.sqrt(sum / n);
-      if (gateGain) {
-        const openGate = rms > 0.016;
-        gateGain.gain.rampTo(openGate ? 1 : 0.05, openGate ? 0.025 : 0.14);
-      }
+      const g = voiceFx.snapshot();
+      voiceFx.setGate(rms > 0.016, g.gateFloor);
+      voiceFx.setNoiseEnvelope(rms);
       const open = rms > 0.025;
       if (open !== mouthOpen) {
         mouthOpen = open;
@@ -406,17 +266,19 @@ export default {
       }
       meterFill.style.width = `${Math.min(100, rms * 420)}%`;
       pitchFrame++;
-      const wantTune = autotune && (fx === 'autotune' || fx === 'natural' || fx === 'talkbox' || fx === 'mega' || fx === 'coro');
-      if (wantTune && pitchFrame % 2 === 0) {
+      const wantsSnap = fx === 'autotune' || (autotune && OVERLAY_IDS.has(fx));
+      if (pitchFrame % 2 === 0) {
         const hz = detectPitchYin(buf, Tone.context.sampleRate);
         if (hz) {
           pitchHz = hz;
           const snapped = snapHz(hz);
-          if (snapped && pitchShift && (fx === 'autotune' || fx === 'natural' || fx === 'coro' || fx === 'mega')) {
+          if (wantsSnap && snapped) {
             const semis = 12 * Math.log2(snapped / hz);
-            pitchShift.pitch = Math.max(-12, Math.min(12, semis * (fx === 'autotune' ? 1 : 0.82)));
+            voiceFx.setTune(semis);
+          } else {
+            voiceFx.setTune(0);
           }
-          if (talkbox) talkbox.setCarrierHz(fx === 'talkbox' || fx === 'mega' ? snapHz(hz) || hz : hz);
+          if (fx === 'talkbox') voiceFx.setCarrierHz((autotune && snapped) || hz);
         }
       }
       raf = requestAnimationFrame(tickMouth);
@@ -508,8 +370,10 @@ export default {
     }
 
     function renderMix() {
-      if (voiceGain) voiceGain.gain.value = Number(mixInput.value) / 100;
-      if (backingGain) backingGain.gain.value = 1 - Number(mixInput.value) / 200;
+      const mix = Number(mixInput.value) / 100;
+      const duck = currentGraph().backingDuck ?? 1;
+      if (voiceFx) voiceFx.setOutGain(mix);
+      if (backingGain) backingGain.gain.value = (1 - mix / 2) * duck;
     }
 
     recBtn.addEventListener('click', async () => {
@@ -588,7 +452,7 @@ export default {
           el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome'), nameInput),
           el('div', { class: 'toolbar' }, micBtn, recBtn, timer),
           status,
-          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Modificador de voz'), fxRow, autoBtn),
+          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Modificador de voz'), fxRow, fxCaption, autoBtn),
           el(
             'div',
             { class: 'field' },
@@ -597,7 +461,7 @@ export default {
             el('div', { class: 'row-actions' }, syncBtn, bpmLabel, bpmInput)
           ),
           el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Mix da voz'), mixInput),
-          el('p', { class: 'hint' }, 'Natural usa gate, filtro e compressão para tirar o chiado. Grave no microfone; cada lontrinha pode repetir uma frase no beat.')
+          el('p', { class: 'hint' }, 'Natural é limpo (gate, filtro e compressão). Os outros chips ligam só o efeito escolhido — Agudo/Grave mudam o tom, Eco atrasos, Robô metal, Caverna reverb, Velhinha vibrato…')
         )
       )
     );
@@ -608,17 +472,29 @@ export default {
     fillBacking();
 
     window.__mmpCantar = {
-      state: () => ({ fx, autotune, backing, bpm, sync, rms, pitchHz, otters: otterClips.filter(Boolean).length, mic: Boolean(stream) }),
+      state: () => ({
+        fx,
+        autotune,
+        backing,
+        bpm,
+        sync,
+        rms,
+        pitchHz,
+        otters: otterClips.filter(Boolean).length,
+        mic: Boolean(stream),
+        graph: currentGraph()
+      }),
+      graph: () => currentGraph(),
+      fingerprint: () => fingerprint(currentGraph()),
+      boot: () => ensureAudio(),
       setFx: (id) => {
-        if (FX.some((f) => f.id === id)) {
-          fx = id;
-          applyFx();
-          renderFx();
-        }
+        fx = normalizeFxId(id);
+        applyFx();
       },
       setAutotune: (on) => {
         autotune = Boolean(on);
         autoBtn.textContent = `Autotune: ${autotune ? 'Sim' : 'Não'}`;
+        autoBtn.setAttribute('aria-pressed', String(autotune));
         applyFx();
       },
       setBacking: (id) => {
@@ -645,8 +521,9 @@ export default {
         otterPlayers.forEach((p) => p.dispose && p.dispose());
         if (stream) stream.getTracks().forEach((t) => t.stop());
         if (rec) rec.dispose();
-        if (talkbox) talkbox.dispose();
-        [pitchShift, chorus, delay, crusher, reverb, cheby, voiceGain, backingGain, micNode, dryGain, fxGain, hpf, lpf, deEss, gateGain, comp].forEach((n) => n && n.dispose && n.dispose());
+        if (voiceFx) voiceFx.dispose();
+        if (backingGain) backingGain.dispose();
+        if (micNode) micNode.dispose();
         if (window.__mmpCantar) delete window.__mmpCantar;
       }
     };

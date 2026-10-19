@@ -37,7 +37,9 @@ export const HINTS = {
 • Palavras vêm com 3 a 7 letras, misturadas.`,
   cantar: `Cantar — como mexer
 • Ligue o microfone e cante. O gato abre a boca no volume da voz.
-• Autotune cola a nota; Agudo, Grave, Robô e Eco mudam a voz.
+• Natural é limpo. Acapela seca a base. Autotune cola a nota.
+• Agudo/Grave mudam o tom; Robô metaliza; Eco atrasa; Caverna é reverb escuro.
+• Sussurro, Rádio, Velhinha, Talkbox, Coro e Cristal têm cada um o seu grafo.
 • Escolha uma base (arpejo ou um beat da Galeria) e ligue o Sync.
 • Grave uma frase em cada lontrinha: ela repete no BPM.`,
   tetris: `Tetris — como mexer
