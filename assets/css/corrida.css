@@ -1,3 +1,4 @@
+/* Corrida — kart pixel art (bico em cima, aerofólio embaixo). */
 .cr {
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
@@ -37,110 +38,119 @@
 .cr-car {
   --car: #fb923c;
   --trim: #9a3412;
+  --steer: 0deg;
   position: absolute;
-  bottom: 28px;
+  bottom: 18px;
   left: 50%;
-  width: 92px;
-  height: 124px;
-  transform: translateX(-50%);
+  width: 108px;
+  height: 162px;
+  transform: translateX(-50%) rotate(var(--steer));
+  transform-origin: 50% 62%;
   pointer-events: none;
   z-index: 3;
+  filter: drop-shadow(0 10px 0 color-mix(in srgb, #000 22%, transparent));
 }
 .cr-car.is-hit {
   animation: ct-shake 0.35s ease;
 }
-.cr-car.is-boost .cr-car__body {
-  box-shadow: 0 -10px 18px color-mix(in srgb, var(--car) 45%, transparent);
+.cr-car.is-boost .cr-car__art {
+  filter: drop-shadow(0 -10px 14px color-mix(in srgb, var(--car) 55%, transparent));
 }
-.cr-car__light {
+.cr-car.is-boost .cr-car__beam {
+  height: 58px;
+  top: -46px;
+  opacity: 1;
+}
+.cr-car.is-boost .cr-car__flame {
+  opacity: 1;
+}
+.cr-car__shadow {
   position: absolute;
-  top: 10px;
-  width: 12px;
-  height: 8px;
-  background: #fef9c3;
-  border-radius: 3px 3px 2px 2px;
-  box-shadow: 0 -6px 10px #fde047;
-  z-index: 4;
-}
-.cr-car__light--l {
-  left: 16px;
-}
-.cr-car__light--r {
-  right: 16px;
-}
-.cr-car__hood {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  top: 16px;
-  height: 18px;
-  background: color-mix(in srgb, var(--car) 62%, #111);
-  border-radius: 8px 8px 4px 4px;
-  z-index: 2;
-}
-.cr-car__body {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  top: 20px;
-  bottom: 16px;
-  background: var(--car);
-  border: 2px solid var(--trim);
-  border-radius: 14px 14px 18px 18px;
-}
-.cr-car__glass {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  top: 36px;
-  height: 28px;
-  background: color-mix(in srgb, #9bd7ff 42%, var(--car));
-  border: 2px solid var(--trim);
-  border-radius: 8px 8px 10px 10px;
-  opacity: 0.55;
-  z-index: 2;
-}
-.cr-car__spoiler {
-  position: absolute;
-  left: 18px;
-  right: 18px;
+  left: 16%;
+  right: 16%;
   bottom: 6px;
-  height: 8px;
-  background: var(--trim);
-  border-radius: 4px;
+  height: 16px;
+  background: #000;
+  opacity: 0.32;
+  border-radius: 50%;
+  filter: blur(3px);
+  z-index: 0;
 }
-.cr-car__wheel {
+.cr-car__beam {
   position: absolute;
-  width: 14px;
-  height: 18px;
-  background: #18181b;
-  border-radius: 4px;
-  border: 2px solid #3f3f46;
+  top: -34px;
+  width: 22px;
+  height: 44px;
+  background: linear-gradient(to top, rgba(254, 243, 166, 0.7), rgba(253, 224, 71, 0.18) 55%, transparent);
+  clip-path: polygon(28% 100%, 72% 100%, 100% 0, 0 0);
+  opacity: 0.85;
+  animation: cr-beam 1.6s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
 }
-.cr-car__wheel--fl {
-  left: 4px;
-  top: 22px;
+.cr-car__beam--l {
+  left: 18px;
 }
-.cr-car__wheel--fr {
-  right: 4px;
-  top: 22px;
+.cr-car__beam--r {
+  right: 18px;
 }
-.cr-car__wheel--bl {
-  left: 4px;
-  bottom: 18px;
+.cr-car__art {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
 }
-.cr-car__wheel--br {
-  right: 4px;
-  bottom: 18px;
+.cr-car__art svg,
+.cr-car__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 .cr-car__pilot {
   position: absolute;
   left: 50%;
-  top: 38px;
+  top: 34%;
+  width: 54px;
+  height: 44px;
+  overflow: hidden;
   z-index: 4;
   margin: 0;
   line-height: 0;
   transform: translateX(-50%);
+  filter: drop-shadow(0 1px 0 #12080c);
+}
+.cr-car__pilot svg {
+  display: block;
+  width: 54px;
+  height: 54px;
+  margin-top: -2px;
+}
+.cr-car__flame {
+  position: absolute;
+  bottom: 2px;
+  width: 8px;
+  height: 14px;
+  border-radius: 3px 3px 6px 6px;
+  background: linear-gradient(to bottom, #fdba74, #ea580c 55%, transparent);
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.cr-car__flame--l {
+  left: 40%;
+}
+.cr-car__flame--r {
+  right: 40%;
+}
+@keyframes cr-beam {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 .cr-overlay {
   position: absolute;

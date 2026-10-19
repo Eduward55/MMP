@@ -208,9 +208,47 @@
     ok('Air Pads: gravação salva também os eventos JSON (nota, tempo, instrumento)', apEv && apEv.kind === 'mmp-events' && apEv.events.length >= 1 && apEv.events.every((e) => Number.isFinite(e.time) && Number.isFinite(e.note) && e.inst === 'synth') && take.meta.notes === apEv.events.length, apEv && JSON.stringify(apEv.events.slice(0, 2)));
     const apAll = ap.events();
     ok('Air Pads: tudo que foi tocado vira evento (piano, bateria, theremin)', apAll && ['piano', 'drums', 'theremin', 'synth'].every((i) => apAll.events.some((e) => e.inst === i)) && apAll.events.some((e) => e.inst === 'drums' && e.note === 36), apAll && `${apAll.events.length} eventos · ${[...new Set(apAll.events.map((e) => e.inst))].join(',')}`);
+    {
+      const moveMouse = (x, y) =>
+        window.dispatchEvent(
+          new PointerEvent('pointermove', { bubbles: true, cancelable: true, clientX: x, clientY: y, pointerId: 1, pointerType: 'mouse', isPrimary: true })
+        );
+      const assertBead = async (sel, label) => {
+        const pad = $(sel);
+        const r = pad.getBoundingClientRect();
+        const samples = [
+          [r.left + r.width / 2, r.top + r.height / 2, 'centro'],
+          [r.left + r.width * 0.7, r.top + r.height * 0.38, 'fatia']
+        ];
+        for (const [x, y, where] of samples) {
+          moveMouse(x, y);
+          await sleep(80);
+          const bead = pad.querySelector('.air-bead');
+          const br = bead && bead.getBoundingClientRect();
+          const d = br ? Math.hypot(br.left + br.width / 2 - x, br.top + br.height / 2 - y) : 99;
+          const i = sel.includes('--0') ? 0 : 1;
+          ok(
+            `Air Pads: mouse ${where} em ${label} captura e a bolinha segue`,
+            ap.state().inside[i] && bead && bead.classList.contains('is-on') && d <= 16,
+            `d=${d.toFixed(1)} inside=${JSON.stringify(ap.state().inside)}`
+          );
+        }
+      };
+      ap.release();
+      await assertBead('.air-circle--0', 'esquerda');
+      await assertBead('.air-circle--1', 'direita');
+      ap.setArenaSize(true);
+      await sleep(200);
+      await assertBead('.air-circle--0', 'tela cheia esquerda');
+      await assertBead('.air-circle--1', 'tela cheia direita');
+      ap.setArenaSize(false);
+      moveMouse(0, 0);
+      await sleep(80);
+    }
+    const apSent = ap.events();
     ap.sendToStudio();
     await sleep(900);
-    ok('Air Pads: “Editar no Studio” abre o que foi tocado no Studio', location.hash.startsWith('#/studio') && window.__mmpStudio && window.__mmpStudio.state().notes === apAll.events.length && window.__mmpStudio.state().origin.includes('Air Pads'), window.__mmpStudio && JSON.stringify(window.__mmpStudio.state().tracks.map((t) => `${t.name}:${t.inst}:${t.notes}`)));
+    ok('Air Pads: “Editar no Studio” abre o que foi tocado no Studio', location.hash.startsWith('#/studio') && window.__mmpStudio && window.__mmpStudio.state().notes === apSent.events.length && window.__mmpStudio.state().origin.includes('Air Pads'), window.__mmpStudio && JSON.stringify(window.__mmpStudio.state().tracks.map((t) => `${t.name}:${t.inst}:${t.notes}`)));
 
     await go('beatcats');
     const bc = window.__mmpBeatCats;

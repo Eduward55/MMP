@@ -320,7 +320,7 @@ export default {
       } else if (run.paused) {
         overlay.hidden = false;
         overlay.innerHTML = '';
-          overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Tab ou Esc continua. P escreve P e atira.'), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Continuar'));
+          overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Tab ou Esc continua.'), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Continuar'));
       } else overlay.hidden = true;
     }
 

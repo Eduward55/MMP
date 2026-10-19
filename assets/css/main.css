@@ -1036,6 +1036,16 @@ svg.creature:focus-visible {
   }
 }
 
+#dock-root {
+  position: static;
+  inset: auto;
+  transform: none;
+  pointer-events: none;
+}
+#dock-root .dock {
+  pointer-events: auto;
+}
+
 .dock {
   position: fixed;
   right: 14px;
@@ -1125,11 +1135,11 @@ svg.creature:focus-visible {
 .dock.is-collapsed {
   filter: none;
   backdrop-filter: none;
-  /* Ignora left/top salvos do duo expandido — o + fica no canto. */
-  left: auto !important;
-  top: auto !important;
-  right: 14px !important;
-  bottom: 12px !important;
+  /* Viewport px, never left:auto — auto used the saved duo static pos (1023,40). */
+  left: calc(100vw - 62px) !important;
+  top: calc(100vh - 60px) !important;
+  right: auto !important;
+  bottom: auto !important;
 }
 .dock.is-collapsed .dock__bubble,
 .dock.is-collapsed .dock__duo {
@@ -1149,16 +1159,25 @@ svg.creature:focus-visible {
   image-rendering: pixelated;
 }
 .dock[hidden] {
-  display: none;
+  display: none !important;
 }
 
-/* #dock-root é irmão do #app: a arena em FS (z-index 50) não cobre o + colapsado. */
+/* #dock-root é irmão do #app: a arena em FS (z-index 50) não cobre o + colapsado.
+   Esconde o root inteiro (não só aside[hidden]) em tela cheia, :fullscreen e Gravar. */
+html.is-dock-hidden #dock-root,
 html.is-airpads-fs #dock-root,
+html.is-recording #dock-root,
 html:fullscreen #dock-root,
+html:-webkit-full-screen #dock-root,
 html:has(:fullscreen) #dock-root,
+html:has(:-webkit-full-screen) #dock-root,
 body:has(.airx.is-arena-fs) #dock-root,
-body:has(.airx__arena.is-fs) #dock-root {
+body:has(.airx__arena.is-fs) #dock-root,
+body:has(.airx .btn--rec.is-active) #dock-root,
+#dock-root[hidden] {
   display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .hub {

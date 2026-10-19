@@ -138,12 +138,88 @@ const TIPS = [
 
 let dock = null;
 const DOCK_POS_KEY = 'dock-pos';
+const INSET_PROPS = ['left', 'top', 'right', 'bottom', 'inset', 'transform', 'margin'];
+let moduleVisible = true;
+let overlayHidden = false;
+let chromeBound = false;
+
+function dockRootEl() {
+  return document.getElementById('dock-root');
+}
+
+function clearInset(node) {
+  if (!node) return;
+  INSET_PROPS.forEach((p) => node.style.removeProperty(p));
+}
+
+function recBtnIsOn(btn) {
+  if (!btn) return false;
+  return (
+    btn.classList.contains('is-active') ||
+    btn.getAttribute('aria-pressed') === 'true' ||
+    /Gravar:\s*Sim/i.test(btn.textContent || '')
+  );
+}
+
+function liveOverlayShouldHide() {
+  const html = document.documentElement;
+  const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+  return Boolean(
+    overlayHidden ||
+      html.classList.contains('is-airpads-fs') ||
+      html.classList.contains('is-recording') ||
+      fsEl ||
+      document.querySelector('.airx.is-arena-fs, .airx__arena.is-fs') ||
+      recBtnIsOn(document.querySelector('.airx .btn--rec'))
+  );
+}
+
+function syncDockVisibility() {
+  const hide = !moduleVisible || liveOverlayShouldHide();
+  const root = dockRootEl();
+  htmlToggle(document.documentElement, 'is-dock-hidden', hide);
+  if (root) {
+    root.hidden = hide;
+    if (hide) {
+      root.style.setProperty('display', 'none', 'important');
+      root.setAttribute('aria-hidden', 'true');
+    } else {
+      root.style.removeProperty('display');
+      root.removeAttribute('aria-hidden');
+    }
+  }
+  if (dock) dock.hidden = hide;
+}
+
+function htmlToggle(node, cls, on) {
+  if (!node) return;
+  node.classList.toggle(cls, on);
+}
 
 function pinCollapsedDock(node) {
-  node.style.left = 'auto';
-  node.style.top = 'auto';
-  node.style.right = '14px';
-  node.style.bottom = '12px';
+  if (!node) return;
+  clearInset(node);
+  clearInset(dockRootEl());
+  const size = 48;
+  const x = Math.max(8, Math.round(window.innerWidth - size - 14));
+  const y = Math.max(8, Math.round(window.innerHeight - size - 12));
+  node.style.setProperty('position', 'fixed', 'important');
+  node.style.setProperty('left', `${x}px`, 'important');
+  node.style.setProperty('top', `${y}px`, 'important');
+  node.style.setProperty('right', 'auto', 'important');
+  node.style.setProperty('bottom', 'auto', 'important');
+  requestAnimationFrame(() => {
+    if (!node.classList.contains('is-collapsed')) return;
+    const r = node.getBoundingClientRect();
+    const w = r.width || 48;
+    const h = r.height || 48;
+    const nx = Math.max(8, Math.round(window.innerWidth - w - 14));
+    const ny = Math.max(8, Math.round(window.innerHeight - h - 12));
+    if (Math.abs(r.left - nx) > 1 || Math.abs(r.top - ny) > 1) {
+      node.style.setProperty('left', `${nx}px`, 'important');
+      node.style.setProperty('top', `${ny}px`, 'important');
+    }
+  });
 }
 
 function applyDockPos(node, pos) {
@@ -151,6 +227,8 @@ function applyDockPos(node, pos) {
     pinCollapsedDock(node);
     return;
   }
+  node.style.removeProperty('position');
+  clearInset(node);
   if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
   node.style.left = `${pos.x}px`;
   node.style.top = `${pos.y}px`;
@@ -163,10 +241,8 @@ function restoreDockPos(node) {
     .then((pos) => {
       if (node.classList.contains('is-collapsed')) return pinCollapsedDock(node);
       if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) {
-        node.style.left = '';
-        node.style.top = '';
-        node.style.right = '';
-        node.style.bottom = '';
+        node.style.removeProperty('position');
+        clearInset(node);
         return;
       }
       applyDockPos(node, pos);
@@ -234,12 +310,50 @@ export function mountDock(root) {
     else restoreDockPos(node);
   });
   bindDockDrag(node);
+  bindDockChrome();
   root.append(node);
+  syncDockVisibility();
   return node;
 }
 
+function bindDockChrome() {
+  if (chromeBound) return;
+  chromeBound = true;
+  const onChrome = () => {
+    syncDockVisibility();
+    if (dock && dock.classList.contains('is-collapsed')) pinCollapsedDock(dock);
+  };
+  document.addEventListener('fullscreenchange', onChrome);
+  document.addEventListener('webkitfullscreenchange', onChrome);
+  window.addEventListener('resize', onChrome);
+  new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      const el = m.target;
+      if (!(el instanceof Element)) continue;
+      if (
+        el === document.documentElement ||
+        el === document.body ||
+        el.id === 'dock-root' ||
+        el.classList.contains('btn--rec') ||
+        el.classList.contains('airx') ||
+        el.classList.contains('airx__arena') ||
+        el.classList.contains('dock')
+      ) {
+        onChrome();
+        return;
+      }
+    }
+  }).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['class', 'hidden'] });
+}
+
 export function setDockVisible(visible) {
-  if (dock) dock.hidden = !visible;
+  moduleVisible = Boolean(visible);
+  syncDockVisibility();
+}
+
+export function setDockCaptureHidden(hidden) {
+  overlayHidden = Boolean(hidden);
+  syncDockVisibility();
 }
 
 let hideTimer = 0;

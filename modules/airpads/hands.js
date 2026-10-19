@@ -2,7 +2,6 @@
 
 const VENDOR = new URL('../../vendor/mediapipe/', import.meta.url).href;
 const FINGERTIPS = [4, 8, 12, 16, 20];
-const PALM = [0, 5, 9, 13, 17];
 export const HAND_CONNECTIONS = [
   [0, 1],
   [1, 2],
@@ -30,7 +29,8 @@ export const HAND_CONNECTIONS = [
 ];
 let landmarkerPromise = null;
 const smooth = new Map();
-const HOLD_FRAMES = 10;
+const HOLD_FRAMES = 3;
+const SMOOTH = 0.88;
 
 export function loadHandLandmarker() {
   if (!landmarkerPromise) {
@@ -67,17 +67,33 @@ function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
-function videoBox(video, arenaW, arenaH) {
-  const vw = video.videoWidth || 640;
-  const vh = video.videoHeight || 480;
-  if (!vw || !vh || !arenaW || !arenaH) {
-    return { vw, vh, dw: arenaW, dh: arenaH, ox: 0, oy: 0 };
+function arenaBox(arenaW, arenaH) {
+  if (arenaW && typeof arenaW === 'object') {
+    return { w: arenaW.clientWidth || 0, h: arenaW.clientHeight || 0, el: arenaW };
   }
-  const fit = (typeof getComputedStyle === 'function' && video ? getComputedStyle(video).objectFit : '') || 'cover';
-  const scale = fit === 'contain' ? Math.min(arenaW / vw, arenaH / vh) : Math.max(arenaW / vw, arenaH / vh);
+  return { w: arenaW || 0, h: arenaH || 0, el: null };
+}
+
+function videoBox(video, arenaW, arenaH) {
+  const { w: boxW, h: boxH } = arenaBox(arenaW, arenaH);
+  const vw = (video && video.videoWidth) || 640;
+  const vh = (video && video.videoHeight) || 480;
+  const elW = (video && video.clientWidth) || boxW;
+  const elH = (video && video.clientHeight) || boxH;
+  if (!vw || !vh || !elW || !elH) {
+    return { vw, vh, dw: elW || boxW, dh: elH || boxH, ox: 0, oy: 0 };
+  }
+  let fit = 'contain';
+  if (typeof getComputedStyle === 'function' && video) {
+    const cs = getComputedStyle(video).objectFit;
+    if (cs) fit = cs;
+  }
+  const scale = fit === 'contain' || fit === 'scale-down' ? Math.min(elW / vw, elH / vh) : Math.max(elW / vw, elH / vh);
   const dw = vw * scale;
   const dh = vh * scale;
-  return { vw, vh, dw, dh, ox: (arenaW - dw) / 2, oy: (arenaH - dh) / 2 };
+  const baseX = video && Number.isFinite(video.offsetLeft) ? video.offsetLeft : 0;
+  const baseY = video && Number.isFinite(video.offsetTop) ? video.offsetTop : 0;
+  return { vw, vh, dw, dh, ox: baseX + (elW - dw) / 2, oy: baseY + (elH - dh) / 2 };
 }
 
 function handednessOf(result, i) {
@@ -91,32 +107,24 @@ function handednessOf(result, i) {
 
 /**
  * Converte o resultado do HandLandmarker em pontos na arena (px), já espelhados
- * para coincidir com o vídeo em object-fit + scaleX(-1).
- * Inclui palma, pulso e todas as pontas — qualquer parte da mão toca o pad.
+ * para coincidir com o vídeo em object-fit:contain + scaleX(-1).
+ * Pontas dos dedos tocam o pad; a palma só entra no esqueleto desenhado.
  * Retorna [{ hand: 0 | 1, x, y, tips: [{x,y}], points: [{x, y}] }]
  */
 export function mapHands(result, video, arenaW, arenaH) {
+  const { w: width } = arenaBox(arenaW, arenaH);
   const { dw, dh, ox, oy } = videoBox(video, arenaW, arenaH);
+  // CSS scaleX(-1) on the video: mirror x so the skeleton sits on the selfie image.
   const toPx = (p) => ({ x: ox + (1 - p.x) * dw, y: oy + p.y * dh });
 
   const hands = (result.landmarks || []).map((lm, i) => {
     const points = lm.map(toPx);
-    const tips = [
-      ...FINGERTIPS.map((idx) => points[idx]).filter(Boolean),
-      ...PALM.map((idx) => points[idx]).filter(Boolean)
-    ];
-    if (points.length >= 18) {
-      const palm = PALM.map((idx) => points[idx]).filter(Boolean);
-      if (palm.length) {
-        tips.push({
-          x: palm.reduce((s, p) => s + p.x, 0) / palm.length,
-          y: palm.reduce((s, p) => s + p.y, 0) / palm.length
-        });
-      }
-    }
+    // Only fingertips hit the pad. Palm points sit closer to the center and stole
+    // the "nearest to center" race, so the bead lagged behind the actual finger.
+    const tips = FINGERTIPS.map((idx) => points[idx]).filter(Boolean);
     const index = points[8] || tips[0] || points[0];
     const { label, score } = handednessOf(result, i);
-    const hand = label === 'Right' ? 1 : label === 'Left' ? 0 : index.x < arenaW / 2 ? 0 : 1;
+    const hand = label === 'Right' ? 1 : label === 'Left' ? 0 : index.x < width / 2 ? 0 : 1;
     return { hand, x: index.x, y: index.y, tips, points, score, miss: 0 };
   });
   if (hands.length === 2 && hands[0].hand === hands[1].hand) {
@@ -128,7 +136,7 @@ export function mapHands(result, video, arenaW, arenaH) {
   const seen = new Set();
   const out = hands.map((h) => {
     const prev = smooth.get(h.hand);
-    const t = prev ? 0.68 : 1;
+    const t = prev ? SMOOTH : 1;
     const x = prev ? lerp(prev.x, h.x, t) : h.x;
     const y = prev ? lerp(prev.y, h.y, t) : h.y;
     const tips = (h.tips || []).map((p, i) => {
