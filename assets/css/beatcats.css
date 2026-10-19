@@ -278,11 +278,11 @@
 }
 
 .bc-side .panel__head {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 .bc-side .hint {
-  margin: 0 0 6px;
-  font-size: 0.78rem;
+  margin: 0 0 4px;
+  font-size: 0.72rem;
 }
 .bc-otter {
   position: relative;
@@ -292,8 +292,9 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  padding: 6px 4px 6px;
-  flex: 0 0 88px;
+  padding: 6px 8px;
+  flex: 0 0 108px;
+  min-width: 108px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -307,7 +308,7 @@
   outline: none;
 }
 .bc-otter__art {
-  width: 64px;
+  width: 80px;
   max-width: 100%;
   transform-origin: 50% 100%;
 }
@@ -422,21 +423,21 @@
 }
 
 .bc-group__title {
-  margin: 0 0 4px;
+  margin: 0 0 2px;
   font-family: var(--font);
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 650;
   color: var(--c);
 }
 .bc-palette {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px 12px;
+  gap: 4px 8px;
 }
 .bc-group__tokens {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
+  gap: 4px;
 }
 .bc-token {
   --c: var(--accent);
@@ -444,12 +445,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 6px 4px 4px;
-  min-height: 58px;
+  gap: 1px;
+  padding: 3px 2px 2px;
+  min-height: 44px;
   background: var(--bg);
   border: 1px solid var(--hairline);
-  border-radius: 10px;
+  border-radius: 8px;
   color: var(--text);
   cursor: grab;
   touch-action: none;
@@ -464,27 +465,29 @@
   cursor: grabbing;
 }
 .bc-token__art {
-  height: 30px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
 }
 .bc-token__art svg {
-  max-width: 36px;
-  max-height: 36px;
+  max-width: 26px;
+  max-height: 26px;
   width: auto;
   height: auto;
 }
 .bc-token__name {
-  font-size: 0.78rem;
-  line-height: 1.15;
+  font-size: 0.65rem;
+  line-height: 1.1;
   text-align: center;
+  max-height: 2.2em;
+  overflow: hidden;
 }
 .bc-token__who {
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   color: var(--c);
-  min-height: 13px;
+  min-height: 10px;
   line-height: 1;
 }
 .bc-token.is-used {
@@ -560,7 +563,7 @@ body.is-dragging * {
     width: 100px;
   }
   .bc-otter__art {
-    width: 64px;
+    width: 80px;
   }
   .bc-main .toolbar {
     flex-wrap: wrap;

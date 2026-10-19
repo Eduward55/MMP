@@ -63,7 +63,7 @@ O repositório precisa ser **privado** no GitHub (a Action usa `GITHUB_TOKEN` co
 - **Hub** — Pirrinha e Manhoso no palco (clique para a carinha fofa). O tema fica num **ícone pequeno** que expande as paletas. Os cards dos módulos ficam embaixo.
 - **Meu Gato** — nomes padrão **Pirrinha** (gato) e **Manhoso** (lontra). Pelagem e olhos **separados** para cada um (12 pelagens no gato, 8 na lontra) e **20 roupinhas** filtradas por categoria (cabeça, pescoço, corpo…). As mudanças **salvam sozinhas**. Clique no bichinho anima a roupinha, sem tirar a roupa. Um item por lugar (cabeça, orelha, rosto, pescoço, corpo, costas, patinha).
 - **Galeria** — lista áudios, vídeos, beats e projetos do Studio, com filtro, busca, ordenação e ações de **abrir, renomear, exportar e apagar**. Itens que têm notas (gravações dos módulos, beats, projetos) ganham o botão **No Studio**.
-- **Beat Cats** — palco dos **8 gatos** em cima (grade 2×4) + a lontra; tocar/BPM no meio; **acessórios sonoros embaixo** em grelha larga. Arraste um dos **28** acessórios para um gato: ele entra no loop, canta e dança. **Limpar todos os beats** silencia a linha. A lontra faz um *splash* especial (tecla O). Grava só áudio ou áudio + animação (vídeo webm) direto na Galeria.
+- **Beat Cats** — palco dos **8 gatos** em cima (grade 2×4) + a lontra; tocar/BPM no meio; **acessórios sonoros embaixo** em grelha larga. Arraste um dos **40** acessórios para um gato: ele entra no loop, canta e dança. **Limpar todos os beats** silencia a linha. A lontra faz um *splash* especial (tecla O). Grava só áudio ou áudio + animação (vídeo webm) direto na Galeria.
 - **Studio** — edita as notas tocadas nos módulos: **piano roll** e **step sequencer**. Projeto novo nasce como **Projeto 1** (sem data no nome). Dicas na barra de cima. **Exportar WAV** / **WebM**; **Salvar** guarda na Galeria.
 - **Air Pads** — duas mãos, dois círculos em fatias. A bolinha e a nota **seguem o mouse/dedo**. O botão **Tela cheia** / **Encolher palco** amplia o palco (também com a câmera). Sem câmera: mouse, teclas **A** e **L**, ou **Simular dedos**.
 - **Termo** — palavras de 5 letras mais cotidianas. Clique numa casa, **espaço** pula para a próxima, Backspace apaga a casa atual. Não precisa digitar a palavra inteira em ordem.
@@ -98,7 +98,7 @@ Air Pads e Beat Cats registram cada nota em `modules/shared/events.js` (formato 
   "events": [{ "time": 0.5, "dur": 0.5, "note": 64, "vel": 0.85, "inst": "piano", "track": "circulo-1-piano" }] }
 ```
 
-`time` e `dur` em batidas; `note` em MIDI (na bateria, General MIDI: 36 bumbo, 38 caixa, 42 chimbal…). As gravações de áudio/vídeo dos módulos salvam os eventos num arquivo ao lado (`gallery/<id>.events.json`), então abrem no Studio. O botão **Editar no Studio** (Air Pads, Beat Cats) leva tudo que foi tocado na sessão direto para o editor. No Beat Cats os 24 sons são capturados por um “grampo” nos sintetizadores do Tone.js, e um beat salvo vira faixas editáveis.
+`time` e `dur` em batidas; `note` em MIDI (na bateria, General MIDI: 36 bumbo, 38 caixa, 42 chimbal…). As gravações de áudio/vídeo dos módulos salvam os eventos num arquivo ao lado (`gallery/<id>.events.json`), então abrem no Studio. O botão **Editar no Studio** (Air Pads, Beat Cats) leva tudo que foi tocado na sessão direto para o editor. No Beat Cats os 40 sons são capturados por um “grampo” nos sintetizadores do Tone.js, e um beat salvo vira faixas editáveis.
 
 ## Onde os dados ficam
 
