@@ -136,7 +136,7 @@ export default {
     const webmBtn = el('button', { class: 'btn btn--primary' }, 'Exportar vídeo WebM');
     const exportStatus = el('p', { class: 'muted st-export__status', 'aria-live': 'polite' }, 'O WAV é renderizado offline; o vídeo grava o projeto tocando uma vez.');
     const exportPreview = el('div', { class: 'st-export__preview' });
-    const recKeysBtn = el('button', { class: 'btn btn--rec btn--sm', 'aria-pressed': 'false' }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar teclado: Não'));
+    const recKeysBtn = el('button', { class: 'btn btn--rec btn--sm', 'aria-pressed': 'false', title: 'Teclas A W S E D F T G Y H U J K O L P tocam a faixa selecionada (bateria: A a L). Com “Gravar teclado” as notas entram onde a agulha estiver. Espaço toca/para; Delete apaga a nota selecionada.' }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar teclado: Não'));
 
     const editor = createEditor({
       project: () => project,
@@ -752,35 +752,39 @@ export default {
           el('div', { class: 'st-namebar' }, el('label', { class: 'field st-name' }, el('span', { class: 'field__label' }, 'Nome do projeto'), nameInput), originEl)
         ),
         el(
-          'aside',
-          { class: 'panel st-side' },
-          el('div', { class: 'panel__head' }, el('h2', {}, 'Faixas'), el('div', { class: 'st-add' }, addInst, addBtn)),
-          tracksEl,
-          el('div', { class: 'st-keysrec' }, recKeysBtn, el('p', { class: 'hint' }, 'Teclas A W S E D F T G Y H U J K O L P tocam a faixa selecionada (bateria: A a L). Com “Gravar teclado” as notas entram onde a agulha estiver. Espaço toca/para; Delete apaga a nota selecionada.')),
+          'div',
+          { class: 'st-desk' },
           el(
-            'div',
-            { class: 'st-open' },
-            el('h3', { class: 'subhead' }, 'Abrir'),
-            el(
-              'div',
-              { class: 'row-actions' },
-              el('button', { class: 'btn btn--ghost btn--sm', onclick: openPicker }, 'Da Galeria…'),
-              el('button', { class: 'btn btn--ghost btn--sm', onclick: () => load(toJsonOf(demoProject()), { originText: 'Projeto de exemplo' }) }, 'Exemplo'),
-              el('button', { class: 'btn btn--ghost btn--sm', onclick: () => load(toJsonOf(blankProject()), { originText: 'Projeto novo' }) }, 'Em branco')
-            )
+            'aside',
+            { class: 'panel st-side' },
+            el('div', { class: 'panel__head' }, el('h2', {}, 'Faixas'), el('div', { class: 'st-add' }, addInst, addBtn)),
+            tracksEl
+          ),
+          el(
+            'section',
+            { class: 'panel st-mix' },
+            el('div', { class: 'panel__head' }, el('h2', {}, 'Mesa de som'), el('span', { class: 'muted st-mix__legend' }, 'Volume por faixa')),
+            mixerEl
           )
-        ),
-        el(
-          'section',
-          { class: 'panel st-mix' },
-          el('div', { class: 'panel__head' }, el('h2', {}, 'Mesa de som'), el('span', { class: 'muted st-mix__legend' }, 'Volume por faixa')),
-          mixerEl
         ),
         el('section', { class: 'panel st-edit' }, el('div', { class: 'panel__head' }, tabs, editHint), editor.el),
         el(
           'section',
           { class: 'panel st-export' },
-          el('div', { class: 'panel__head' }, el('h2', {}, 'Exportar'), el('div', { class: 'row-actions st-export__actions' }, wavBtn, el('label', { class: 'st-check' }, camBox, el('span', {}, 'Webcam no vídeo')), webmBtn)),
+          el(
+            'div',
+            { class: 'st-export__tools' },
+            recKeysBtn,
+            el(
+              'div',
+              { class: 'row-actions st-open' },
+              el('button', { class: 'btn btn--ghost btn--sm', onclick: openPicker }, 'Da Galeria…'),
+              el('button', { class: 'btn btn--ghost btn--sm', onclick: () => load(toJsonOf(demoProject()), { originText: 'Projeto de exemplo' }) }, 'Exemplo'),
+              el('button', { class: 'btn btn--ghost btn--sm', onclick: () => load(toJsonOf(blankProject()), { originText: 'Projeto novo' }) }, 'Em branco')
+            )
+          ),
+          el('h2', {}, 'Exportar'),
+          el('div', { class: 'row-actions st-export__actions' }, wavBtn, el('label', { class: 'st-check' }, camBox, el('span', {}, 'Webcam no vídeo')), webmBtn),
           exportStatus,
           exportPreview
         )

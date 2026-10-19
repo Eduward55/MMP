@@ -30,11 +30,10 @@
   min-height: 0;
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-areas:
     'bar bar'
-    'side edit'
-    'mix edit'
+    'desk edit'
     'export export';
   gap: 10px;
   align-items: stretch;
@@ -42,17 +41,36 @@
 .st-bar {
   grid-area: bar;
 }
-.st-side {
-  grid-area: side;
+.st-desk {
+  grid-area: desk;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   min-height: 0;
+  overflow: hidden;
+}
+.st-side {
+  flex: 1 1 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 140px;
   overflow: auto;
 }
 .st-mix {
-  grid-area: mix;
+  flex: 0 0 auto;
   min-width: 0;
+}
+.st-export__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-right: 180px;
+}
+.st-export__tools .row-actions {
+  margin-top: 0;
 }
 .st-edit {
   grid-area: edit;
@@ -105,7 +123,7 @@
   flex-direction: column;
   gap: 6px;
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 148px;
   overflow: auto;
 }
 .st-track {
@@ -114,7 +132,7 @@
   grid-template-columns: 8px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-  padding: 6px 8px;
+  padding: 4px 6px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -184,9 +202,9 @@
   padding: 5px 7px;
 }
 .st-keysrec .hint {
-  margin-top: 6px;
+  margin-top: 4px;
   margin-bottom: 0;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
 }
 .st-open .subhead {
   margin-top: 4px;
@@ -204,8 +222,8 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding: 2px 0 4px;
-  min-height: 248px;
+  padding: 2px 0 0;
+  min-height: 0;
 }
 .st-strip {
   --c: var(--accent);
@@ -216,7 +234,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 8px 6px 10px;
+  padding: 6px 6px 8px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -242,8 +260,8 @@
   --v: 100%;
   position: relative;
   width: 36px;
-  height: 176px;
-  flex: 0 0 176px;
+  height: 144px;
+  flex: 0 0 144px;
   background:
     repeating-linear-gradient(to top, transparent 0 16px, rgba(255, 255, 255, 0.07) 16px 17px),
     var(--bg);
@@ -289,6 +307,9 @@
   color: var(--text);
   min-width: 2ch;
   text-align: center;
+}
+.st-strip {
+  padding-bottom: 8px;
 }
 .st-strip__mute {
   width: 100%;
@@ -488,7 +509,8 @@
   align-items: center;
 }
 .st-export__actions {
-  margin-top: 0;
+  margin-top: 4px;
+  padding-right: 180px;
 }
 .st-check {
   display: inline-flex;
@@ -561,7 +583,7 @@
   }
   .st {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(380px, 70vh) auto auto auto;
+    grid-template-rows: auto minmax(300px, 420px) auto auto auto;
     grid-template-areas:
       'bar'
       'edit'
@@ -571,15 +593,24 @@
     min-height: 0;
     height: auto;
   }
+  .st-desk {
+    display: contents;
+  }
+  .st-side {
+    grid-area: side;
+  }
+  .st-mix {
+    grid-area: mix;
+  }
   .st-scroll {
-    min-height: 360px;
+    min-height: 300px;
   }
   .st-mixer {
-    min-height: 236px;
+    min-height: 220px;
   }
   .st-fader {
-    height: 160px;
-    flex-basis: 160px;
+    height: 148px;
+    flex-basis: 148px;
   }
   .st-strip {
     flex: 0 0 80px;
