@@ -5,24 +5,21 @@ import { beatFromJson } from '../beatcats/beatcats.js';
 import { LOOP_STEPS, SOUND_BY_ID, makeCaptured } from '../beatcats/sounds.js';
 import { createEventLog } from '../shared/events.js';
 import { gallery, getProfile } from '../shared/store.js';
-import { el, startAudio, stamp, toast } from '../shared/ui.js';
-import { createTalkbox } from './vocoder.js';
+import { el, modal, startAudio, stamp, toast } from '../shared/ui.js';
+import { FX, OVERLAY_IDS, createVoiceFx, fingerprint, graphFor, normalizeFxId } from './voice-fx.js';
+import {
+  OTTER_INTERVAL_MAX,
+  OTTER_INTERVAL_MIN,
+  OTTER_REC_MAX,
+  OTTER_REC_MIN,
+  clampOtterSeconds,
+  decodePhraseBlob,
+  formatOtterSeconds,
+  makeBeepBuffer,
+  recordPhraseFromStream,
+  startOtterLoopPlayer
+} from './otter-loops.js';
 
-const FX = [
-  { id: 'natural', name: 'Natural' },
-  { id: 'autotune', name: 'Autotune' },
-  { id: 'agudo', name: 'Agudo' },
-  { id: 'grave', name: 'Grave' },
-  { id: 'robo', name: 'Robô' },
-  { id: 'eco', name: 'Eco' },
-  { id: 'talkbox', name: 'Talkbox' },
-  { id: 'coro', name: 'Coro' },
-  { id: 'radio', name: 'Rádio' },
-  { id: 'cristal', name: 'Cristal' },
-  { id: 'caverna', name: 'Caverna' },
-  { id: 'sussurro', name: 'Sussurro' },
-  { id: 'mega', name: 'Mega' }
-];
 const SCALE = [0, 2, 3, 5, 7, 8, 10];
 const OTTER_SLOTS = 3;
 
@@ -85,10 +82,6 @@ function snapHz(hz) {
   return 440 * Math.pow(2, (nearest - 69) / 12);
 }
 
-function setWet(node, v) {
-  if (node && node.wet && typeof node.wet.value === 'number') node.wet.value = v;
-}
-
 export default {
   id: 'cantar',
   title: 'Cantar',
@@ -102,24 +95,8 @@ export default {
     let audioPromise = null;
     let stream = null;
     let micNode = null;
-    let analyser = null;
-    let pitchShift = null;
-    let chorus = null;
-    let delay = null;
-    let crusher = null;
-    let reverb = null;
-    let cheby = null;
-    let voiceGain = null;
+    let voiceFx = null;
     let backingGain = null;
-    let dryGain = null;
-    let fxGain = null;
-    let hpf = null;
-    let lpf = null;
-    let deEss = null;
-    let gateGain = null;
-    let comp = null;
-    let talkbox = null;
-    let fxTap = null;
     let rec = null;
     let recTimer = 0;
     let raf = 0;
@@ -128,23 +105,29 @@ export default {
     let pitchFrame = 0;
     let mouthOpen = false;
     let fx = 'natural';
-    let autotune = true;
+    let autotune = false;
     let backing = 'arpeggio';
     let bpm = 100;
     let sync = true;
     let backingLoop = null;
     let backingVoices = [];
-    let otterPlayers = [];
+    let otterGain = null;
+    let otterAnimRaf = 0;
+    let otterBusy = false;
+    let otterRecSession = null;
+    const otterPlayers = new Array(OTTER_SLOTS).fill(null);
     const otterClips = new Array(OTTER_SLOTS).fill(null);
+    const otterUi = Array.from({ length: OTTER_SLOTS }, () => ({ recording: false, looping: false, singing: false }));
     const log = createEventLog({ source: 'cantar', bpm, scale: 'minor', root: 9 });
 
     const nameInput = el('input', { class: 'input', type: 'text', maxlength: '60', value: `Canto ${stamp()}`, 'aria-label': 'Nome da gravação' });
     const micBtn = el('button', { class: 'btn btn--primary' }, 'Ligar microfone');
     const recBtn = el('button', { class: 'btn btn--rec', disabled: true }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar'));
     const timer = el('span', { class: 'pill' }, '00:00');
-    const status = el('p', { class: 'muted' }, 'Ligue o microfone e cante. O gatinho abre a boca no volume da sua voz.');
+    const status = el('p', { class: 'muted' }, 'Ligue o microfone e cante. Cada chip muda a voz de um jeito — Natural fica limpo.');
     const fxRow = el('div', { class: 'chips', role: 'radiogroup', 'aria-label': 'Modificador de voz' });
-    const autoBtn = el('button', { class: 'btn btn--ghost btn--sm', 'aria-pressed': 'true' }, 'Autotune: Sim');
+    const fxCaption = el('p', { class: 'cantar__fx-now' }, FX[0].hint);
+    const autoBtn = el('button', { class: 'btn btn--ghost btn--sm', 'aria-pressed': 'false' }, 'Autotune: Não');
     const syncBtn = el('button', { class: 'btn btn--ghost btn--sm', 'aria-pressed': 'true' }, 'Sync: Sim');
     const bpmInput = el('input', { class: 'range', type: 'range', min: '70', max: '140', value: String(bpm), 'aria-label': 'BPM' });
     const bpmLabel = el('span', { class: 'pill' }, `${bpm} BPM`);
@@ -154,6 +137,10 @@ export default {
     const ottersRow = el('div', { class: 'cantar__otters' });
     const meterFill = el('div', { class: 'cantar__meter-fill' });
     const meter = el('div', { class: 'cantar__meter', title: 'Volume da voz' }, meterFill);
+
+    function currentGraph() {
+      return voiceFx ? voiceFx.snapshot() : graphFor(fx, autotune);
+    }
 
     function paintCat() {
       const svg = catStage.querySelector('svg.creature');
@@ -165,29 +152,70 @@ export default {
       svg.classList.toggle('is-idle', !mouthOpen);
     }
 
+    function otterCard(i) {
+      return ottersRow.querySelector(`.cantar__otter[data-slot="${i}"]`);
+    }
+
     function renderOtters() {
       ottersRow.innerHTML = '';
       for (let i = 0; i < OTTER_SLOTS; i++) {
         const clip = otterClips[i];
+        const ui = otterUi[i];
+        const looping = Boolean(clip && ui.looping);
         const card = el(
           'div',
-          { class: `cantar__otter ${clip ? 'is-on' : ''}` },
-          el('div', { class: 'cantar__otter-art', html: creatureSVG('otter', profile.otter, { size: 86, extraClass: clip ? 'is-dancing' : 'is-idle', label: `${profile.otter.name} ${i + 1}` }) }),
-          el('span', { class: 'cantar__otter-name' }, clip ? clip.name : `Lontrinha ${i + 1}`),
-          el('button', { class: 'btn btn--sm btn--primary', onclick: () => recordOtter(i) }, clip ? 'Regravar' : 'Gravar frase'),
+          {
+            class: `cantar__otter${clip ? ' is-on' : ''}${ui.recording ? ' is-recording' : ''}${looping ? ' is-looping' : ''}${ui.singing ? ' is-singing' : ''}`,
+            'data-slot': String(i)
+          },
+          el('div', {
+            class: 'cantar__otter-art',
+            html: creatureSVG('otter', profile.otter, {
+              size: 86,
+              extraClass: ui.recording || looping ? 'is-dancing' : 'is-idle',
+              label: `${profile.otter.name} ${i + 1}`
+            })
+          }),
+          el('span', { class: 'cantar__otter-name' }, `Lontrinha ${i + 1}`),
+          ui.recording ? el('span', { class: 'cantar__otter-countdown' }, 'Gravando…') : null,
           clip
-            ? el('button', {
-                class: 'btn btn--sm btn--ghost',
-                onclick: () => {
-                  otterClips[i] = null;
-                  restartOtters().catch(() => {});
-                  renderOtters();
-                }
-              }, 'Tirar')
-            : null
+            ? el(
+                'label',
+                { class: 'cantar__otter-interval' },
+                el('span', {}, 'Repete a cada'),
+                el('input', {
+                  class: 'input cantar__otter-interval-num',
+                  type: 'number',
+                  min: String(OTTER_INTERVAL_MIN),
+                  max: String(OTTER_INTERVAL_MAX),
+                  step: '0.5',
+                  value: String(clip.interval),
+                  'aria-label': `Intervalo da lontrinha ${i + 1} em segundos`,
+                  oninput: (e) => {
+                    const v = clampOtterSeconds(e.target.value, OTTER_INTERVAL_MIN, OTTER_INTERVAL_MAX, clip.interval);
+                    clip.interval = v;
+                  },
+                  onchange: (e) => {
+                    const v = clampOtterSeconds(e.target.value, OTTER_INTERVAL_MIN, OTTER_INTERVAL_MAX, clip.interval);
+                    clip.interval = v;
+                    e.target.value = String(v);
+                    if (ui.looping) startOtterLoop(i).catch((err) => toast(err.message, 'error'));
+                  }
+                }),
+                el('span', {}, 's')
+              )
+            : null,
+          el(
+            'div',
+            { class: 'cantar__otter-actions' },
+            el('button', { class: 'btn btn--sm btn--primary', onclick: () => recordOtter(i) }, ui.recording ? 'Gravando…' : clip ? 'Regravar' : 'Gravar frase'),
+            clip ? el('button', { class: 'btn btn--sm btn--ghost', onclick: () => clearOtter(i) }, 'Parar') : null
+          )
         );
         ottersRow.append(card);
       }
+      paintOtterAnims();
+      if (otterUi.some((u) => u.looping || u.recording)) startOtterAnim();
     }
 
     function renderFx() {
@@ -203,13 +231,15 @@ export default {
               onclick: () => {
                 fx = f.id;
                 applyFx();
-                renderFx();
               }
             },
             f.name
           )
         );
       });
+      const meta = FX.find((f) => f.id === fx);
+      const extra = autotune && OVERLAY_IDS.has(fx) ? ' Autotune por cima.' : fx === 'autotune' ? '' : '';
+      fxCaption.textContent = `${meta ? meta.hint : ''}`.trim() + extra;
     }
 
     async function fillBacking() {
@@ -225,86 +255,11 @@ export default {
       backing = backingSel.value;
     }
 
-    function disconnectTap() {
-      if (!comp) return;
-      try {
-        if (fxTap) comp.disconnect(fxTap);
-      } catch {}
-      try {
-        if (talkbox) comp.disconnect(talkbox.input);
-      } catch {}
-      fxTap = null;
-    }
-
-    function tap(node) {
-      if (!comp || !node) return;
-      Tone.connect(comp, node);
-      fxTap = node;
-    }
-
     function applyFx() {
-      if (!comp) return;
-      const talk = fx === 'talkbox' || fx === 'mega';
-      const wantTune = autotune && (fx === 'natural' || fx === 'autotune' || fx === 'talkbox' || fx === 'mega' || fx === 'coro');
-      disconnectTap();
-      setWet(chorus, 0);
-      setWet(delay, 0);
-      setWet(crusher, 0);
-      setWet(reverb, 0);
-      if (pitchShift) pitchShift.pitch = 0;
-      if (deEss) deEss.gain.value = fx === 'sussurro' ? 4 : -10;
-      if (lpf) lpf.frequency.value = fx === 'radio' ? 2800 : fx === 'sussurro' ? 4200 : 7800;
-      if (hpf) hpf.frequency.value = fx === 'sussurro' ? 420 : fx === 'radio' ? 520 : 90;
-
-      if (fx === 'natural' && !autotune) {
-        if (reverb) {
-          setWet(reverb, 0.12);
-          tap(reverb);
-        }
-        if (dryGain) dryGain.gain.value = 0.96;
-        if (fxGain) fxGain.gain.value = 0.12;
-      } else if (fx === 'agudo' || fx === 'grave' || fx === 'autotune' || wantTune) {
-        if (fx === 'agudo') pitchShift.pitch = 7;
-        else if (fx === 'grave') pitchShift.pitch = -5;
-        tap(pitchShift);
-        if (dryGain) dryGain.gain.value = 0.22;
-        if (fxGain) fxGain.gain.value = 0.9;
-      } else if (fx === 'robo') {
-        setWet(crusher, 0.42);
-        tap(crusher);
-        if (dryGain) dryGain.gain.value = 0.12;
-        if (fxGain) fxGain.gain.value = 0.8;
-      } else if (fx === 'eco' || fx === 'caverna' || fx === 'coro') {
-        setWet(delay, fx === 'caverna' ? 0.48 : fx === 'eco' ? 0.4 : 0.22);
-        setWet(chorus, fx === 'coro' ? 0.55 : 0.18);
-        setWet(reverb, fx === 'caverna' ? 0.55 : 0.2);
-        tap(delay);
-        if (dryGain) dryGain.gain.value = 0.35;
-        if (fxGain) fxGain.gain.value = 0.78;
-      } else if (fx === 'radio') {
-        setWet(crusher, 0.22);
-        tap(crusher);
-        if (dryGain) dryGain.gain.value = 0.2;
-        if (fxGain) fxGain.gain.value = 0.75;
-      } else if (fx === 'cristal' && cheby) {
-        tap(cheby);
-        if (dryGain) dryGain.gain.value = 0.28;
-        if (fxGain) fxGain.gain.value = 0.7;
-      } else {
-        if (reverb) {
-          setWet(reverb, 0.1);
-          tap(reverb);
-        }
-        if (dryGain) dryGain.gain.value = 0.9;
-        if (fxGain) fxGain.gain.value = 0.15;
-      }
-      if (talk && talkbox) {
-        Tone.connect(comp, talkbox.input);
-        talkbox.setWet(fx === 'mega' ? 1.05 : 1.3);
-        if (dryGain) dryGain.gain.value = Math.min(dryGain.gain.value, 0.16);
-      } else if (talkbox) {
-        talkbox.setWet(0);
-      }
+      fx = normalizeFxId(fx);
+      if (voiceFx) voiceFx.apply(fx, autotune);
+      renderMix();
+      renderFx();
     }
 
     async function ensureAudio() {
@@ -312,36 +267,8 @@ export default {
         audioPromise = (async () => {
           Tone = await startAudio();
           if (!alive) return;
-          const ctx = Tone.getContext().rawContext;
-          voiceGain = new Tone.Gain(0.86).toDestination();
+          voiceFx = createVoiceFx(Tone);
           backingGain = new Tone.Gain(0.36).toDestination();
-          dryGain = new Tone.Gain(0.96).connect(voiceGain);
-          fxGain = new Tone.Gain(0.2).connect(voiceGain);
-          hpf = new Tone.Filter({ type: 'highpass', frequency: 90, Q: 0.55 });
-          lpf = new Tone.Filter({ type: 'lowpass', frequency: 7800, Q: 0.5 });
-          deEss = new Tone.Filter({ type: 'highshelf', frequency: 6200, gain: -10 });
-          gateGain = new Tone.Gain(1);
-          comp = new Tone.Compressor({ threshold: -18, ratio: 2.6, attack: 0.008, release: 0.16, knee: 10 });
-          pitchShift = new Tone.PitchShift({ pitch: 0, windowSize: 0.1, delayTime: 0.03 }).connect(fxGain);
-          chorus = new Tone.Chorus(1.8, 2.2, 0.28).start().connect(fxGain);
-          delay = new Tone.FeedbackDelay('8n', 0.18).connect(chorus);
-          crusher = new Tone.BitCrusher(5).connect(fxGain);
-          try {
-            reverb = new Tone.JCReverb(0.25).connect(fxGain);
-          } catch {
-            try {
-              reverb = new Tone.Freeverb({ roomSize: 0.4, dampening: 4000 }).connect(fxGain);
-            } catch {
-              reverb = null;
-            }
-          }
-          try {
-            cheby = new Tone.Chebyshev(3).connect(fxGain);
-          } catch {
-            cheby = null;
-          }
-          talkbox = createTalkbox(ctx);
-          Tone.connect(talkbox.output, voiceGain);
           Tone.Transport.bpm.value = bpm;
           applyFx();
         })();
@@ -367,20 +294,11 @@ export default {
       const src = Tone.context.createMediaStreamSource(stream);
       micNode = new Tone.Gain(1.05);
       Tone.connect(src, micNode);
-      analyser = Tone.context.createAnalyser();
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0.42;
-      micNode.connect(hpf);
-      hpf.connect(lpf);
-      lpf.connect(deEss);
-      deEss.connect(gateGain);
-      gateGain.connect(comp);
-      Tone.connect(comp, analyser);
-      Tone.connect(comp, dryGain);
+      Tone.connect(micNode, voiceFx.input);
       recBtn.disabled = false;
       micBtn.textContent = 'Microfone ligado';
       micBtn.disabled = true;
-      status.textContent = 'Cante perto do microfone. Natural fica limpo; os outros chips mexem na mixagem.';
+      status.textContent = 'Cante perto do microfone. Natural fica limpo; cada chip liga um efeito diferente.';
       applyFx();
       if (sync) Tone.Transport.start('+0.05');
       tickMouth();
@@ -388,17 +306,17 @@ export default {
     }
 
     function tickMouth() {
-      if (!alive || !analyser) return;
+      if (!alive || !voiceFx || !voiceFx.analyser) return;
+      const analyser = voiceFx.analyser;
       const buf = new Float32Array(analyser.fftSize);
       analyser.getFloatTimeDomainData(buf);
       let sum = 0;
       const n = Math.min(buf.length, 1024);
       for (let i = 0; i < n; i++) sum += buf[i] * buf[i];
       rms = Math.sqrt(sum / n);
-      if (gateGain) {
-        const openGate = rms > 0.016;
-        gateGain.gain.rampTo(openGate ? 1 : 0.05, openGate ? 0.025 : 0.14);
-      }
+      const g = voiceFx.snapshot();
+      voiceFx.setGate(rms > 0.016, g.gateFloor);
+      voiceFx.setNoiseEnvelope(rms);
       const open = rms > 0.025;
       if (open !== mouthOpen) {
         mouthOpen = open;
@@ -406,17 +324,19 @@ export default {
       }
       meterFill.style.width = `${Math.min(100, rms * 420)}%`;
       pitchFrame++;
-      const wantTune = autotune && (fx === 'autotune' || fx === 'natural' || fx === 'talkbox' || fx === 'mega' || fx === 'coro');
-      if (wantTune && pitchFrame % 2 === 0) {
+      const wantsSnap = fx === 'autotune' || (autotune && OVERLAY_IDS.has(fx));
+      if (pitchFrame % 2 === 0) {
         const hz = detectPitchYin(buf, Tone.context.sampleRate);
         if (hz) {
           pitchHz = hz;
           const snapped = snapHz(hz);
-          if (snapped && pitchShift && (fx === 'autotune' || fx === 'natural' || fx === 'coro' || fx === 'mega')) {
+          if (wantsSnap && snapped) {
             const semis = 12 * Math.log2(snapped / hz);
-            pitchShift.pitch = Math.max(-12, Math.min(12, semis * (fx === 'autotune' ? 1 : 0.82)));
+            voiceFx.setTune(semis);
+          } else {
+            voiceFx.setTune(0);
           }
-          if (talkbox) talkbox.setCarrierHz(fx === 'talkbox' || fx === 'mega' ? snapHz(hz) || hz : hz);
+          if (fx === 'talkbox') voiceFx.setCarrierHz((autotune && snapped) || hz);
         }
       }
       raf = requestAnimationFrame(tickMouth);
@@ -466,50 +386,226 @@ export default {
       backingVoices = [];
     }
 
-    async function restartOtters() {
-      otterPlayers.forEach((p) => {
-        try {
-          p.stop();
-          p.dispose();
-        } catch {}
+    async function ensureOtterGain() {
+      await ensureAudio();
+      if (!otterGain) otterGain = new Tone.Gain(0.55).toDestination();
+      return otterGain;
+    }
+
+    function stopOtterLoop(i) {
+      const p = otterPlayers[i];
+      otterPlayers[i] = null;
+      if (p && p.dispose) p.dispose();
+      otterUi[i].looping = false;
+      otterUi[i].singing = false;
+    }
+
+    function clearOtter(i) {
+      if (otterRecSession && otterRecSession.i === i) otterRecSession.stop();
+      stopOtterLoop(i);
+      otterClips[i] = null;
+      renderOtters();
+    }
+
+    async function startOtterLoop(i) {
+      const clip = otterClips[i];
+      if (!clip || !clip.buffer) return;
+      await ensureOtterGain();
+      const interval = clampOtterSeconds(clip.interval, OTTER_INTERVAL_MIN, OTTER_INTERVAL_MAX, Math.max(1, clip.duration || clip.buffer.duration));
+      clip.interval = interval;
+      const prev = otterPlayers[i];
+      const next = await startOtterLoopPlayer(Tone, clip.buffer, otterGain, interval);
+      otterPlayers[i] = next;
+      if (prev && prev !== next && prev.dispose) prev.dispose();
+      otterUi[i].looping = true;
+      startOtterAnim();
+      paintOtterAnims();
+    }
+
+    function paintOtterAnims() {
+      for (let i = 0; i < OTTER_SLOTS; i++) {
+        const card = otterCard(i);
+        const p = otterPlayers[i];
+        const looping = Boolean(otterClips[i] && otterUi[i].looping);
+        const singing = Boolean(looping && p && p.singingAt && p.singingAt());
+        otterUi[i].singing = singing;
+        if (!card) continue;
+        card.classList.toggle('is-on', Boolean(otterClips[i]));
+        card.classList.toggle('is-looping', looping);
+        card.classList.toggle('is-singing', singing);
+        card.classList.toggle('is-recording', otterUi[i].recording);
+        const svg = card.querySelector('svg.creature');
+        if (svg) {
+          svg.classList.toggle('is-dancing', looping || otterUi[i].recording);
+          svg.classList.toggle('is-sing-open', singing || otterUi[i].recording);
+          svg.classList.toggle('is-idle', !looping && !otterUi[i].recording);
+        }
+      }
+    }
+
+    function startOtterAnim() {
+      if (otterAnimRaf) return;
+      const tick = () => {
+        if (!alive) return;
+        paintOtterAnims();
+        if (otterUi.some((u) => u.looping || u.recording)) otterAnimRaf = requestAnimationFrame(tick);
+        else otterAnimRaf = 0;
+      };
+      otterAnimRaf = requestAnimationFrame(tick);
+    }
+
+    function askOtterDuration(i) {
+      return new Promise((resolve) => {
+        let secs = 2;
+        const label = el('span', { class: 'pill' }, '2 segundos');
+        const range = el('input', {
+          class: 'range cantar__dur-range',
+          type: 'range',
+          min: String(OTTER_REC_MIN),
+          max: String(OTTER_REC_MAX),
+          step: '0.5',
+          value: '2',
+          'aria-label': 'Duração da gravação em segundos'
+        });
+        const num = el('input', {
+          class: 'input cantar__dur-num',
+          type: 'number',
+          min: String(OTTER_REC_MIN),
+          max: String(OTTER_REC_MAX),
+          step: '0.5',
+          value: '2',
+          'aria-label': 'Segundos de gravação'
+        });
+        const syncDur = (v) => {
+          secs = clampOtterSeconds(v, OTTER_REC_MIN, OTTER_REC_MAX, 2);
+          range.value = String(secs);
+          num.value = String(secs);
+          label.textContent = secs === 1 ? '1 segundo' : `${secs} segundos`;
+        };
+        range.addEventListener('input', () => syncDur(range.value));
+        num.addEventListener('input', () => syncDur(num.value));
+        modal({
+          title: `Gravar frase · Lontrinha ${i + 1}`,
+          body: el(
+            'div',
+            { class: 'cantar__otter-ask' },
+            el('p', {}, 'Escolha quanto tempo gravar no mesmo microfone do Cantar. Depois a lontrinha fica repetindo.'),
+            el('div', { class: 'cantar__otter-ask-row' }, label, num, el('span', { class: 'muted' }, 's')),
+            range
+          ),
+          onClose: resolve,
+          actions: [
+            { label: 'Cancelar', value: null },
+            { label: 'Gravar agora', kind: 'primary', onClick: (close) => close(secs) }
+          ]
+        });
       });
-      otterPlayers = [];
-      if (!Tone) return;
-      const bar = Tone.Time('1m').toSeconds();
-      otterClips.forEach((clip) => {
-        if (!clip) return;
-        const player = new Tone.Player(clip.buffer).connect(backingGain);
-        player.loop = true;
-        player.loopEnd = Math.max(bar, clip.buffer.duration);
-        player.sync().start(0);
-        otterPlayers.push(player);
+    }
+
+    async function captureOtterPhrase(i, seconds) {
+      const statusP = el('p', { class: 'cantar__otter-countdown' }, `Gravando… ${Number(seconds).toFixed(1)} s`);
+      let settled = false;
+      let cancelled = false;
+      const session = recordPhraseFromStream(stream, seconds, {
+        onTick: (left) => {
+          statusP.textContent = `Gravando… ${left.toFixed(1)} s`;
+          const mark = otterCard(i) && otterCard(i).querySelector('.cantar__otter-countdown');
+          if (mark) mark.textContent = `Gravando ${left.toFixed(1)} s`;
+        }
       });
+      otterRecSession = { i, stop: session.stop };
+      otterUi[i].recording = true;
+      renderOtters();
+      const recModal = modal({
+        title: `Lontrinha ${i + 1} gravando`,
+        body: el('div', {}, el('p', {}, 'Cante a frase. A voz ao vivo e as outras lontrinhas continuam.'), statusP),
+        onClose: (v) => {
+          if (v !== 'done') session.stop();
+          if (v == null) cancelled = true;
+        },
+        actions: [{ label: 'Parar agora', kind: 'primary', onClick: (close) => close('stop') }]
+      });
+      try {
+        const result = await session.done;
+        settled = true;
+        recModal.close('done');
+        if (cancelled) return null;
+        return result;
+      } finally {
+        otterRecSession = null;
+        otterUi[i].recording = false;
+        if (!settled) recModal.close('done');
+      }
     }
 
     async function recordOtter(i) {
-      if (!stream) return toast('Ligue o microfone primeiro.', 'info');
-      toast(`Grave a frase da lontrinha ${i + 1} (2 segundos)…`, 'info');
-      const chunks = [];
-      const mr = new MediaRecorder(stream);
-      mr.ondataavailable = (e) => e.data.size && chunks.push(e.data);
-      const blobP = new Promise((resolve) => {
-        mr.onstop = () => resolve(new Blob(chunks, { type: mr.mimeType || 'audio/webm' }));
-      });
-      mr.start();
-      await new Promise((r) => setTimeout(r, 2000));
-      mr.stop();
-      const blob = await blobP;
-      await ensureAudio();
-      const buf = await Tone.context.decodeAudioData(await blob.arrayBuffer());
-      otterClips[i] = { name: `Frase ${i + 1}`, buffer: buf };
-      await restartOtters();
+      if (otterBusy || otterUi.some((u) => u.recording)) {
+        toast('Espere a outra frase terminar.', 'info');
+        return;
+      }
+      otterBusy = true;
+      try {
+        const seconds = await askOtterDuration(i);
+        if (seconds == null) return;
+        try {
+          await ensureAudio();
+          if (!stream) await startMic();
+        } catch (err) {
+          toast(err.message || 'Sem microfone.', 'error');
+          return;
+        }
+        if (!stream) {
+          toast('Não achei o microfone.', 'error');
+          return;
+        }
+        stopOtterLoop(i);
+        const result = await captureOtterPhrase(i, seconds);
+        if (!result || !result.blob || result.blob.size < 32) {
+          renderOtters();
+          if (result) toast('Gravação vazia — tente de novo.', 'warn');
+          return;
+        }
+        const buffer = await decodePhraseBlob(Tone, result.blob);
+        const duration = buffer.duration;
+        const interval = clampOtterSeconds(duration, OTTER_INTERVAL_MIN, OTTER_INTERVAL_MAX, Math.max(1, Math.round(duration * 2) / 2));
+        otterClips[i] = { name: `Lontrinha ${i + 1}`, buffer, duration, interval };
+        await startOtterLoop(i);
+        renderOtters();
+        toast(`${profile.otter.name} ${i + 1} repetindo a cada ${formatOtterSeconds(interval)}.`, 'ok');
+      } catch (err) {
+        renderOtters();
+        toast(err.message || 'Não deu para gravar a frase.', 'error');
+      } finally {
+        otterBusy = false;
+      }
+    }
+
+    async function setOtterClip(i, { duration = 0.25, interval, freq } = {}) {
+      await ensureOtterGain();
+      const ctx = Tone.getContext().rawContext || Tone.context;
+      const buffer = makeBeepBuffer(ctx, { seconds: duration, freq: freq || 440 + i * 90 });
+      const iv = clampOtterSeconds(interval ?? Math.max(1, duration), OTTER_INTERVAL_MIN, OTTER_INTERVAL_MAX, 1);
+      otterClips[i] = { name: `Lontrinha ${i + 1}`, buffer, duration: buffer.duration, interval: iv };
+      await startOtterLoop(i);
       renderOtters();
-      toast(`${profile.otter.name} ${i + 1} vai repetir no beat.`, 'ok');
+      return true;
+    }
+
+    async function setOtterInterval(i, sec) {
+      const clip = otterClips[i];
+      if (!clip) return clip;
+      clip.interval = clampOtterSeconds(sec, OTTER_INTERVAL_MIN, OTTER_INTERVAL_MAX, clip.interval);
+      const input = otterCard(i) && otterCard(i).querySelector('.cantar__otter-interval-num');
+      if (input) input.value = String(clip.interval);
+      if (otterUi[i].looping) await startOtterLoop(i);
+      return clip;
     }
 
     function renderMix() {
-      if (voiceGain) voiceGain.gain.value = Number(mixInput.value) / 100;
-      if (backingGain) backingGain.gain.value = 1 - Number(mixInput.value) / 200;
+      const mix = Number(mixInput.value) / 100;
+      const duck = currentGraph().backingDuck ?? 1;
+      if (voiceFx) voiceFx.setOutGain(mix);
+      if (backingGain) backingGain.gain.value = (1 - mix / 2) * duck;
     }
 
     recBtn.addEventListener('click', async () => {
@@ -588,7 +684,7 @@ export default {
           el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome'), nameInput),
           el('div', { class: 'toolbar' }, micBtn, recBtn, timer),
           status,
-          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Modificador de voz'), fxRow, autoBtn),
+          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Modificador de voz'), fxRow, fxCaption, autoBtn),
           el(
             'div',
             { class: 'field' },
@@ -597,7 +693,7 @@ export default {
             el('div', { class: 'row-actions' }, syncBtn, bpmLabel, bpmInput)
           ),
           el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Mix da voz'), mixInput),
-          el('p', { class: 'hint' }, 'Natural usa gate, filtro e compressão para tirar o chiado. Grave no microfone; cada lontrinha pode repetir uma frase no beat.')
+          el('p', { class: 'hint' }, 'Natural é limpo (gate, filtro e compressão). Os outros chips ligam só o efeito escolhido — Agudo/Grave mudam o tom, Eco atrasos, Robô metal, Caverna reverb, Velhinha vibrato. Cada lontrinha grava uma frase (você escolhe os segundos) e fica repetindo junto da voz.')
         )
       )
     );
@@ -608,17 +704,37 @@ export default {
     fillBacking();
 
     window.__mmpCantar = {
-      state: () => ({ fx, autotune, backing, bpm, sync, rms, pitchHz, otters: otterClips.filter(Boolean).length, mic: Boolean(stream) }),
+      state: () => ({
+        fx,
+        autotune,
+        backing,
+        bpm,
+        sync,
+        rms,
+        pitchHz,
+        otters: otterClips.filter(Boolean).length,
+        mic: Boolean(stream),
+        graph: currentGraph(),
+        otterLoops: otterClips.map((c, i) => ({
+          hasClip: Boolean(c),
+          interval: c ? c.interval : null,
+          duration: c ? c.duration : null,
+          looping: otterUi[i].looping,
+          recording: otterUi[i].recording,
+          singing: otterUi[i].singing
+        }))
+      }),
+      graph: () => currentGraph(),
+      fingerprint: () => fingerprint(currentGraph()),
+      boot: () => ensureAudio(),
       setFx: (id) => {
-        if (FX.some((f) => f.id === id)) {
-          fx = id;
-          applyFx();
-          renderFx();
-        }
+        fx = normalizeFxId(id);
+        applyFx();
       },
       setAutotune: (on) => {
         autotune = Boolean(on);
         autoBtn.textContent = `Autotune: ${autotune ? 'Sim' : 'Não'}`;
+        autoBtn.setAttribute('aria-pressed', String(autotune));
         applyFx();
       },
       setBacking: (id) => {
@@ -629,7 +745,10 @@ export default {
         rms = v;
         mouthOpen = rms > 0.06;
         paintCat();
-      }
+      },
+      setOtterClip,
+      setOtterInterval,
+      clearOtter
     };
 
     return {
@@ -640,13 +759,17 @@ export default {
       unmount() {
         alive = false;
         cancelAnimationFrame(raf);
+        cancelAnimationFrame(otterAnimRaf);
         clearInterval(recTimer);
         stopBacking();
-        otterPlayers.forEach((p) => p.dispose && p.dispose());
+        if (otterRecSession) otterRecSession.stop();
+        for (let i = 0; i < OTTER_SLOTS; i++) stopOtterLoop(i);
+        if (otterGain) otterGain.dispose();
         if (stream) stream.getTracks().forEach((t) => t.stop());
         if (rec) rec.dispose();
-        if (talkbox) talkbox.dispose();
-        [pitchShift, chorus, delay, crusher, reverb, cheby, voiceGain, backingGain, micNode, dryGain, fxGain, hpf, lpf, deEss, gateGain, comp].forEach((n) => n && n.dispose && n.dispose());
+        if (voiceFx) voiceFx.dispose();
+        if (backingGain) backingGain.dispose();
+        if (micNode) micNode.dispose();
         if (window.__mmpCantar) delete window.__mmpCantar;
       }
     };

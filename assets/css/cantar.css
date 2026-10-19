@@ -8,6 +8,18 @@
 .cantar .chips {
   flex-wrap: wrap;
 }
+.cantar .chip {
+  padding: 6px 14px;
+}
+.cantar .chip.is-on {
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg));
+}
+.cantar__fx-now {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
 .cantar__stage {
   display: flex;
   flex-direction: column;
@@ -55,13 +67,64 @@
   border: 1px solid var(--hairline);
   border-radius: 10px;
 }
-.cantar__otter.is-on {
+.cantar__otter.is-on,
+.cantar__otter.is-looping {
   border-color: var(--accent);
+}
+.cantar__otter.is-recording {
+  border-color: var(--danger);
+}
+.cantar__otter.is-looping svg.creature {
+  animation: hop 0.7s ease-in-out infinite;
+}
+.cantar__otter.is-singing svg.creature,
+.cantar__otter.is-recording svg.creature {
+  animation: hop 0.32s ease-in-out infinite;
 }
 .cantar__otter-name {
   font-size: 0.78rem;
   font-weight: 650;
   color: var(--accent);
+}
+.cantar__otter-interval {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.cantar__otter-interval-num {
+  width: 3.6rem;
+  padding: 4px 6px;
+  text-align: center;
+  font-size: 0.78rem;
+}
+.cantar__otter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+.cantar__otter-countdown {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--danger);
+}
+.cantar__otter-ask-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+.cantar__dur-range {
+  width: 100%;
+}
+.cantar__dur-num {
+  width: 4.6rem;
+  text-align: center;
 }
 @media (max-width: 900px) {
   .cantar {

@@ -456,6 +456,50 @@
     CG.setRms(0.2);
     ok('Cantar: gato abre a boca com volume', $('.cantar__cat svg.creature.is-sing-open') && CG.state().fx === 'agudo');
 
+    ok('Cantar: botão Gravar frase nas 3 lontrinhas', $$('.cantar__otter .btn--primary').length === 3);
+    $$('.cantar__otter')[2].querySelector('.btn--primary').click();
+    await sleep(250);
+    const durDlg = $('.modal');
+    const durInput = durDlg && durDlg.querySelector('input[type="range"], input[type="number"]');
+    ok(
+      'Cantar: Gravar frase abre diálogo de duração',
+      durDlg && durInput && /lontrinha 3|gravar frase/i.test(durDlg.textContent),
+      durDlg && durDlg.textContent.replace(/\s+/g, ' ').slice(0, 160)
+    );
+    if (durDlg) {
+      const x = durDlg.querySelector('.icon-btn');
+      if (x) x.click();
+    }
+    await sleep(150);
+    ok('Cantar: diálogo de duração fecha no cancelar', !$('.modal'));
+    if (CG.setOtterClip) {
+      await CG.setOtterClip(0, { duration: 0.2, interval: 1, freq: 392 });
+      await CG.setOtterClip(1, { duration: 0.2, interval: 2, freq: 494 });
+      await CG.setOtterClip(2, { duration: 0.2, interval: 3, freq: 587 });
+      await sleep(280);
+      const loops = CG.state().otterLoops || [];
+      ok(
+        'Cantar: 3 lontrinhas loopam em paralelo com intervalos diferentes',
+        CG.state().otters === 3 && loops.length === 3 && loops.every((o) => o.hasClip && o.looping) && new Set(loops.map((o) => o.interval)).size === 3,
+        JSON.stringify(loops)
+      );
+      ok(
+        'Cantar: intervalo visível no card',
+        $$('.cantar__otter-interval-num').length === 3 && $$('.cantar__otter.is-looping').length === 3,
+        String($$('.cantar__otter-interval-num').length)
+      );
+      await CG.setOtterInterval(0, 4);
+      ok('Cantar: muda o intervalo da lontrinha', CG.state().otterLoops[0].interval === 4 && CG.state().otterLoops[0].looping, JSON.stringify(CG.state().otterLoops[0]));
+      CG.clearOtter(1);
+      ok(
+        'Cantar: parar uma lontrinha não derruba as outras',
+        CG.state().otterLoops[0].looping && !CG.state().otterLoops[1].hasClip && CG.state().otterLoops[2].looping
+      );
+      CG.setFx('eco');
+      ok('Cantar: chips de FX seguem depois do loop', CG.state().fx === 'eco' && $$('.cantar .chip.is-on').some((c) => /eco/i.test(c.textContent)));
+      CG.setFx('agudo');
+    }
+
     await go('tetris');
     const TZ = window.__mmpTetris;
     ok('Tetris: tabuleiro e bichinhos', TZ && $('.tz-canvas') && $$('.tz-mascot svg.creature--cat').length && $$('.tz-mascot svg.creature--otter').length);
