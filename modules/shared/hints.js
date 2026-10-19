@@ -43,7 +43,8 @@ export const HINTS = {
   tetris: `Tetris — como mexer
 • Setas ou WASD: A/D andam, W gira, S acelera.
 • Espaço solta a peça. Esc pausa.
-• Complete linhas para pontuar.`,
+• Complete linhas para pontuar.
+• Som liga/desliga a musiquinha; o slider abaixa o volume.`,
   corrida: `Corrida — como mexer
 • A/D ou setas desviam o carrinho.
 • W ou ↑ aumenta o ritmo da pista.
