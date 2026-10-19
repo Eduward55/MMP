@@ -417,6 +417,13 @@
     ok('Cat Typing: P escreve a letra e não pausa', !cts.paused && cts.typing === 'p' && cts.lasers >= 1, JSON.stringify({ paused: cts.paused, typing: cts.typing, lasers: cts.lasers }));
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
     ok('Cat Typing: Tab pausa', CT.state().paused && $('.ct-overlay h2') && $('.ct-overlay h2').textContent.includes('Pausa'));
+    ok(
+      'Cat Typing: overlay de pausa não explica P',
+      $('.ct-overlay p') &&
+        $('.ct-overlay p').textContent.includes('Tab ou Esc continua') &&
+        !$('.ct-overlay p').textContent.includes('escreve P'),
+      $('.ct-overlay p') && $('.ct-overlay p').textContent
+    );
     CT.resume();
     ok('Cat Typing: Esc/Tab continua', !CT.state().paused);
     CT.lock(true);
@@ -430,6 +437,24 @@
       `${livesBefore} → ${cts.lives}`
     );
     ok('Cat Typing: dica não fala que P escreve P', !$('.ct-hint').textContent.includes('escreve P'), $('.ct-hint').textContent);
+    const volEl = $('.ct-vol');
+    ok(
+      'Cat Typing: slider de volume no HUD',
+      volEl && volEl.type === 'range' && Number(volEl.min) === 0 && Number(volEl.max) === 100 && $('.ct-sound') && $('.ct-sound .btn--sm'),
+      volEl && `${volEl.min}-${volEl.max} · ${$('.ct-sound') && $('.ct-sound').textContent}`
+    );
+    volEl.value = '40';
+    volEl.dispatchEvent(new Event('input', { bubbles: true }));
+    cts = CT.state();
+    ok('Cat Typing: volume regula o gain', cts.volume === 40 && cts.sound === true && cts.gain === 0.4, JSON.stringify({ volume: cts.volume, sound: cts.sound, gain: cts.gain }));
+    volEl.value = '0';
+    volEl.dispatchEvent(new Event('input', { bubbles: true }));
+    cts = CT.state();
+    ok('Cat Typing: volume 0 silencia', cts.volume === 0 && cts.sound === false && cts.gain === 0, JSON.stringify({ volume: cts.volume, sound: cts.sound, gain: cts.gain }));
+    volEl.value = '70';
+    volEl.dispatchEvent(new Event('input', { bubbles: true }));
+    cts = CT.state();
+    ok('Cat Typing: volume volta a ligar o som', cts.volume === 70 && cts.sound === true && cts.gain === 0.7, JSON.stringify({ volume: cts.volume, sound: cts.sound, gain: cts.gain }));
     CT.clear();
     CT.spawn({ word: 'lua', y: 0.3, vy: 0 });
     for (const ch of 'lua') CT.type(ch);
@@ -438,15 +463,15 @@
     const savedCt = await window.mmp.store.read('cattyping');
     ok(
       'Cat Typing: Salvar persiste pontos e recorde',
-      savedCt && savedCt.version === 2 && savedCt.game && savedCt.game.destroyed >= 1 && savedCt.best >= savedCt.game.score,
-      JSON.stringify(savedCt && { best: savedCt.best, score: savedCt.game && savedCt.game.score, destroyed: savedCt.game && savedCt.game.destroyed })
+      savedCt && savedCt.version === 2 && savedCt.game && savedCt.game.destroyed >= 1 && savedCt.best >= savedCt.game.score && savedCt.volume === 70 && savedCt.sound === true,
+      JSON.stringify(savedCt && { best: savedCt.best, score: savedCt.game && savedCt.game.score, destroyed: savedCt.game && savedCt.game.destroyed, volume: savedCt.volume, sound: savedCt.sound })
     );
     CT.pause();
     await go('hub');
     await go('cattyping');
     for (let i = 0; i < 50 && !window.__mmpCatTyping; i++) await sleep(100);
     cts = window.__mmpCatTyping && window.__mmpCatTyping.state();
-    ok('Cat Typing: partida em andamento continua ao voltar', cts && !cts.over && cts.destroyed >= 1 && cts.score > 0, cts && JSON.stringify(cts));
+    ok('Cat Typing: partida em andamento continua ao voltar', cts && !cts.over && cts.destroyed >= 1 && cts.score > 0 && cts.volume === 70, cts && JSON.stringify(cts));
 
     await go('cantar');
     const CG = window.__mmpCantar;

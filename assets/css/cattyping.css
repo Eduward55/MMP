@@ -14,6 +14,28 @@
   flex-direction: column;
   gap: 12px;
 }
+.ct-hud .row-actions {
+  align-items: center;
+}
+.ct-sound {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 100%;
+  min-width: 0;
+}
+.ct-sound .btn--sm {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.ct-vol {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 88px;
+  max-width: 160px;
+  height: 18px;
+  cursor: pointer;
+}
 .ct-stage {
   grid-area: stage;
   position: relative;
