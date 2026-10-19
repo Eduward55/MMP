@@ -3,8 +3,9 @@
 import { DRUM_BY_NOTE, DRUM_KIT, INSTRUMENT_BY_ID, inScale, midiName, nearestDrum, scaleRange } from '../shared/instruments.js';
 import { el } from '../shared/ui.js';
 
-export const CELL = 22;
-export const ROW = 16;
+export const CELL = 32;
+export const ROW = 22;
+export const HANDLE = 10;
 const STEP = 0.25;
 const snap = (beats) => Math.round(beats / STEP) * STEP;
 
@@ -155,7 +156,7 @@ export function createEditor({ project, track, view, onCommit, onAudition, onSel
     if (n) {
       e = n._ev;
       const right = (e.time + e.dur) * 4 * CELL;
-      mode = right - x0 < 7 ? 'resize' : 'move';
+      mode = right - x0 < HANDLE ? 'resize' : 'move';
     } else {
       const ri = Math.max(0, Math.min(rows.length - 1, Math.floor(y0 / ROW)));
       const time = Math.max(0, Math.min(p.length - STEP, Math.floor(x0 / CELL) * STEP));

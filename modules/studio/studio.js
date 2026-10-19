@@ -8,11 +8,17 @@ import { EVENTS_KIND, eventsSummary, handoff, normalizeEvents } from '../shared/
 import { DRUM_KIT, INSTRUMENTS, INSTRUMENT_BY_ID, ROOTS, SCALES, SCALE_BY_ID, createVoice, snapToScale } from '../shared/instruments.js';
 import { gallery, getProfile } from '../shared/store.js';
 import { el, formatDate, modal, stamp, startAudio, toast } from '../shared/ui.js';
-import { createEditor } from './editor.js';
+import { CELL, ROW, createEditor } from './editor.js';
 import { createVideoRecorder, projectSeconds, renderWav } from './render.js';
 
 const MAX_BARS = 32;
 const STEP = 0.25;
+const DEFAULT_VOL = 1;
+const clampVol = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : DEFAULT_VOL;
+};
+const trackGain = (t) => (t && !t.mute ? clampVol(t.vol) : 0);
 const SOURCE_NAMES = { airpads: 'Air Pads', beatcats: 'Beat Cats', cattyping: 'Cat Typing', cantar: 'Cantar', studio: 'Studio' };
 const KEY_ROW = ['a', 'w', 's', 'e', 'd', 'f', 't', 'g', 'y', 'h', 'u', 'j', 'k', 'o', 'l', 'p'];
 const DRUM_KEYS = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'];
@@ -30,8 +36,8 @@ function blankProject() {
     root: 0,
     length: 16,
     tracks: [
-      { id: 'bateria', name: 'Bateria', inst: 'drums', mute: false },
-      { id: 'teclado', name: 'Teclado', inst: 'piano', mute: false }
+      { id: 'bateria', name: 'Bateria', inst: 'drums', mute: false, vol: DEFAULT_VOL },
+      { id: 'teclado', name: 'Teclado', inst: 'piano', mute: false, vol: DEFAULT_VOL }
     ],
     events: []
   };
@@ -41,10 +47,10 @@ function blankProject() {
 function demoProject() {
   const p = { ...blankProject(), name: 'Exemplo · Noite Neon', bpm: 104, scale: 'minor', root: 9, length: 16 };
   p.tracks = [
-    { id: 'bateria', name: 'Bateria', inst: 'drums', mute: false },
-    { id: 'baixo', name: 'Baixo', inst: 'bass', mute: false },
-    { id: 'acordes', name: 'Acordes', inst: 'piano', mute: false },
-    { id: 'melodia', name: 'Melodia', inst: 'chip', mute: false }
+    { id: 'bateria', name: 'Bateria', inst: 'drums', mute: false, vol: DEFAULT_VOL },
+    { id: 'baixo', name: 'Baixo', inst: 'bass', mute: false, vol: DEFAULT_VOL },
+    { id: 'acordes', name: 'Acordes', inst: 'piano', mute: false, vol: DEFAULT_VOL },
+    { id: 'melodia', name: 'Melodia', inst: 'chip', mute: false, vol: DEFAULT_VOL }
   ];
   const ev = (track, time, note, dur = 0.25, vel = 0.85) => p.events.push({ track, inst: p.tracks.find((t) => t.id === track).inst, time, note, dur, vel });
   const chords = [[57, 60, 64], [57, 60, 65], [55, 60, 64], [55, 59, 62]];
@@ -64,7 +70,7 @@ function demoProject() {
 function fromJson(json, fallbackName) {
   const j = normalizeEvents(json);
   const bars = Math.max(1, Math.min(MAX_BARS, Math.ceil((Number(j.length) || j.events.reduce((m, e) => Math.max(m, e.time + e.dur), 4)) / 4)));
-  const tracks = j.tracks.map((t) => ({ id: String(t.id), name: String(t.name || t.id).slice(0, 40), inst: t.inst, mute: Boolean(t.mute) }));
+  const tracks = j.tracks.map((t) => ({ id: String(t.id), name: String(t.name || t.id).slice(0, 40), inst: t.inst, mute: Boolean(t.mute), vol: clampVol(t.vol) }));
   const instOf = Object.fromEntries(tracks.map((t) => [t.id, t.inst]));
   return {
     name: j.name || fallbackName || 'Projeto 1',
@@ -120,6 +126,7 @@ export default {
     const nameInput = el('input', { class: 'input', type: 'text', maxlength: '60', 'aria-label': 'Nome do projeto' });
     const originEl = el('span', { class: 'muted st-origin' });
     const tracksEl = el('div', { class: 'st-tracks', role: 'listbox', 'aria-label': 'Faixas' });
+    const mixerEl = el('div', { class: 'st-mixer', role: 'group', 'aria-label': 'Mesa de som' });
     const addInst = el('select', { class: 'input input--select', 'aria-label': 'Instrumento da nova faixa' }, ...INSTRUMENTS.map((i) => el('option', { value: i.id }, i.name)));
     const addBtn = el('button', { class: 'btn btn--ghost btn--sm' }, '+ Faixa');
     const tabs = el('div', { class: 'segmented', role: 'tablist', 'aria-label': 'Editor' });
@@ -152,9 +159,55 @@ export default {
       originEl.textContent = `${origin} · ${sum.notes} nota${sum.notes === 1 ? '' : 's'} em ${sum.tracks} faixa${sum.tracks === 1 ? '' : 's'}`;
     }
 
+    function applyGain(t) {
+      const v = voices.get(t.id);
+      if (v) v.gain.gain.value = trackGain(t);
+    }
+
+    function bindFader(well, t, readout) {
+      const paint = () => {
+        const pct = Math.round(clampVol(t.vol) * 100);
+        well.style.setProperty('--v', `${pct}%`);
+        well.setAttribute('aria-valuenow', String(pct));
+        if (readout) readout.textContent = String(pct);
+      };
+      const setFromY = (clientY) => {
+        const box = well.getBoundingClientRect();
+        t.vol = Math.round(Math.max(0, Math.min(1, (box.bottom - clientY) / Math.max(1, box.height))) * 100) / 100;
+        paint();
+        applyGain(t);
+      };
+      well.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          well.setPointerCapture(e.pointerId);
+        } catch {}
+        setFromY(e.clientY);
+      });
+      well.addEventListener('pointermove', (e) => {
+        if (well.hasPointerCapture(e.pointerId)) setFromY(e.clientY);
+      });
+      well.addEventListener('keydown', (e) => {
+        const step = e.shiftKey ? 0.1 : 0.05;
+        if (e.key === 'ArrowUp' || e.key === 'ArrowRight') t.vol = Math.min(1, clampVol(t.vol) + step);
+        else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') t.vol = Math.max(0, clampVol(t.vol) - step);
+        else if (e.key === 'Home') t.vol = 1;
+        else if (e.key === 'End') t.vol = 0;
+        else return;
+        e.preventDefault();
+        paint();
+        applyGain(t);
+      });
+      paint();
+    }
+
     function renderTracks() {
       tracksEl.innerHTML = '';
+      mixerEl.innerHTML = '';
       project.tracks.forEach((t) => {
+        t.vol = clampVol(t.vol);
         const inst = INSTRUMENT_BY_ID[t.inst];
         const count = project.events.filter((e) => e.track === t.id).length;
         const sel = el('select', { class: 'input input--select input--sm', 'aria-label': `Instrumento de ${t.name}` }, ...INSTRUMENTS.map((i) => el('option', { value: i.id }, i.name)));
@@ -165,14 +218,7 @@ export default {
         name.addEventListener('click', (e) => e.stopPropagation());
         name.addEventListener('change', () => {
           t.name = name.value.trim() || t.name;
-        });
-        const mute = el('button', { class: `btn btn--ghost btn--xs ${t.mute ? 'is-active' : ''}`, title: t.mute ? 'Ligar som' : 'Silenciar', 'aria-pressed': String(t.mute) }, t.mute ? 'Mudo' : 'Som');
-        mute.addEventListener('click', (e) => {
-          e.stopPropagation();
-          t.mute = !t.mute;
-          syncVoices();
           renderTracks();
-          if (view === 'roll') editor.render();
         });
         const del = el('button', { class: 'btn btn--ghost btn--xs', title: 'Apagar faixa', 'aria-label': `Apagar ${t.name}` }, '✕');
         del.addEventListener('click', (e) => {
@@ -184,13 +230,55 @@ export default {
           { class: `st-track ${t.id === trackId ? 'is-on' : ''} ${t.mute ? 'is-muted' : ''}`, role: 'option', 'aria-selected': String(t.id === trackId), tabindex: '0', style: `--c:${inst.color}`, 'data-track': t.id },
           el('span', { class: 'st-track__dot' }),
           el('div', { class: 'st-track__body' }, name, el('div', { class: 'st-track__row' }, sel, el('span', { class: 'st-track__count' }, `${count} notas`))),
-          el('div', { class: 'st-track__tools' }, mute, del)
+          el('div', { class: 'st-track__tools' }, del)
         );
         row.addEventListener('click', () => selectTrack(t.id));
         row.addEventListener('keydown', (e) => (e.key === 'Enter' ? selectTrack(t.id) : null));
         tracksEl.append(row);
+
+        const readout = el('span', { class: 'st-strip__vol' }, String(Math.round(clampVol(t.vol) * 100)));
+        const fader = el('div', {
+          class: 'st-fader',
+          role: 'slider',
+          tabindex: '0',
+          'aria-orientation': 'vertical',
+          'aria-label': `Volume de ${t.name}`,
+          'aria-valuemin': '0',
+          'aria-valuemax': '100'
+        });
+        bindFader(fader, t, readout);
+        const mute = el(
+          'button',
+          {
+            class: `btn btn--ghost btn--sm st-strip__mute ${t.mute ? 'is-active' : ''}`,
+            title: t.mute ? 'Tirar mudo' : 'Silenciar faixa',
+            'aria-pressed': String(t.mute),
+            'aria-label': `Mudo de ${t.name}`
+          },
+          'Mudo'
+        );
+        mute.addEventListener('click', (e) => {
+          e.stopPropagation();
+          t.mute = !t.mute;
+          applyGain(t);
+          renderTracks();
+          if (view === 'roll') editor.render();
+        });
+        const strip = el(
+          'div',
+          { class: `st-strip ${t.id === trackId ? 'is-on' : ''} ${t.mute ? 'is-muted' : ''}`, style: `--c:${inst.color}`, 'data-track': t.id },
+          el('span', { class: 'st-strip__name', title: t.name }, t.name),
+          fader,
+          readout,
+          mute
+        );
+        strip.addEventListener('click', () => selectTrack(t.id));
+        mixerEl.append(strip);
       });
-      if (!project.tracks.length) tracksEl.append(el('p', { class: 'muted' }, 'Nenhuma faixa. Escolha um instrumento e clique em + Faixa.'));
+      if (!project.tracks.length) {
+        tracksEl.append(el('p', { class: 'muted' }, 'Nenhuma faixa. Escolha um instrumento e clique em + Faixa.'));
+        mixerEl.append(el('p', { class: 'muted' }, 'Sem faixas para mixar.'));
+      }
     }
 
     function renderTabs() {
@@ -203,8 +291,8 @@ export default {
       );
       editHint.textContent =
         view === 'roll'
-          ? 'Clique para criar uma nota (arraste para esticar). Arraste a nota para mover, puxe a ponta direita para mudar a duração; duplo clique ou botão direito apaga. Fileiras escuras ficam fora da escala.'
-          : 'Cada quadradinho é uma semicolcheia: clique para ligar/desligar. As fileiras mostram as notas da escala escolhida (na bateria, as peças do kit).';
+          ? 'Clique para criar · arraste para mover · ponta direita para duração · duplo clique apaga. Fileiras escuras saem da escala.'
+          : 'Cada quadrado é uma semicolcheia. Clique para ligar ou desligar. Na bateria, as fileiras são as peças do kit.';
     }
 
     function renderAll() {
@@ -251,7 +339,7 @@ export default {
     }
 
     function addTrack(inst = addInst.value) {
-      const t = { id: newId(), name: INSTRUMENT_BY_ID[inst].name, inst, mute: false };
+      const t = { id: newId(), name: INSTRUMENT_BY_ID[inst].name, inst, mute: false, vol: DEFAULT_VOL };
       project.tracks.push(t);
       trackId = t.id;
       syncVoices();
@@ -346,7 +434,7 @@ export default {
           const gain = new Tone.Gain(1).connect(master);
           voices.set(t.id, { inst: t.inst, gain, voice: createVoice(Tone, t.inst, gain) });
         }
-        voices.get(t.id).gain.gain.value = t.mute ? 0 : 1;
+        voices.get(t.id).gain.gain.value = trackGain(t);
       });
     }
 
@@ -455,7 +543,7 @@ export default {
 
     /* ---------- Salvar / abrir ---------- */
     function toJson() {
-      const tracks = project.tracks.map(({ id, name, inst, mute }) => ({ id, name, inst, mute }));
+      const tracks = project.tracks.map(({ id, name, inst, mute, vol }) => ({ id, name, inst, mute, vol: clampVol(vol) }));
       const instOf = Object.fromEntries(tracks.map((t) => [t.id, t.inst]));
       return {
         version: 1,
@@ -682,12 +770,17 @@ export default {
             )
           )
         ),
+        el(
+          'section',
+          { class: 'panel st-mix' },
+          el('div', { class: 'panel__head' }, el('h2', {}, 'Mesa de som'), el('span', { class: 'muted st-mix__legend' }, 'Volume por faixa')),
+          mixerEl
+        ),
         el('section', { class: 'panel st-edit' }, el('div', { class: 'panel__head' }, tabs, editHint), editor.el),
         el(
           'section',
           { class: 'panel st-export' },
-          el('h2', {}, 'Exportar'),
-          el('div', { class: 'row-actions' }, wavBtn, el('label', { class: 'st-check' }, camBox, el('span', {}, 'Webcam no vídeo')), webmBtn),
+          el('div', { class: 'panel__head' }, el('h2', {}, 'Exportar'), el('div', { class: 'row-actions st-export__actions' }, wavBtn, el('label', { class: 'st-check' }, camBox, el('span', {}, 'Webcam no vídeo')), webmBtn)),
           exportStatus,
           exportPreview
         )
@@ -736,6 +829,8 @@ export default {
         opened: openedProjectId,
         origin
       }),
+      cell: () => CELL,
+      row: () => ROW,
       json: toJson,
       rows: () => editor.rows(),
       selectTrack,

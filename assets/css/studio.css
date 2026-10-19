@@ -1,13 +1,43 @@
-/* ---------- STUDIO ---------- */
+/* ---------- STUDIO (layout tipo DAW) ---------- */
+.page--studio {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+.page--studio .page__main {
+  flex: 1;
+  min-height: 0;
+  max-width: none;
+  width: 100%;
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.page--studio .panel {
+  padding: 10px 12px;
+}
+.page--studio .panel__head {
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.page--studio .field {
+  margin-bottom: 0;
+}
+
 .st {
+  flex: 1;
+  min-height: 0;
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   grid-template-areas:
     'bar bar'
     'side edit'
-    'side export';
-  gap: 18px;
-  align-items: start;
+    'mix edit'
+    'export export';
+  gap: 10px;
+  align-items: stretch;
 }
 .st-bar {
   grid-area: bar;
@@ -16,18 +46,29 @@
   grid-area: side;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
+  min-height: 0;
+  overflow: auto;
+}
+.st-mix {
+  grid-area: mix;
+  min-width: 0;
 }
 .st-edit {
   grid-area: edit;
   min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 .st-export {
   grid-area: export;
   min-width: 0;
 }
+
 .st-bar .toolbar {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  gap: 8px;
 }
 .st-field {
   display: flex;
@@ -39,7 +80,7 @@
 }
 .st-namebar {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 16px;
   flex-wrap: wrap;
 }
@@ -48,9 +89,8 @@
   margin: 0;
 }
 .st-origin {
-  flex: 1 1 260px;
+  flex: 1 1 220px;
   font-size: 0.88rem;
-  padding-bottom: 10px;
 }
 
 .st-add {
@@ -63,15 +103,18 @@
 .st-tracks {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 }
 .st-track {
   --c: var(--accent);
   display: grid;
   grid-template-columns: 8px minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  padding: 8px;
+  padding: 6px 8px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -97,13 +140,13 @@
 .st-track__body {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 .st-track__name {
   width: 100%;
   font-family: var(--font);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text);
   background: transparent;
@@ -141,19 +184,137 @@
   padding: 5px 7px;
 }
 .st-keysrec .hint {
-  margin-top: 8px;
+  margin-top: 6px;
+  margin-bottom: 0;
+  font-size: 0.78rem;
+}
+.st-open .subhead {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+.st-open .row-actions {
+  margin-top: 0;
+}
+
+/* Mesa de som: faders verticais grandes */
+.st-mix__legend {
+  font-size: 0.78rem;
+}
+.st-mixer {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 4px;
+  min-height: 248px;
+}
+.st-strip {
+  --c: var(--accent);
+  flex: 1 1 64px;
+  max-width: 100px;
+  min-width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 6px 10px;
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.st-strip.is-on {
+  border-color: var(--c);
+}
+.st-strip.is-muted {
+  opacity: 0.55;
+}
+.st-strip__name {
+  width: 100%;
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-align: center;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.st-fader {
+  --v: 100%;
+  position: relative;
+  width: 36px;
+  height: 176px;
+  flex: 0 0 176px;
+  background:
+    repeating-linear-gradient(to top, transparent 0 16px, rgba(255, 255, 255, 0.07) 16px 17px),
+    var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+.st-fader::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 3px;
+  height: var(--v);
+  max-height: calc(100% - 6px);
+  background: linear-gradient(to top, color-mix(in srgb, var(--c) 70%, #000), var(--c));
+  border-radius: 4px 4px 2px 2px;
+  pointer-events: none;
+}
+.st-fader::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  bottom: var(--v);
+  height: 14px;
+  transform: translateY(50%);
+  background: var(--text);
+  border: 1px solid var(--bg);
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.st-fader:focus-visible {
+  outline: 2px solid var(--accent-hover);
+  outline-offset: 2px;
+}
+.st-strip__vol {
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--text);
+  min-width: 2ch;
+  text-align: center;
+}
+.st-strip__mute {
+  width: 100%;
+  padding: 6px 4px;
+  font-size: 0.72rem;
 }
 
 .st-edit .panel__head {
   align-items: flex-start;
+  flex: 0 0 auto;
 }
 .st-hint {
-  flex: 1 1 320px;
+  flex: 1 1 280px;
   margin: 0;
+  font-size: 0.8rem;
+}
+.st-editor {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 .st-scroll {
+  flex: 1;
+  min-height: 280px;
   overflow: auto;
-  max-height: 470px;
   border: 1px solid var(--hairline);
   border-radius: 10px;
   background: var(--bg);
@@ -161,9 +322,10 @@
 }
 .st-grid {
   display: grid;
-  grid-template-columns: 96px max-content;
-  grid-template-rows: 22px auto;
+  grid-template-columns: 108px max-content;
+  grid-template-rows: 26px auto;
   width: max-content;
+  min-height: 100%;
 }
 .st-corner {
   position: sticky;
@@ -178,19 +340,19 @@
   position: sticky;
   top: 0;
   z-index: 3;
-  height: 22px;
+  height: 26px;
   background: var(--surface);
   border-bottom: 1px solid var(--hairline);
 }
 .st-ruler__bar {
   position: absolute;
-  top: 3px;
-  padding-left: 4px;
+  top: 4px;
+  padding-left: 6px;
   font-family: var(--font);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   border-left: 1px solid var(--accent);
-  height: 17px;
+  height: 18px;
 }
 .st-keys {
   position: sticky;
@@ -202,8 +364,8 @@
 .st-key {
   display: flex;
   align-items: center;
-  padding: 0 6px;
-  font-size: 0.72rem;
+  padding: 0 8px;
+  font-size: 0.76rem;
   line-height: 1;
   color: var(--text-muted);
   white-space: nowrap;
@@ -243,11 +405,11 @@
 }
 .st-note {
   position: absolute;
-  height: calc(var(--row) - 2px);
+  height: calc(var(--row) - 3px);
   margin-top: 1px;
   background: var(--c);
   border: 1px solid var(--bg);
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: grab;
   z-index: 2;
 }
@@ -256,10 +418,11 @@
   position: absolute;
   top: 0;
   right: -2px;
-  width: 7px;
+  width: 10px;
   height: 100%;
   cursor: ew-resize;
-  background: rgba(15, 15, 18, 0.28);
+  background: rgba(15, 15, 18, 0.32);
+  border-radius: 0 3px 3px 0;
 }
 .st-note.is-selected {
   outline: 1px solid var(--text);
@@ -280,7 +443,7 @@
   margin: 1px 0 0 1px;
   padding: 0;
   border: 0;
-  border-radius: 2px;
+  border-radius: 3px;
   background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
 }
@@ -314,10 +477,17 @@
   display: none;
 }
 .st-editor__empty {
-  min-height: 220px;
+  flex: 1;
+  min-height: 280px;
 }
 
 .st-export h2 {
+  margin-top: 0;
+}
+.st-export .panel__head {
+  align-items: center;
+}
+.st-export__actions {
   margin-top: 0;
 }
 .st-check {
@@ -334,10 +504,15 @@
 }
 .st-export__status {
   font-size: 0.88rem;
+  margin: 6px 0 0;
+}
+.st-export__preview:empty {
+  display: none;
 }
 .st-export__preview .player {
   width: 100%;
-  max-height: 360px;
+  max-height: 220px;
+  margin-top: 8px;
   background: #000;
   border: 1px solid var(--hairline);
 }
@@ -374,24 +549,55 @@
 }
 
 @media (max-width: 1080px) {
+  .page--studio {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  .page--studio .page__main {
+    overflow: auto;
+    height: auto;
+    padding-bottom: 24px;
+  }
   .st {
     grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(380px, 70vh) auto auto auto;
     grid-template-areas:
       'bar'
       'edit'
+      'mix'
       'side'
       'export';
+    min-height: 0;
+    height: auto;
+  }
+  .st-scroll {
+    min-height: 360px;
+  }
+  .st-mixer {
+    min-height: 236px;
+  }
+  .st-fader {
+    height: 160px;
+    flex-basis: 160px;
+  }
+  .st-strip {
+    flex: 0 0 80px;
+    max-width: 88px;
   }
 }
 @media (max-width: 560px) {
   .st-grid {
-    grid-template-columns: 64px max-content;
+    grid-template-columns: 72px max-content;
   }
   .st-key {
     font-size: 0.68rem;
-    padding: 0 3px;
+    padding: 0 4px;
   }
   .st-scroll {
-    max-height: 380px;
+    min-height: 320px;
+  }
+  .st-bar .toolbar {
+    gap: 6px;
   }
 }
