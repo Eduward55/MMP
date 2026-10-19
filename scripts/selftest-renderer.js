@@ -15,10 +15,18 @@
     ok('galeria semeada no primeiro uso', initial.length === 2, `${initial.length} itens`);
     ok('Tone.js carregado de /vendor', window.Tone && window.Tone.version, window.Tone && window.Tone.version);
 
+    await go('hub');
+    ok(
+      'Hub: nomes padrão Pirrinha e Manhoso',
+      $('.hub__greeting') && $('.hub__greeting').textContent.includes('Pirrinha') && $('.hub__greeting').textContent.includes('Manhoso'),
+      $('.hub__greeting') && $('.hub__greeting').textContent
+    );
+    ok('Hub: seletor de tema', $$('.theme-swatch').length >= 5, String($$('.theme-swatch').length));
+
     for (const r of ['airpads', 'beatcats', 'studio', 'gallery', 'termo', 'conexoes', 'cattyping', 'mycat']) {
       await go(r);
       const bar = $('.topbar');
-      const hasAll = bar && bar.querySelector('.topbar__back') && bar.querySelector('.topbar__save') && bar.querySelector('a[href="#/gallery"]');
+      const hasAll = bar && bar.querySelector('.topbar__back') && bar.querySelector('.topbar__save') && bar.querySelector('a[href="#/gallery"]') && bar.querySelector('.topbar__hint');
       ok(`barra superior em ${r}`, hasAll);
       ok(`gato+lontra visíveis em ${r}`, $$('svg.creature--cat').length && $$('svg.creature--otter').length);
     }
@@ -54,7 +62,7 @@
     ok('Meu Gato salva perfil em JSON', prof.cat.name === 'Bolinha' && prof.cat.coat === 'tuxedo' && prof.cat.outfit.head === 'coroa' && prof.otter.outfit.body === 'astronauta', JSON.stringify(prof));
 
     await go('hub');
-    ok('Hub reflete o gato salvo', $('.hub__greeting').textContent.includes('Bolinha') && $('.acc--coroa') && $('.acc--batuta'));
+    ok('Hub reflete o gato salvo', $('.hub__greeting').textContent.includes('Bolinha') && $('.acc--coroa') && !$('.acc--batuta'));
 
     await go('gallery');
     ok('Galeria lista 3 cards', $$('.gcard').length === 3, $$('.gcard').length);
@@ -67,7 +75,8 @@
 
     await go('airpads');
     const ap = window.__mmpAirPads;
-    ok('Air Pads: 2 círculos + HUD + gato maestro', $$('.air-circle').length === 2 && $$('.air-hud').length === 2 && $('.air-maestro svg.creature--cat .acc--batuta'));
+    ok('Air Pads: 2 círculos + HUD + gato maestro', $$('.air-circle').length === 2 && $$('.air-hud').length === 2 && $('.air-maestro svg.creature--cat'));
+    ok('Air Pads: círculos em fatias com as notas', $$('.air-slice').length >= 6, String($$('.air-slice').length));
     ok('Air Pads: HUD mostra os instrumentos', $('.air-hud--0').textContent.includes('Piano') && $('.air-hud--1').textContent.includes('Bateria'), $$('.air-hud').map((h) => h.textContent).join(' | '));
     await ap.ready();
     ap.tap(0, 0, -0.9);
@@ -274,10 +283,12 @@
       ctd && JSON.stringify({ words: ctd.words, themes: ctd.themes, byLen: ctd.byLen })
     );
     ok(
-      'Cat Typing: gato espacial e lontra copiloto com a roupa do Meu Gato',
+      'Cat Typing: nave de costas com orelhas e a roupa do Meu Gato',
       CT &&
-        $('.ct-ship__cat svg.creature--cat') &&
-        $('.ct-ship__otter svg.creature--otter') &&
+        $('.ct-ship__hull') &&
+        $$('.ct-ship__gun').length >= 2 &&
+        $('.ct-ship__cat svg.creature--cat.creature--rear') &&
+        $('.ct-ship__otter svg.creature--otter.creature--rear') &&
         $('.ct-ship__cat .acc--coroa') &&
         $('.ct-ship__otter .acc--astronauta'),
       $$('.ct-ship .acc').map((a) => a.className).join(' | ')
@@ -319,6 +330,16 @@
     ok('Cat Typing: não atira pausado', CT.type('x') === false);
     CT.resume();
     ok('Cat Typing: continua depois da pausa', !CT.state().paused);
+    CT.lock(true);
+    CT.clear();
+    CT.spawn({ word: 'pato', display: 'PATO', y: 0.4, vy: 0 });
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true, cancelable: true }));
+    cts = CT.state();
+    ok('Cat Typing: P escreve a letra e não pausa', !cts.paused && cts.typing === 'p' && cts.lasers >= 1, JSON.stringify({ paused: cts.paused, typing: cts.typing, lasers: cts.lasers }));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    ok('Cat Typing: Tab pausa', CT.state().paused && $('.ct-overlay h2') && $('.ct-overlay h2').textContent.includes('Pausa'));
+    CT.resume();
+    ok('Cat Typing: Esc/Tab continua', !CT.state().paused);
     CT.lock(true);
     const livesBefore = CT.state().lives;
     CT.spawn({ word: 'fim', y: 0.95, vy: 2 });
@@ -496,6 +517,16 @@
     ok('Termo: teclado físico normaliza Á e ç', ts.typing === 'ac', ts.typing);
     T.press('backspace');
     T.press('backspace');
+    T.press('m');
+    T.press('space');
+    T.press('u');
+    ts = T.state();
+    ok(
+      'Termo: clique/espaço monta letra no meio da palavra',
+      ts.slots && ts.slots[0] === 'm' && ts.slots[1] === '' && ts.slots[2] === 'u' && ts.cursor === 3 && $('.tm-tile.is-cursor'),
+      JSON.stringify({ slots: ts.slots, cursor: ts.cursor, typing: ts.typing })
+    );
+    for (let i = 0; i < 6; i++) T.press('backspace');
     const [w1] = wrong(1);
     T.type(w1);
     $('.tm-key[data-key="enter"]').click();

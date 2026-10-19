@@ -1,13 +1,13 @@
 {
   "version": 1,
   "cat": {
-    "name": "Miau",
+    "name": "Pirrinha",
     "coat": "tabby",
     "eyes": "#5dff9b",
     "outfit": { "ear": "lacinho" }
   },
   "otter": {
-    "name": "Lulu",
+    "name": "Manhoso",
     "outfit": { "neck": "cachecol" }
   }
 }

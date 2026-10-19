@@ -43,9 +43,9 @@ export function mapHands(result, video, arenaW, arenaH) {
 
   const hands = (result.landmarks || []).map((lm, i) => {
     const points = lm.map(toPx);
-    // O MediaPipe assume imagem espelhada; como a entrada é o quadro cru da webcam, o rótulo vem invertido.
+    // Vídeo da arena é selfie (x espelhado). A mão direita da pessoa cai no lado direito da arena.
     const label = result.handedness && result.handedness[i] && result.handedness[i][0] ? result.handedness[i][0].categoryName : '';
-    const hand = label === 'Left' ? 1 : label === 'Right' ? 0 : points[8].x < arenaW / 2 ? 0 : 1;
+    const hand = label === 'Right' ? 1 : label === 'Left' ? 0 : points[8].x < arenaW / 2 ? 0 : 1;
     return { hand, x: points[8].x, y: points[8].y, points };
   });
   if (hands.length === 2 && hands[0].hand === hands[1].hand) {

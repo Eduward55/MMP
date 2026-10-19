@@ -2,7 +2,7 @@
 export default [
   ['ger-planetas', 0, 'Planetas do Sistema Solar', 'MERCÚRIO,VÊNUS,TERRA,MARTE,JÚPITER,SATURNO,URANO,NETUNO'],
   ['ger-astro', 1, 'Corpos astronômicos', 'SOL,LUA,ASTEROIDE,COMETA,METEORO,SATÉLITE,ESTRELA,GALÁXIA'],
-  ['ger-continentes', 0, 'Continentes', 'ÁFRICA,AMÉRICA,ÁSIA,EUROPA,OCEANIA,ANTÁRTIDA,EURASIA,AMÉRICA DO SUL'],
+  ['ger-continentes', 0, 'Continentes', 'ÁFRICA,AMÉRICA,ÁSIA,EUROPA,OCEANIA,ANTÁRTIDA,AMÉRICA DO NORTE,AMÉRICA DO SUL'],
   ['ger-oceanos', 0, 'Oceanos e mares', 'ATLÂNTICO,PACÍFICO,ÍNDICO,ÁRTICO,ANTÁRTICO,MAR DO NORTE,MAR MEDITERRÂNEO,MAR DO CARIBE'],
   ['ger-clima', 0, 'Tipos de clima', 'EQUATORIAL,TROPICAL,SEMIÁRIDO,TEMPERADO,MEDITERRÂNEO,POLAR,DESÉRTICO,SUBTROPICAL'],
   ['ger-relevo', 1, 'Formas de relevo', 'MONTANHA,PLANÍCIE,PLANALTO,DEPRESSÃO,VALE,CHAPADA,SERRA,LITORAL'],

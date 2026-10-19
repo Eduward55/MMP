@@ -1,6 +1,7 @@
 import { createDuo } from '../shared/companion.js';
 import { getProfile, onProfile, appInfo, gallery } from '../shared/store.js';
 import { icon } from '../shared/icons.js';
+import { createThemePicker } from '../shared/theme.js';
 import { el, esc } from '../shared/ui.js';
 
 const NOTES = ['♪', '♫', '♩', '♬'];
@@ -11,11 +12,11 @@ export default {
   icon: 'mycat',
   hideDock: true,
   async mount(root, { modules }) {
-    const duo = createDuo({ size: 210, catOverride: { back: 'capa', hand: 'batuta' }, catClass: 'is-conducting', otterClass: 'is-dancing' });
+    const duo = createDuo({ size: 210, catClass: 'is-idle', otterClass: 'is-dancing' });
 
     const greeting = el('p', { class: 'hub__greeting' });
     const renderGreeting = (p) => {
-      greeting.innerHTML = `Maestro <strong>${esc(p.cat.name)}</strong> e ${esc(p.otter.name)} afinaram tudo. Escolha um palco!`;
+      greeting.innerHTML = `<strong>${esc(p.cat.name)}</strong> e <strong>${esc(p.otter.name)}</strong> afinaram tudo. Escolha um palco!`;
     };
     renderGreeting(getProfile());
     const off = onProfile(renderGreeting);
@@ -52,7 +53,9 @@ export default {
             { class: 'hub__brand' },
             el('h1', { class: 'logo' }, el('span', { class: 'logo__my' }, 'My Music'), el('span', { class: 'logo__place' }, 'Place')),
             el('span', { class: 'logo__tag' }, 'MMP'),
-            greeting
+            greeting,
+            el('p', { class: 'hub__how' }, 'Clique nos bichinhos para ver a carinha. Tema, dicas e os módulos ficam aqui embaixo.'),
+            createThemePicker()
           ),
           el('div', { class: 'stage' }, notes, el('div', { class: 'stage__spot', 'aria-hidden': 'true' }), duo.el, el('div', { class: 'stage__podium', 'aria-hidden': 'true' }))
         ),

@@ -373,9 +373,17 @@
   border: 2px solid var(--hairline);
   border-radius: 8px;
   user-select: none;
+  padding: 0;
+  cursor: default;
 }
 .tm-row.is-current .tm-tile {
+  cursor: pointer;
   border-color: var(--accent);
+}
+.tm-tile.is-cursor {
+  outline: 2px solid var(--accent-hover);
+  outline-offset: 1px;
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 .tm-tile--typed,
 .tm-row.is-current .tm-tile--typed {

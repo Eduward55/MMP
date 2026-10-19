@@ -440,6 +440,68 @@ svg.pixel-icon {
 .topbar__actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.topbar-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: min(340px, 86vw);
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--elevate);
+  color: var(--text);
+}
+.topbar-pop__title {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  color: var(--accent);
+}
+.topbar-pop__hint {
+  margin: 0;
+  white-space: pre-line;
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.45;
+}
+.theme-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.theme-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.theme-swatch__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sw) 50%, var(--ac) 50%);
+  border: 1px solid var(--hairline);
+}
+.theme-swatch.is-on {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.hub__how {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .toasts {
@@ -542,7 +604,7 @@ svg.pixel-icon {
   font-weight: 600;
   padding: 6px 10px;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--hairline);
   border-radius: 999px;
   max-width: 180px;
   overflow: hidden;
@@ -579,6 +641,95 @@ svg.pixel-icon {
 }
 .creature.is-conducting .acc-hand {
   animation: conduct 0.9s ease-in-out infinite alternate;
+}
+.creature .layer-heart-eyes {
+  display: none;
+}
+.duo__member {
+  position: relative;
+}
+.react-heart {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ff4fd8;
+  font-size: 1.4rem;
+  pointer-events: none;
+  animation: react-heart 0.85s ease forwards;
+}
+.creature.is-react-heart .layer-heart-eyes {
+  display: block;
+}
+.creature.is-react-heart .layer-eyes {
+  opacity: 0;
+}
+.creature.is-react-wink .layer-eyes {
+  animation: wink 0.55s ease;
+}
+.creature.is-react-bounce {
+  animation: hop 0.45s ease;
+}
+.creature.is-react-spin {
+  animation: react-spin 0.7s ease;
+}
+.creature.is-react-sparkle .acc--coroa,
+.creature.is-react-sparkle .acc--estrelinha {
+  animation: sparkle 0.7s ease;
+}
+.creature.is-react-bob .acc--fone,
+.creature.is-react-bob .acc--gravata {
+  animation: hop 0.5s ease;
+}
+.creature.is-react-sway .acc--cachecol,
+.creature.is-react-sway .acc-back {
+  animation: sway 0.7s ease;
+}
+.creature.is-react-bow .acc--lacinho,
+.creature.is-react-bow .acc--maid {
+  animation: bow-wiggle 0.6s ease;
+}
+.creature.is-react-conduct .acc-hand {
+  animation: conduct 0.35s ease-in-out 3 alternate;
+}
+.creature.is-react-sing .acc--microfone {
+  animation: hop 0.4s ease;
+}
+.creature.is-react-float .acc--astronauta,
+.creature.is-react-float .acc--capacete {
+  animation: float-acc 0.8s ease;
+}
+.creature.is-react-party .acc--chapeu-festa {
+  animation: party 0.6s ease;
+}
+.creature.is-react-wiggle .acc--chapeu-bruxa,
+.creature.is-react-wiggle .acc--boina {
+  animation: wiggle 0.55s ease;
+}
+.creature.is-react-bloom .acc--flor {
+  animation: bloom 0.6s ease;
+}
+.creature.is-react-jingle .acc--coleira {
+  animation: jingle 0.5s ease;
+}
+.acc--lacinho {
+  animation: bow-idle 2.4s ease-in-out infinite;
+}
+.acc--cachecol {
+  animation: sway 2.8s ease-in-out infinite;
+}
+.acc--coroa,
+.acc--estrelinha {
+  animation: sparkle-idle 2.2s ease-in-out infinite;
+}
+.acc--fone {
+  animation: bob-acc 1.8s ease-in-out infinite;
+}
+.acc--flor {
+  animation: bloom-idle 2.6s ease-in-out infinite;
+}
+.acc--chapeu-festa {
+  animation: party-idle 1.4s ease-in-out infinite;
 }
 @keyframes wag {
   0%,
@@ -617,6 +768,114 @@ svg.pixel-icon {
     transform: rotate(16deg) translateY(-1px);
   }
 }
+@keyframes wink {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  40% {
+    transform: scaleY(0.08);
+  }
+}
+@keyframes react-spin {
+  40% {
+    transform: rotate(-8deg) translateY(-6px);
+  }
+  70% {
+    transform: rotate(8deg) translateY(-2px);
+  }
+}
+@keyframes react-heart {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -28px) scale(1.15);
+  }
+}
+@keyframes sparkle {
+  50% {
+    transform: translateY(-3px) scale(1.08);
+    filter: brightness(1.25);
+  }
+}
+@keyframes sparkle-idle {
+  50% {
+    transform: translateY(-1px);
+  }
+}
+@keyframes sway {
+  50% {
+    transform: rotate(8deg);
+  }
+}
+@keyframes bow-wiggle {
+  30% {
+    transform: rotate(-18deg);
+  }
+  70% {
+    transform: rotate(14deg);
+  }
+}
+@keyframes bow-idle {
+  50% {
+    transform: rotate(-6deg);
+  }
+}
+@keyframes float-acc {
+  50% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes party {
+  25% {
+    transform: rotate(-12deg);
+  }
+  75% {
+    transform: rotate(12deg);
+  }
+}
+@keyframes party-idle {
+  50% {
+    transform: rotate(6deg);
+  }
+}
+@keyframes wiggle {
+  30% {
+    transform: rotate(-10deg);
+  }
+  70% {
+    transform: rotate(10deg);
+  }
+}
+@keyframes bloom {
+  50% {
+    transform: scale(1.18);
+  }
+}
+@keyframes bloom-idle {
+  50% {
+    transform: rotate(-4deg) scale(1.04);
+  }
+}
+@keyframes jingle {
+  30% {
+    transform: rotate(-16deg);
+  }
+  70% {
+    transform: rotate(16deg);
+  }
+}
+@keyframes bob-acc {
+  50% {
+    transform: translateY(2px);
+  }
+}
 
 .dock {
   position: fixed;
@@ -632,14 +891,25 @@ svg.pixel-icon {
   pointer-events: auto;
 }
 .dock__duo {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   padding: 8px 10px 6px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius);
 }
 .dock__duo:hover {
   border-color: var(--accent-hover);
+}
+.dock__edit {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--accent);
 }
 .dock__bubble {
   max-width: 230px;
@@ -760,7 +1030,7 @@ svg.pixel-icon {
   justify-content: center;
   padding-bottom: 28px;
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius);
   background: var(--surface);
 }
@@ -814,7 +1084,7 @@ svg.pixel-icon {
   color: var(--text);
   text-decoration: none;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius);
   box-shadow: none;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
@@ -843,7 +1113,7 @@ svg.pixel-icon {
   font-family: var(--font);
   font-size: 1.02rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--text);
 }
 .card__desc {
   color: var(--text-muted);

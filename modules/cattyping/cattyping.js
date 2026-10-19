@@ -50,11 +50,13 @@ function loadWords() {
   return wordsPromise;
 }
 
-function lenRange(level) {
-  if (level <= 2) return [3, 5];
-  if (level <= 4) return [4, 7];
-  if (level <= 6) return [5, 8];
-  return [6, 10];
+const SPAWN_LENS = [3, 4, 5, 6, 7];
+
+function pickSpawnLen(rocks) {
+  const used = new Set(rocks.map((r) => r.word.length));
+  const fresh = SPAWN_LENS.filter((n) => !used.has(n));
+  const bag = fresh.length ? fresh : SPAWN_LENS;
+  return bag[Math.floor(Math.random() * bag.length)];
 }
 
 function emptyRun() {
@@ -126,7 +128,7 @@ export default {
       el(
         'p',
         { class: 'ct-hint' },
-        `Temas: ${Object.values(THEME_LABEL).join(', ')}. Digite a palavra do asteroide (acentos não importam). Espaço ou P pausa. O gato atira o laser.`
+        `Temas: ${Object.values(THEME_LABEL).join(', ')}. Digite a palavra do asteroide (acentos não importam). Cada letra atira um laser. Tab ou Esc pausa — P escreve P.`
       )
     );
     root.append(el('section', { class: 'ct' }, hud, stage));
@@ -152,9 +154,18 @@ export default {
 
     function renderShip(p = getProfile()) {
       ship.innerHTML = `
-        <span class="ct-ship__pad" aria-hidden="true"></span>
-        <figure class="ct-ship__cat">${creatureSVG('cat', p.cat, { size: 108, label: `Gato espacial ${p.cat.name}` })}</figure>
-        <figure class="ct-ship__otter">${creatureSVG('otter', p.otter, { size: 78, label: `Copiloto ${p.otter.name}` })}</figure>`;
+        <div class="ct-ship__hull" aria-hidden="true">
+          <span class="ct-ship__wing ct-ship__wing--l"></span>
+          <span class="ct-ship__wing ct-ship__wing--r"></span>
+          <span class="ct-ship__body"></span>
+          <span class="ct-ship__gun ct-ship__gun--l"></span>
+          <span class="ct-ship__gun ct-ship__gun--r"></span>
+          <span class="ct-ship__glow"></span>
+        </div>
+        <div class="ct-ship__crew">
+          <figure class="ct-ship__cat">${creatureSVG('cat', p.cat, { size: 72, pose: 'rear', label: `Gato espacial ${p.cat.name}` })}</figure>
+          <figure class="ct-ship__otter">${creatureSVG('otter', p.otter, { size: 58, pose: 'rear', label: `Copiloto ${p.otter.name}` })}</figure>
+        </div>`;
     }
     const offProfile = onProfile((p) => renderShip(p));
 
@@ -261,24 +272,25 @@ export default {
       } else if (run.paused) {
         overlay.hidden = false;
         overlay.innerHTML = '';
-        overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Espaço ou P continua. O universo espera o gato.'), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Continuar'));
+          overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Tab ou Esc continua. A letra P atira, não pausa.'), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Continuar'));
       } else overlay.hidden = true;
     }
 
     function nextWord() {
       if (!data) return null;
-      const [lo, hi] = lenRange(run.level);
-      for (let n = 0; n < deck.length; n++) {
-        const i = (run.deckI + n) % deck.length;
-        const w = data.words[deck[i]];
-        if (w && w.len >= lo && w.len <= hi && !rocks.some((r) => r.word === w.word)) {
-          run.deckI = (i + 1) % deck.length;
-          return w;
+      const want = pickSpawnLen(rocks);
+      const tryLen = (lo, hi) => {
+        for (let n = 0; n < deck.length; n++) {
+          const i = (run.deckI + n) % deck.length;
+          const w = data.words[deck[i]];
+          if (w && w.len >= lo && w.len <= hi && !rocks.some((r) => r.word === w.word)) {
+            run.deckI = (i + 1) % deck.length;
+            return w;
+          }
         }
-      }
-      const w = data.words[deck[run.deckI % deck.length]];
-      run.deckI++;
-      return w;
+        return null;
+      };
+      return tryLen(want, want) || tryLen(3, 7) || data.words[deck[run.deckI++ % deck.length]];
     }
 
     function spawn(opts = {}) {
@@ -302,13 +314,22 @@ export default {
       return rock;
     }
 
-    function fireAt(rock) {
+    function fireAt(rock, { finisher = false } = {}) {
       const rect = canvas.getBoundingClientRect();
-      const cat = ship.querySelector('.ct-ship__cat');
-      const cr = cat ? cat.getBoundingClientRect() : ship.getBoundingClientRect();
+      const guns = [...ship.querySelectorAll('.ct-ship__gun')];
+      const origin = guns[lasers.length % Math.max(1, guns.length)] || ship;
+      const cr = origin.getBoundingClientRect();
       const x0 = (cr.left + cr.width / 2 - rect.left) / rect.width;
-      const y0 = (cr.top + 18 - rect.top) / rect.height;
-      lasers.push({ x0, y0, x1: rock.x, y1: rock.y, t: 0, life: 0.18 });
+      const y0 = (cr.top - rect.top) / rect.height;
+      lasers.push({
+        x0,
+        y0,
+        x1: rock.x,
+        y1: rock.y,
+        t: 0,
+        life: finisher ? 0.22 : 0.14,
+        fat: finisher
+      });
       lastShotAt = performance.now();
       ship.classList.remove('is-shot');
       void ship.offsetWidth;
@@ -331,7 +352,7 @@ export default {
       run.score += pts;
       run.destroyed++;
       if (run.score > best) best = run.score;
-      fireAt(rock);
+      fireAt(rock, { finisher: true });
       explode(rock, pts);
       if (run.destroyed > 0 && run.destroyed % 10 === 0) {
         run.level++;
@@ -403,6 +424,7 @@ export default {
       }
       run.targetId = target.id;
       run.typing = next;
+      fireAt(target);
       ensureSound().then((s) => s && s.blip(['C5', 'E5', 'G5', 'C6'][next.length % 4])).catch(() => {});
       if (next === target.word) destroy(target);
       hudRefresh();
@@ -455,12 +477,30 @@ export default {
       });
       lasers.forEach((l) => {
         const k = Math.min(1, l.t / l.life);
-        ctx.strokeStyle = k < 0.5 ? theme.accentHover : theme.accent;
-        ctx.lineWidth = 2;
+        const x0 = l.x0 * w;
+        const y0 = l.y0 * h;
+        const x1 = l.x1 * w;
+        const y1 = l.y1 * h;
+        ctx.save();
+        ctx.globalAlpha = 1 - k * 0.35;
+        ctx.strokeStyle = hexToRgba(theme.accentHover, 0.35);
+        ctx.lineWidth = l.fat ? 8 : 5;
+        ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(l.x0 * w, l.y0 * h);
-        ctx.lineTo(l.x1 * w, l.y1 * h);
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
         ctx.stroke();
+        ctx.strokeStyle = k < 0.45 ? '#fff7d6' : theme.accent;
+        ctx.lineWidth = l.fat ? 3 : 2;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+        ctx.fillStyle = '#fff7d6';
+        ctx.beginPath();
+        ctx.arc(x1, y1, l.fat ? 5 : 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       });
       rocks.forEach((r) => {
         const cx = r.x * w;
@@ -533,14 +573,13 @@ export default {
     }
 
     const onKey = (e) => {
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.target instanceof HTMLElement && e.target.matches('input, select, textarea')) return;
-      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape' || e.key === ' ') {
-        if (e.key === ' ' && run.typing) return;
+      if (e.key === 'Tab' || e.key === 'Escape') {
         e.preventDefault();
         togglePause();
         return;
       }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Backspace') {
         e.preventDefault();
         run.typing = run.typing.slice(0, -1);

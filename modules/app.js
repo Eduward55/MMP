@@ -1,6 +1,8 @@
 // Roteador por hash (#/modulo?param=valor). Cada módulo exporta { id, title, icon, mount(root, ctx) }.
 import { loadProfile } from './shared/store.js';
 import { mountDock, setDockVisible } from './shared/companion.js';
+import { HINTS } from './shared/hints.js';
+import { loadTheme } from './shared/theme.js';
 import { createTopbar } from './shared/topbar.js';
 import { el, toast } from './shared/ui.js';
 
@@ -59,7 +61,12 @@ async function navigate() {
   let topbar = null;
   if (name !== 'hub') {
     let instance = null;
-    topbar = createTopbar({ title: mod.title, iconName: mod.icon, onSave: () => (instance && instance.save ? instance.save() : false) });
+    topbar = createTopbar({
+      title: mod.title,
+      iconName: mod.icon,
+      hint: HINTS[name] || mod.desc,
+      onSave: () => (instance && instance.save ? instance.save() : false)
+    });
     main = el('main', { class: 'page__main' });
     page.append(topbar.el, main);
     app.append(page);
@@ -103,6 +110,7 @@ window.addEventListener('keydown', (e) => {
 
 async function boot() {
   await loadProfile();
+  await loadTheme();
   mountDock(document.getElementById('dock-root'));
   window.addEventListener('hashchange', navigate);
   if (!location.hash) location.hash = '#/hub';

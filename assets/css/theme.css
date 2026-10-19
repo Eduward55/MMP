@@ -1,18 +1,18 @@
-/* My Music Place — tema único.
-   Troque só as variáveis abaixo para mudar o visual do hub e de todos os módulos.
-   As cinco chaves pedidas: --bg, --surface, --border, --accent, --text. */
+/* My Music Place — paletas. Padrão: noite (bordas zinco, acento azul).
+   data-theme: night | ocean | day | grape | cream */
 
-:root {
+:root,
+html[data-theme='night'] {
   --bg: #0f0f12;
   --surface: #18181c;
-  --border: #8b5cf6;
-  --accent: #8b5cf6;
+  --border: #2a2a32;
+  --accent: #7c9cff;
   --text: #e4e4e7;
 
   --surface-2: #1c1c22;
   --hairline: #2a2a32;
   --text-muted: #a1a1aa;
-  --accent-hover: #a78bfa;
+  --accent-hover: #93c5fd;
   --accent-ink: #0f0f12;
   --ok: #4ade80;
   --warn: #eab308;
@@ -21,16 +21,90 @@
   --font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
   --shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
   --elevate: 0 12px 28px rgba(0, 0, 0, 0.34);
+  color-scheme: dark;
+}
 
-  /* Aliases para CSS legado dos módulos (sem neon, sem glow). */
+html[data-theme='ocean'] {
+  --bg: #0b1220;
+  --surface: #121a2b;
+  --border: #1e2a44;
+  --accent: #38bdf8;
+  --text: #e2e8f0;
+  --surface-2: #172033;
+  --hairline: #1e2a44;
+  --text-muted: #94a3b8;
+  --accent-hover: #7dd3fc;
+  --accent-ink: #082f49;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --danger: #fb7185;
+  color-scheme: dark;
+}
+
+html[data-theme='day'] {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --border: #dbe3ee;
+  --accent: #2563eb;
+  --text: #0f172a;
+  --surface-2: #eef3f9;
+  --hairline: #dbe3ee;
+  --text-muted: #64748b;
+  --accent-hover: #3b82f6;
+  --accent-ink: #ffffff;
+  --ok: #15803d;
+  --warn: #b45309;
+  --danger: #b91c1c;
+  --shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  --elevate: 0 12px 28px rgba(15, 23, 42, 0.12);
+  color-scheme: light;
+}
+
+html[data-theme='grape'] {
+  --bg: #16111f;
+  --surface: #1e1730;
+  --border: #3b2d5c;
+  --accent: #8b5cf6;
+  --text: #f3e8ff;
+  --surface-2: #251c3a;
+  --hairline: #3b2d5c;
+  --text-muted: #c4b5fd;
+  --accent-hover: #a78bfa;
+  --accent-ink: #1e1033;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --danger: #fb7185;
+  color-scheme: dark;
+}
+
+html[data-theme='cream'] {
+  --bg: #faf6ef;
+  --surface: #fffdf8;
+  --border: #eadfcb;
+  --accent: #c2410c;
+  --text: #3f2e1f;
+  --surface-2: #f3ead9;
+  --hairline: #eadfcb;
+  --text-muted: #8a7458;
+  --accent-hover: #ea580c;
+  --accent-ink: #fff7ed;
+  --ok: #3f6212;
+  --warn: #b45309;
+  --danger: #b91c1c;
+  --shadow: 0 8px 20px rgba(63, 46, 31, 0.08);
+  --elevate: 0 12px 28px rgba(63, 46, 31, 0.12);
+  color-scheme: light;
+}
+
+:root {
   --bg2: var(--bg);
   --panel: var(--surface);
   --panel2: var(--surface-2);
   --line: var(--hairline);
   --purple: var(--accent);
-  --purple-deep: #6d28d9;
+  --purple-deep: color-mix(in srgb, var(--accent) 70%, #000);
   --pink: var(--accent);
-  --pink-deep: #6d28d9;
+  --pink-deep: color-mix(in srgb, var(--accent) 70%, #000);
   --cyan: var(--accent-hover);
   --gold: var(--warn);
   --green: var(--ok);
@@ -41,6 +115,4 @@
   --px: 1px;
   --glow-pink: none;
   --glow-purple: none;
-
-  color-scheme: dark;
 }

@@ -91,7 +91,8 @@ export default {
     const games = { ...(saved.games || {}) };
     const used = new Set(Array.isArray(saved.used) ? saved.used : []);
     let words = null;
-    let typing = '';
+    let slots = Array(LEN).fill('');
+    let cursor = 0;
     let revealRow = -1;
     let catMood = 'idle';
     let alive = true;
@@ -106,6 +107,16 @@ export default {
 
     const game = () => games[settings.mode];
     const persist = () => kv.set('termo', { version: 2, settings, stats, games, used: [...used] }).catch(() => {});
+    const typingOf = () => slots.join('');
+    const resetInput = () => {
+      slots = Array(LEN).fill('');
+      cursor = 0;
+    };
+    const everydayWord = (a, byTheme) => {
+      if (a.theme !== 'gerais') return true;
+      const list = byTheme.gerais || [];
+      return list.indexOf(a.word) < Math.min(400, list.length);
+    };
 
     // ---------- Elementos ----------
     const stage = el('div', { class: 'tm-stage' });
@@ -188,10 +199,15 @@ export default {
     // ---------- Partidas ----------
     function draw(n, theme) {
       const fits = (a) => theme === 'todos' || a.theme === theme;
-      let pool = words.answers.filter((a) => fits(a) && !used.has(a.word));
+      const byTheme = {};
+      words.answers.forEach((a) => (byTheme[a.theme] = byTheme[a.theme] || []).push(a.word));
+      const prefer = (a) => everydayWord(a, byTheme);
+      let pool = words.answers.filter((a) => fits(a) && !used.has(a.word) && prefer(a));
+      if (pool.length < n) pool = words.answers.filter((a) => fits(a) && !used.has(a.word));
       if (pool.length < n) {
         words.answers.filter(fits).forEach((a) => used.delete(a.word));
-        pool = words.answers.filter(fits);
+        pool = words.answers.filter((a) => fits(a) && prefer(a));
+        if (pool.length < n) pool = words.answers.filter(fits);
         toast(`Você já viu todas as palavras de ${THEME_LABEL[theme].toLowerCase()}! Embaralhando de novo.`, 'ok', 3600);
       }
       const picked = [];
@@ -213,7 +229,7 @@ export default {
         won: false,
         startedAt: new Date().toISOString()
       };
-      typing = '';
+      resetInput();
       revealRow = -1;
       setMood('idle');
       const n = mode.boards;
@@ -285,10 +301,11 @@ export default {
     function submit() {
       const g = game();
       if (!g || g.done) return;
-      if (typing.length < LEN) {
-        shake('Faltam letras: a palavra tem 5.');
+      if (slots.some((s) => !s)) {
+        shake('Faltam letras: clique numa casa ou aperte espaço para pular.');
         return;
       }
+      const typing = typingOf();
       if (!words.valid.has(typing)) {
         shake(`"${typing.toUpperCase()}" não está na lista de palavras.`);
         return;
@@ -302,7 +319,7 @@ export default {
           newlySolved++;
         }
       });
-      typing = '';
+      resetInput();
       revealRow = row;
       const allSolved = g.solvedAt.every((x) => x !== null);
       if (allSolved) finish(true);
@@ -340,17 +357,45 @@ export default {
       const g = game();
       if (!g || g.done || !words) return;
       if (key === 'enter') return submit();
-      if (key === 'backspace') typing = typing.slice(0, -1);
-      else if (/^[a-z]$/.test(key) && typing.length < LEN) typing += key;
-      else return;
-      renderBoards(key !== 'backspace');
+      if (key === 'space') {
+        cursor = Math.min(LEN - 1, cursor + 1);
+        renderBoards();
+        return;
+      }
+      if (key === 'arrowleft') {
+        cursor = Math.max(0, cursor - 1);
+        renderBoards();
+        return;
+      }
+      if (key === 'arrowright') {
+        cursor = Math.min(LEN - 1, cursor + 1);
+        renderBoards();
+        return;
+      }
+      if (key === 'backspace') {
+        if (cursor >= LEN) cursor = LEN - 1;
+        if (slots[cursor]) slots[cursor] = '';
+        else if (cursor > 0) {
+          cursor -= 1;
+          slots[cursor] = '';
+        }
+        renderBoards();
+        return;
+      }
+      if (/^[a-z]$/.test(key)) {
+        const i = cursor >= LEN ? LEN - 1 : cursor;
+        slots[i] = key;
+        cursor = Math.min(LEN, i + 1);
+        renderBoards(true, i);
+        return;
+      }
     }
 
     async function setMode(id) {
       if (id === settings.mode) return;
       settings.mode = id;
       if (!games[id] || (games[id].done && settingsDiffer(games[id]))) newGame(id);
-      typing = '';
+      resetInput();
       revealRow = -1;
       const g = game();
       setMood(g.done ? (g.won ? 'win' : 'lose') : 'idle', true);
@@ -426,10 +471,11 @@ export default {
       return st;
     }
 
-    function renderBoards(pop = false) {
+    function renderBoards(pop = false, popAt = -1) {
       const g = game();
       boardsEl.innerHTML = '';
       boardsEl.dataset.boards = g.answers.length;
+      const cursorAt = cursor >= LEN ? LEN - 1 : cursor;
       g.answers.forEach((a, b) => {
         const solved = g.solvedAt[b];
         const board = el('div', {
@@ -442,7 +488,7 @@ export default {
           const row = el('div', { class: `tm-row ${isCurrent ? 'is-current' : ''}` });
           const filled = guess && (solved === null || r <= solved);
           const res = filled ? score(guess, a.word) : null;
-          const letters = filled ? (r === solved ? [...a.display.normalize('NFC')] : [...guess]) : isCurrent ? [...typing] : [];
+          const letters = filled ? (r === solved ? [...a.display.normalize('NFC')] : [...guess]) : isCurrent ? slots : [];
           const reveal = filled && r === revealRow;
           const win = r === solved;
           for (let i = 0; i < LEN; i++) {
@@ -452,8 +498,24 @@ export default {
             else if (ch) cls.push('tm-tile--typed');
             if (reveal) cls.push('is-reveal');
             if (win) cls.push('is-win');
-            if (pop && isCurrent && i === typing.length - 1) cls.push('is-pop');
-            row.append(el('div', { class: cls.join(' '), style: `--i:${i}` }, ch.toUpperCase()));
+            if (pop && isCurrent && i === popAt) cls.push('is-pop');
+            if (isCurrent && i === cursorAt) cls.push('is-cursor');
+            row.append(
+              el(
+                'div',
+                {
+                  class: cls.join(' '),
+                  style: `--i:${i}`,
+                  onclick: isCurrent
+                    ? () => {
+                        cursor = i;
+                        renderBoards();
+                      }
+                    : undefined
+                },
+                ch.toUpperCase()
+              )
+            );
           }
           board.append(row);
         }
@@ -604,9 +666,22 @@ export default {
     const onKey = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey || document.querySelector('.modal-backdrop')) return;
       if (e.target instanceof HTMLElement && e.target.matches('input, select, textarea')) return;
-      const k = e.key === 'Enter' ? 'enter' : e.key === 'Backspace' ? 'backspace' : e.key.length === 1 ? norm(e.key) : '';
+      const k =
+        e.key === 'Enter'
+          ? 'enter'
+          : e.key === 'Backspace'
+            ? 'backspace'
+            : e.key === ' '
+              ? 'space'
+              : e.key === 'ArrowLeft'
+                ? 'arrowleft'
+                : e.key === 'ArrowRight'
+                  ? 'arrowright'
+                  : e.key.length === 1
+                    ? norm(e.key)
+                    : '';
       if (!k) return;
-      if (k === 'enter' || k === 'backspace' || /^[a-z]$/.test(k)) {
+      if (k === 'enter' || k === 'backspace' || k === 'space' || k === 'arrowleft' || k === 'arrowright' || /^[a-z]$/.test(k)) {
         e.preventDefault();
         press(k);
       }
@@ -662,7 +737,7 @@ export default {
 
     window.__mmpTermo = {
       words: () => ({ answers: words.answers.length, valid: words.valid.size, themes: words.themes }),
-      state: () => JSON.parse(JSON.stringify({ settings, game: game(), stats, used: [...used], typing, mood: catMood })),
+      state: () => JSON.parse(JSON.stringify({ settings, game: game(), stats, used: [...used], typing: typingOf(), slots: [...slots], cursor, mood: catMood })),
       isValid: (w) => words.valid.has(norm(w)),
       score,
       type: (w) => [...norm(w)].forEach((ch) => press(ch)),

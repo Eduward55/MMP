@@ -3,11 +3,81 @@ import { creatureSVG } from './creatures.js';
 import { getProfile, onProfile } from './store.js';
 import { el, esc } from './ui.js';
 
+const REACTS = ['heart', 'wink', 'bounce', 'spin'];
+const OUTFIT_REACT = {
+  coroa: 'sparkle',
+  fone: 'bob',
+  cachecol: 'sway',
+  lacinho: 'bow',
+  batuta: 'conduct',
+  microfone: 'sing',
+  astronauta: 'float',
+  capacete: 'float',
+  'chapeu-festa': 'party',
+  'chapeu-bruxa': 'wiggle',
+  flor: 'bloom',
+  estrelinha: 'sparkle',
+  'oculos-coracao': 'heart',
+  oculos: 'wink',
+  coleira: 'jingle',
+  gravata: 'bob',
+  maid: 'bow',
+  sueter: 'bounce',
+  capa: 'sway',
+  boina: 'wiggle'
+};
+
+function outfitKinds(svg) {
+  return [...svg.querySelectorAll('[class*="acc--"]')]
+    .map((node) => [...node.classList].find((c) => c.startsWith('acc--')))
+    .filter(Boolean)
+    .map((c) => c.slice(5));
+}
+
+/** Clique no bichinho: carinha fofa + animação da roupinha. */
+export function reactCreature(fig, svg) {
+  if (!svg) return;
+  const kinds = outfitKinds(svg);
+  const fromOutfit = kinds.map((id) => OUTFIT_REACT[id]).find(Boolean);
+  const kind = fromOutfit || REACTS[Math.floor(Math.random() * REACTS.length)];
+  const host = fig || svg.parentElement;
+  svg.classList.remove('is-react-heart', 'is-react-wink', 'is-react-bounce', 'is-react-spin', 'is-react-sparkle', 'is-react-bob', 'is-react-sway', 'is-react-bow', 'is-react-conduct', 'is-react-sing', 'is-react-float', 'is-react-party', 'is-react-wiggle', 'is-react-bloom', 'is-react-jingle');
+  void svg.offsetWidth;
+  svg.classList.add(`is-react-${kind}`);
+  if (host) {
+    host.classList.add('is-reacting');
+    const heart = el('span', { class: 'react-heart', 'aria-hidden': 'true' }, kind === 'sing' ? '♪' : '♥');
+    host.append(heart);
+    setTimeout(() => heart.remove(), 900);
+    setTimeout(() => host.classList.remove('is-reacting'), 900);
+  }
+  setTimeout(() => svg.classList.remove(`is-react-${kind}`), 900);
+}
+
+function bindReact(root) {
+  root.querySelectorAll('.duo__member').forEach((fig) => {
+    const svg = fig.querySelector('.creature');
+    if (!svg || svg.dataset.reactBound) return;
+    svg.dataset.reactBound = '1';
+    svg.setAttribute('tabindex', '0');
+    svg.style.cursor = 'pointer';
+    const go = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      reactCreature(fig, svg);
+    };
+    svg.addEventListener('click', go);
+    svg.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') go(e);
+    });
+  });
+}
+
 /**
  * Cria a dupla. Opções:
  *  - size: tamanho do gato em px (a lontra é ~80%)
  *  - names: mostra as plaquinhas com os nomes
- *  - catOverride/otterOverride: acessórios forçados (ex.: maestro no Hub)
+ *  - catOverride/otterOverride: acessórios forçados
  *  - profile: usa um perfil específico (pré-visualização) em vez do salvo
  *  - live: acompanha mudanças do perfil salvo (padrão true)
  */
@@ -28,6 +98,7 @@ export function createDuo({ size = 120, names = true, catOverride, otterOverride
         ${creatureSVG('otter', otterLook, { size: Math.round(size * 0.8), label: `Lontra ${p.otter.name}`, extraClass: otterClass })}
         ${names ? `<figcaption class="nameplate nameplate--otter">${esc(p.otter.name)}</figcaption>` : ''}
       </figure>`;
+    bindReact(root);
   }
 
   render();
@@ -38,7 +109,7 @@ export function createDuo({ size = 120, names = true, catOverride, otterOverride
 const TIPS = [
   (p) => `${p.cat.name}: Ctrl+S salva o que você criou!`,
   (p) => `${p.otter.name}: tudo fica guardadinho na Galeria.`,
-  (p) => `${p.cat.name}: miau! Que som bonito.`,
+  (p) => `${p.cat.name}: miau! Clica na gente pra ver a careta.`,
   (p) => `${p.otter.name}: dá pra trocar minhas roupinhas no Meu Gato.`,
   () => 'Funciona 100% offline, sem internet.'
 ];
@@ -49,8 +120,9 @@ export function mountDock(root) {
   const duo = createDuo({ size: 84, names: false });
   const bubble = el('div', { class: 'dock__bubble' });
   const toggle = el('button', { class: 'dock__toggle', 'aria-label': 'Esconder companheiros', title: 'Esconder/mostrar' }, '–');
-  const link = el('a', { class: 'dock__duo', href: '#/mycat', title: 'Editar no Meu Gato' }, duo.el);
-  const node = el('aside', { class: 'dock', 'aria-label': 'Seu gato e sua lontra' }, bubble, link, toggle);
+  const edit = el('a', { class: 'dock__edit', href: '#/mycat', title: 'Editar no Meu Gato' }, 'Editar');
+  const wrap = el('div', { class: 'dock__duo' }, duo.el, edit);
+  const node = el('aside', { class: 'dock', 'aria-label': 'Seu gato e sua lontra' }, bubble, wrap, toggle);
   dock = node;
   let i = 0;
   const tick = () => {

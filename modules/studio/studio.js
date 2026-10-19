@@ -23,7 +23,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function blankProject() {
   return {
-    name: `Projeto ${stamp()}`,
+    name: 'Projeto 1',
     source: 'studio',
     bpm: 100,
     scale: 'major',
@@ -67,7 +67,7 @@ function fromJson(json, fallbackName) {
   const tracks = j.tracks.map((t) => ({ id: String(t.id), name: String(t.name || t.id).slice(0, 40), inst: t.inst, mute: Boolean(t.mute) }));
   const instOf = Object.fromEntries(tracks.map((t) => [t.id, t.inst]));
   return {
-    name: j.name || fallbackName || `Projeto ${stamp()}`,
+    name: j.name || fallbackName || 'Projeto 1',
     source: j.source || 'studio',
     bpm: j.bpm,
     scale: SCALE_BY_ID[j.scale] ? j.scale : 'major',

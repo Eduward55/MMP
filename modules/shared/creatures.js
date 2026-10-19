@@ -87,6 +87,65 @@ function drawCat(look) {
   return { coat, body, tail, eyes, anchors: CAT_ANCHORS, outline: coat.outline, glow: coat.glow };
 }
 
+function heartEyesGrid(kind) {
+  const g = new Grid(SIZE, SIZE);
+  const pal = { h: '#ff4fd8', l: '#ff8fd0' };
+  const heart = ['.h.h.', 'hhhhh', 'hhhhh', '.hhh.', '..h..'];
+  if (kind === 'otter') {
+    g.map(heart, pal, 13, 13);
+    g.map(heart, pal, 22, 13);
+  } else {
+    g.map(heart, pal, 12, 14);
+    g.map(heart, pal, 22, 14);
+  }
+  return g;
+}
+
+function drawCatRear(look) {
+  const coat = COAT_BY_ID[look.coat] || COATS[0];
+  const body = new Grid(SIZE, SIZE);
+  const tail = new Grid(SIZE, SIZE);
+  const eyes = new Grid(SIZE, SIZE);
+
+  const tailPts = [[12, 35], [10, 34], [8, 32], [7, 30], [6, 27], [7, 24], [8, 22], [10, 20]];
+  tail.points(tailPts, coat.fur, 2);
+  if (coat.stripes) tail.points([[8, 32], [7, 27], [8, 22]], coat.stripe, 2);
+
+  body.ellipse(20, 31, 9, 7, coat.fur);
+  body.ellipse(20, 18, 10, 8, coat.fur);
+  body.tri([11, 14], [13, 5], [18, 11], coat.fur);
+  body.tri([29, 14], [27, 5], [22, 11], coat.fur);
+  body.tri([13, 12], [14, 7], [16, 11], coat.ear);
+  body.tri([27, 12], [26, 7], [24, 11], coat.ear);
+  body.ellipse(16, 36, 2.5, 1.5, coat.paw);
+  body.ellipse(24, 36, 2.5, 1.5, coat.paw);
+  if (coat.stripes) {
+    body.points([[17, 11], [17, 12], [20, 10], [20, 11], [23, 11], [23, 12]], coat.stripe);
+    body.points([[12, 28], [13, 28], [27, 28], [28, 28]], coat.stripe);
+  }
+
+  return { coat, body, tail, eyes, anchors: CAT_ANCHORS, outline: coat.outline };
+}
+
+function drawOtterRear() {
+  const c = OTTER;
+  const body = new Grid(SIZE, SIZE);
+  const tail = new Grid(SIZE, SIZE);
+  const eyes = new Grid(SIZE, SIZE);
+
+  tail.points([[14, 36], [11, 36], [8, 35], [5, 33], [3, 31], [2, 28], [3, 25]], c.fur, 2);
+  tail.points([[2, 28], [3, 31]], c.dark, 2);
+
+  body.ellipse(20, 30, 7, 9, c.fur);
+  body.ellipse(20, 17, 8.5, 7, c.fur);
+  body.ellipse(12.5, 11, 1.8, 1.8, c.dark);
+  body.ellipse(27.5, 11, 1.8, 1.8, c.dark);
+  body.ellipse(16, 37, 2, 1, c.dark);
+  body.ellipse(24, 37, 2, 1, c.dark);
+
+  return { body, tail, eyes, anchors: OTTER_ANCHORS, outline: c.outline };
+}
+
 function drawOtter() {
   const c = OTTER;
   const body = new Grid(SIZE, SIZE);
@@ -143,22 +202,26 @@ function layerSVG(grid, outlineColor, cls, style = '') {
  * Renderiza uma criatura como string SVG.
  * kind: 'cat' | 'otter'; look: { coat, eyes, outfit }
  */
-export function creatureSVG(kind, look = {}, { size = 160, label = '', extraClass = '', viewBox = `0 0 ${SIZE} ${SIZE}` } = {}) {
-  const d = kind === 'otter' ? drawOtter(look) : drawCat(look);
+export function creatureSVG(kind, look = {}, { size = 160, label = '', extraClass = '', viewBox = `0 0 ${SIZE} ${SIZE}`, pose = 'front' } = {}) {
+  const rear = pose === 'rear';
+  const d = kind === 'otter' ? (rear ? drawOtterRear(look) : drawOtter(look)) : rear ? drawCatRear(look) : drawCat(look);
   const A = d.anchors;
   const acc = accessoryLayers(look.outfit || {}, A);
   const [px, py] = A.tailPivot;
+  const hearts = heartEyesGrid(kind);
   const parts = [
     layerSVG(acc.back, OUTLINE, 'acc acc-back'),
     layerSVG(d.tail, d.outline, 'layer-tail', `transform-origin:${px}px ${py}px`),
     layerSVG(d.body, d.outline, 'layer-body'),
-    `<g class="layer-eyes" style="transform-origin:20px ${A.eyeY}px">${gridToPaths(d.eyes)}</g>`
+    `<g class="layer-eyes" style="transform-origin:20px ${A.eyeY}px">${gridToPaths(d.eyes)}</g>`,
+    layerSVG(hearts, null, 'layer-heart-eyes')
   ];
   for (const layer of acc.front) {
+    if (rear && layer.slot === 'face') continue;
     const style = layer.slot === 'hand' ? `transform-origin:${A.handX}px ${A.handY}px` : '';
     parts.push(layerSVG(layer.grid, layer.outline ? OUTLINE : null, `acc acc-${layer.slot} acc--${layer.id}`, style));
   }
-  const classes = ['creature', `creature--${kind}`, d.glow ? 'creature--glow' : '', extraClass].filter(Boolean).join(' ');
+  const classes = ['creature', `creature--${kind}`, rear ? 'creature--rear' : '', d.glow ? 'creature--glow' : '', extraClass].filter(Boolean).join(' ');
   return `<svg xmlns="http://www.w3.org/2000/svg" class="${classes}" viewBox="${viewBox}" width="${size}" height="${size}" shape-rendering="crispEdges" role="img" aria-label="${escapeAttr(label)}">${parts.join('')}</svg>`;
 }
 

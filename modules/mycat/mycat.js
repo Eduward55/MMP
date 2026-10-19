@@ -27,7 +27,10 @@ export default {
   async mount(root) {
     let draft = structuredClone(getProfile());
     let saved = JSON.stringify(draft);
+    const revertTo = saved;
     let target = 'cat';
+    let saveTimer = 0;
+    let ready = false;
 
     const preview = el('div', { class: 'mycat__preview' });
     const dirtyFlag = el('span', { class: 'pill pill--warn', hidden: true }, 'Alterações não salvas');
@@ -45,14 +48,37 @@ export default {
       return JSON.stringify(draft) !== saved;
     }
 
+    async function persistDraft() {
+      if (!COAT_BY_ID[draft.cat.coat]) draft.cat.coat = 'tabby';
+      await saveProfile(draft);
+      saved = JSON.stringify(draft);
+      dirtyFlag.hidden = true;
+      dirtyFlag.textContent = 'Salvo';
+    }
+
+    function scheduleSave() {
+      dirtyFlag.hidden = false;
+      dirtyFlag.textContent = 'Salvando…';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        persistDraft().catch((err) => {
+          console.error(err);
+          dirtyFlag.textContent = 'Não salvou';
+          dirtyFlag.hidden = false;
+        });
+      }, 280);
+    }
+
     function refresh({ outfits = true } = {}) {
       preview.innerHTML = '';
       preview.append(createDuo({ size: 230, profile: draft, live: false, catClass: 'is-idle', otterClass: 'is-idle' }).el);
       dirtyFlag.hidden = !dirty();
+      if (dirty()) dirtyFlag.textContent = 'Salvando…';
       renderWearing();
       renderCoats();
       renderEyes();
       if (outfits) renderOutfits();
+      if (ready) scheduleSave();
     }
 
     function renderWearing() {
@@ -206,12 +232,12 @@ export default {
       el('button', {
         class: 'btn btn--ghost',
         onclick: () => {
-          draft = JSON.parse(saved);
+          draft = JSON.parse(revertTo);
           catName.value = draft.cat.name;
           otterName.value = draft.otter.name;
           renderTabs();
           refresh();
-          toast('Voltamos para o último salvo.');
+          toast('Voltamos para como estava quando você abriu.');
         }
       }, 'Desfazer')
     );
@@ -247,6 +273,7 @@ export default {
 
     renderTabs();
     refresh();
+    ready = true;
 
     const beforeUnload = (e) => {
       if (dirty()) toast(`${draft.cat.name} lembra: você saiu sem salvar o Meu Gato.`, 'warn', 3600);
@@ -255,14 +282,14 @@ export default {
 
     return {
       async save() {
-        if (!COAT_BY_ID[draft.cat.coat]) draft.cat.coat = 'tabby';
-        await saveProfile(draft);
-        saved = JSON.stringify(draft);
-        dirtyFlag.hidden = true;
+        clearTimeout(saveTimer);
+        await persistDraft();
         return `${draft.cat.name} e ${draft.otter.name} foram salvos!`;
       },
       unmount() {
-        beforeUnload();
+        clearTimeout(saveTimer);
+        if (dirty()) persistDraft().catch(() => beforeUnload());
+        else beforeUnload();
       }
     };
   }

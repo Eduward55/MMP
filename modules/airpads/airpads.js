@@ -2,7 +2,7 @@
 // Sem câmera, o mouse, as teclas A/L ou o "Simular dedos" fazem o papel das pontas dos dedos.
 import { createOutputRecorder } from '../shared/audio.js';
 import { creatureSVG } from '../shared/creatures.js';
-import { dockSay } from '../shared/companion.js';
+import { dockSay, reactCreature } from '../shared/companion.js';
 import { createEventLog, eventsSummary, openInStudio } from '../shared/events.js';
 import { gallery, getProfile, kv } from '../shared/store.js';
 import { themeTokens } from '../shared/theme.js';
@@ -85,11 +85,17 @@ export default {
     const circles = [0, 1].map((i) => el('div', { class: `air-circle air-circle--${i}`, 'data-circle': String(i) }));
     const huds = [0, 1].map((i) => el('div', { class: `air-hud air-hud--${i}` }));
     const bubble = el('div', { class: 'air-maestro__bubble' }, 'Prontos?');
+    const maestroCat = el('div', {
+      class: 'air-maestro__cat',
+      html: creatureSVG('cat', profile.cat, { size: 112, label: profile.cat.name }),
+      title: `Clique em ${profile.cat.name}`
+    });
+    maestroCat.addEventListener('click', () => reactCreature(maestroCat, maestroCat.querySelector('svg.creature')));
     const maestro = el(
       'div',
-      { class: 'air-maestro', title: `${profile.cat.name}, o maestro` },
+      { class: 'air-maestro', title: profile.cat.name },
       bubble,
-      el('div', { class: 'air-maestro__cat', html: creatureSVG('cat', { ...profile.cat, outfit: { ...profile.cat.outfit, hand: 'batuta' } }, { size: 112, label: `${profile.cat.name}, maestro` }) }),
+      maestroCat,
       el('span', { class: 'air-maestro__name' }, profile.cat.name)
     );
     const arena = el('div', { class: 'airx__arena' }, video, ...circles, canvas, ...huds, maestro);
@@ -112,16 +118,25 @@ export default {
     /* ---------- Renderização dos controles ---------- */
     const notesFor = (i) => scaleNotes(config.instruments[i], config.scale, config.root);
 
+    function sliceLabels(i) {
+      const inst = INSTRUMENT_BY_ID[config.instruments[i]];
+      if (inst.id === 'drums') return DRUM_ZONES;
+      const notes = notesFor(i);
+      const max = inst.continuous ? 6 : 8;
+      const pick = notes.length <= max ? notes : Array.from({ length: max }, (_, k) => notes[Math.round((k * (notes.length - 1)) / (max - 1))]);
+      return pick.slice().reverse().map(midiName);
+    }
+
     function renderCircle(i) {
       const inst = INSTRUMENT_BY_ID[config.instruments[i]];
       const c = circles[i];
       c.style.setProperty('--c', inst.color);
       c.dataset.instrument = inst.id;
-      let guide = '';
-      if (inst.id === 'drums') guide = DRUM_ZONES.map((z) => `<span class="air-zone">${z}</span>`).join('');
-      else if (inst.continuous) guide = '<span class="air-axis air-axis--x">grave ◀ X ▶ agudo</span><span class="air-axis air-axis--y">▲ volume</span>';
-      else guide = `<span class="air-axis air-axis--top">agudo</span><span class="air-axis air-axis--bottom">grave</span>`;
-      c.innerHTML = `<span class="air-circle__guide">${guide}</span><span class="air-circle__name">${inst.name}</span><span class="air-circle__note">${lastLabel[i] || '—'}</span>`;
+      const slices = sliceLabels(i)
+        .map((lab) => `<span class="air-slice">${lab}</span>`)
+        .join('');
+      const extra = inst.continuous ? '<span class="air-axis air-axis--x">grave ◀ X ▶ agudo</span>' : '';
+      c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span>${extra}<span class="air-circle__name">${inst.name}</span><span class="air-circle__note">${lastLabel[i] || '—'}</span>`;
     }
 
     function renderHud(i) {
@@ -539,11 +554,13 @@ export default {
       config.scale = scaleSel.value;
       log.set({ scale: config.scale });
       bubble.textContent = `Escala ${SCALE_BY_ID[config.scale].name}!`;
+      renderAll();
     });
     rootSel.addEventListener('change', () => {
       config.root = Number(rootSel.value);
       log.set({ root: config.root });
       bubble.textContent = `Tom de ${ROOTS[config.root]}!`;
+      renderAll();
     });
     bpmInput.addEventListener('input', () => {
       config.bpm = Number(bpmInput.value);

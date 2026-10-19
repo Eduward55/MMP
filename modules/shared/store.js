@@ -5,9 +5,14 @@ const api = ensureMmp();
 
 const DEFAULT_PROFILE = {
   version: 1,
-  cat: { name: 'Miau', coat: 'tabby', eyes: '#4ade80', outfit: {} },
-  otter: { name: 'Lulu', outfit: {} }
+  cat: { name: 'Pirrinha', coat: 'tabby', eyes: '#4ade80', outfit: { ear: 'lacinho' } },
+  otter: { name: 'Manhoso', outfit: { neck: 'cachecol' } }
 };
+
+function migrateDefaultNames(cat, otter) {
+  if (cat.name === 'Miau') cat.name = 'Pirrinha';
+  if (otter.name === 'Lulu') otter.name = 'Manhoso';
+}
 
 let profile = null;
 const listeners = new Set();
@@ -16,11 +21,10 @@ const galleryListeners = new Set();
 function normalizeProfile(p) {
   const base = structuredClone(DEFAULT_PROFILE);
   if (!p || typeof p !== 'object') return base;
-  return {
-    version: 1,
-    cat: { ...base.cat, ...(p.cat || {}), outfit: { ...((p.cat && p.cat.outfit) || {}) } },
-    otter: { ...base.otter, ...(p.otter || {}), outfit: { ...((p.otter && p.otter.outfit) || {}) } }
-  };
+  const cat = { ...base.cat, ...(p.cat || {}), outfit: { ...((p.cat && p.cat.outfit) || {}) } };
+  const otter = { ...base.otter, ...(p.otter || {}), outfit: { ...((p.otter && p.otter.outfit) || {}) } };
+  migrateDefaultNames(cat, otter);
+  return { version: 1, cat, otter };
 }
 
 export async function loadProfile() {
