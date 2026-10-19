@@ -100,18 +100,18 @@ const MAPS = {
     '............'
   ],
   cattyping: [
-    '.p........p.',
-    '.pp......pp.',
-    '.pppppppppp.',
-    '.ppkppppkpp.',
-    '.pppppwpppp.',
-    '............',
-    'vvvvvvvvvvvv',
-    'vwvwvwvwvwvv',
-    'vvvvvvvvvvvv',
-    'vvwvwvwvwvvv',
-    'vvvwwwwwwvvv',
-    'vvvvvvvvvvvv'
+    'c....w.....c',
+    '.o........o.',
+    '.oo......oo.',
+    '.okokwwkoko.',
+    '.oooooooooo.',
+    '.....cc.....',
+    '.....cc.....',
+    '...yyyyyy...',
+    '..ywwywwyy..',
+    '...yyyyyy...',
+    'w.....w...w.',
+    '............'
   ],
   mycat: [
     '.o........o.',

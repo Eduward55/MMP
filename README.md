@@ -18,10 +18,11 @@ Outros comandos:
 | Comando | O que faz |
 |---|---|
 | `npm run start:local-data` | Roda salvando os dados em `./data/user` em vez do `userData` do Electron |
-| `npm run check` | Autoteste ponta a ponta dentro do Electron (Galeria, Meu Gato, Air Pads, Beat Cats, eventos, Studio com export WAV/WebM e webcam falsa, Termo, Conexões, MediaPipe local, rede bloqueada) |
+| `npm run check` | Autoteste ponta a ponta dentro do Electron (Galeria, Meu Gato, Air Pads, Beat Cats, eventos, Studio com export WAV/WebM e webcam falsa, Termo, Conexões, Cat Typing, MediaPipe local, rede bloqueada) |
 | `npm run screenshots` | Gera PNGs do Hub, Meu Gato e Galeria em `out/screenshots/` |
 | `npm run termo:words` | Regera `data/termo/answers.json` e `valid.json` a partir de dicionários Hunspell e da lista de frequência (ver `data/termo/README.md`) |
 | `npm run conexoes:check` | Valida `data/conexoes/categories.json` (400+ categorias, 8–12 palavras, gerador sem sobreposição) e conta as combinações válidas |
+| `npm run cattyping:words` | Regenera `data/cattyping/words.json` (5.000+ palavras reais de 3–10 letras) a partir do Hunspell pt-BR e da lista de frequência |
 | `npm run vendor` | Recria `/vendor` a partir de `node_modules` (e baixa o modelo do MediaPipe se faltar) |
 
 Em Linux sem tela (CI/servidor), use o `xvfb`: `xvfb-run -a npm run check`.
@@ -36,13 +37,13 @@ Em Linux sem tela (CI/servidor), use o `xvfb`: `xvfb-run -a npm run check`.
 - **Air Pads** — MediaPipe Hand Landmarker local (2 mãos) com vídeo espelhado e **dois círculos grandes, um por mão**, cada um com seu instrumento: piano, bateria, synth, baixo ou theremin (X = nota, Y = volume). Quando a ponta do indicador entra no círculo, toca; a altura dentro do círculo escolhe a nota (na bateria: chimbal, caixa ou bumbo) e, segurando o dedo lá dentro, o som repete no BPM. O HUD mostra o instrumento de cada círculo e o seu gato (do Meu Gato) rege com a batuta apontando para o círculo tocado. Tem escala e tônica, BPM, metrônomo, efeitos visuais e **Gravar: Sim/Não** (a gravação vai para a Galeria como áudio). **Salvar** guarda a configuração (instrumentos, escala, tônica, BPM). Sem câmera: o mouse vale como ponta do dedo, as teclas **A** e **L** “encostam” nos círculos e **Simular dedos** move duas pontas virtuais sozinhas.
 - **Termo** — palavras de 5 letras em português, **ignorando acentos** (digite `acao` ou `ação`, tanto faz; o teclado físico normaliza Á, Ç…). Modos **Simples** (1 tabuleiro), **Dueto** (2) e **Quarteto** (4), todos com **10 tentativas** por padrão (configurável de 4 a 15). Escolha o tema: psicologia, arte, história, gerais ou todos. Cores verde/amarelo/cinza com letras repetidas tratadas certinho; nos modos com vários tabuleiros cada tecla é pintada por pedaço (metades ou quadrantes). Animações de digitar, virar, balançar (palavra fora da lista) e pular ao acertar. O sorteio **não repete palavras** até esgotar o tema. Estatísticas locais por modo (jogos, % de vitórias, sequência, recorde, distribuição de tentativas), partida em andamento continua de onde parou, e o seu gato **comemora** (pulos, corações, confete) ou **chora** (lágrimas) no fim. Ao terminar aparece a forma acentuada (ÂNIMO, ÉPOCA).
 - **Conexões** — jogo de 16 palavras em **4 grupos de 4**, no espírito do Connections. O tabuleiro é gerado na hora a partir de **400+ categorias** reais (`data/conexoes/categories.json`: psicologia, arte, história, música e gerais, 8 a 12 palavras cada). O gerador escolhe 4 categorias **sem palavras ambíguas** (uma palavra não pode pertencer a duas das quatro) e pega 4 palavras de cada; isso dá **centenas de milhões** de combinações. Você seleciona 4 e manda **Enviar**: acertou, o grupo revela a categoria e a cor (amarelo/verde/azul/roxo, do mais direto ao mais obscuro); **4 erros e perde**. Tem **embaralhar**, **dica** (ilumina duas palavras do grupo mais fácil que resta), **histórico** e **recorde local** (vitórias, sequência, menos erros). O gato e a lontra do Meu Gato reagem a acerto, erro, vitória e derrota. **Salvar** guarda a partida em andamento.
-- **Cat Typing** — digite frases fofas; cada acerto toca uma nota; salva recordes.
+- **Cat Typing** — o gato espacial (com a pelagem e as roupas atuais do Meu Gato) fica embaixo da tela e a lontra vai de copiloto. Asteroides descem com palavras de 3 a 10 letras; você digita a palavra no teclado físico (acentos não importam) e o gato atira um laser 8-bit. Velocidade sobe a cada nível, há 3 vidas, pontos, pausa (Espaço ou P) e recorde local. A lista tem **5.000+ palavras reais** de psicologia, arte, história e gerais (`data/cattyping/words.json`), embaralhadas a cada partida. **Salvar** guarda a missão em andamento e o recorde.
 
 Todo módulo tem a mesma barra superior: **◀ Hub**, **Salvar** (também `Ctrl+S`) e **Galeria**.
 
 ### Eventos: tudo que é tocado vira JSON
 
-Air Pads, Beat Cats e Cat Typing registram cada nota em `modules/shared/events.js` (formato `mmp-events`):
+Air Pads e Beat Cats registram cada nota em `modules/shared/events.js` (formato `mmp-events`):
 
 ```json
 { "kind": "mmp-events", "version": 1, "source": "airpads", "bpm": 96, "scale": "penta", "root": 0, "length": 8,
@@ -50,7 +51,7 @@ Air Pads, Beat Cats e Cat Typing registram cada nota em `modules/shared/events.j
   "events": [{ "time": 0.5, "dur": 0.5, "note": 64, "vel": 0.85, "inst": "piano", "track": "circulo-1-piano" }] }
 ```
 
-`time` e `dur` em batidas; `note` em MIDI (na bateria, General MIDI: 36 bumbo, 38 caixa, 42 chimbal…). As gravações de áudio/vídeo dos módulos salvam os eventos num arquivo ao lado (`gallery/<id>.events.json`), então abrem no Studio. O botão **Editar no Studio** (Air Pads, Beat Cats) e **Melodia no Studio** (Cat Typing) leva tudo que foi tocado na sessão direto para o editor. No Beat Cats os 24 sons são capturados por um “grampo” nos sintetizadores do Tone.js, e um beat salvo vira faixas editáveis.
+`time` e `dur` em batidas; `note` em MIDI (na bateria, General MIDI: 36 bumbo, 38 caixa, 42 chimbal…). As gravações de áudio/vídeo dos módulos salvam os eventos num arquivo ao lado (`gallery/<id>.events.json`), então abrem no Studio. O botão **Editar no Studio** (Air Pads, Beat Cats) leva tudo que foi tocado na sessão direto para o editor. No Beat Cats os 24 sons são capturados por um “grampo” nos sintetizadores do Tone.js, e um beat salvo vira faixas editáveis.
 
 ## Onde os dados ficam
 
@@ -92,9 +93,9 @@ modules/
   hub/ mycat/ gallery/ beatcats/ studio/ airpads/ termo/ conexoes/ cattyping/
                  conexoes/engine.js  gerador de puzzles (4 categorias sem palavras em comum)
 assets/              CSS e fontes pixel (Press Start 2P e VT323, licença OFL)
-data/                padrões versionados (defaults/), exemplos (demo/), palavras do Termo (termo/) e categorias do Conexões (conexoes/)
+data/                padrões versionados (defaults/), exemplos (demo/), palavras do Termo (termo/), categorias do Conexões (conexoes/) e palavras do Cat Typing (cattyping/)
 vendor/              Tone.js e MediaPipe locais (ver vendor/README.md)
-scripts/             autoteste, screenshots, setup do vendor, geradores do Termo e do Conexões
+scripts/             autoteste, screenshots, setup do vendor, geradores do Termo, do Conexões e do Cat Typing
 ```
 
 ## Offline de verdade
@@ -106,6 +107,10 @@ scripts/             autoteste, screenshots, setup do vendor, geradores do Termo
 ## Categorias do Conexões
 
 `data/conexoes/categories.json` (400+ categorias, 8 a 12 palavras cada, nos temas psicologia, arte, história, música e gerais) é montado por `npm run conexoes:check` a partir de `scripts/conexoes-data/`. O gerador só junta 4 categorias cujas palavras **não se sobrepõem**; o script conta as combinações válidas (são centenas de milhões). Detalhes em `data/conexoes/README.md`.
+
+## Palavras do Cat Typing
+
+`data/cattyping/words.json` (**5.200** palavras de 3 a 10 letras: psicologia, arte, história e gerais) sai de `npm run cattyping:words`. Toda palavra precisa ser aceita pelo corretor Hunspell pt-BR e aparecer na lista de frequência real do português brasileiro (OpenSubtitles). Nada é inventado. As candidatas temáticas ficam em `scripts/cattyping-themes.mjs`. Detalhes em `data/cattyping/README.md`.
 
 ## Palavras do Termo
 

@@ -1,158 +1,671 @@
-// Cat Typing: digite frases fofas; cada tecla certa toca uma nota da escala pentatônica.
-import { kv, getProfile } from '../shared/store.js';
+// Cat Typing: o gato espacial atira laser nos asteroides cuja palavra você digitou.
+import { kv, getProfile, onProfile } from '../shared/store.js';
 import { creatureSVG } from '../shared/creatures.js';
-import { el, esc, startAudio } from '../shared/ui.js';
-import { dockSay } from '../shared/companion.js';
-import { createEventLog, openInStudio } from '../shared/events.js';
+import { el, toast, startAudio } from '../shared/ui.js';
 
-const PHRASES = [
-  'o gato maestro rege a orquestra com sua batuta',
-  'a lontra toca pandeiro boiando no rio',
-  'miau miau faz o coral dos bigodes',
-  'um beat bem fofo para dançar no sofá',
-  'notas de neon brilham no céu roxo',
-  'o piano ronrona quando a pata encosta',
-  'cada tecla é uma nota e cada nota é um carinho'
-];
-const SCALE = ['C5', 'D5', 'E5', 'G5', 'A5', 'C6'];
-const SCALE_MIDI = [72, 74, 76, 79, 81, 84];
+const LIVES = 3;
+const MAX_ROCKS = 6;
+const STORE_KEY = 'cattyping';
+const THEME_LABEL = { psicologia: 'Psicologia', arte: 'Arte', historia: 'História', gerais: 'Gerais' };
+
+export const norm = (s) =>
+  String(s || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z]/g, '');
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffle(list, rng) {
+  const arr = [...list];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+let wordsPromise = null;
+function loadWords() {
+  if (!wordsPromise) {
+    wordsPromise = fetch(new URL('../../data/cattyping/words.json', import.meta.url)).then(async (r) => {
+      if (!r.ok) throw new Error(`words.json: HTTP ${r.status}`);
+      const json = await r.json();
+      if (!Array.isArray(json.words) || json.words.length < 5000) throw new Error('A lista de palavras está incompleta.');
+      return json;
+    });
+    wordsPromise.catch(() => (wordsPromise = null));
+  }
+  return wordsPromise;
+}
+
+function lenRange(level) {
+  if (level <= 2) return [3, 5];
+  if (level <= 4) return [4, 7];
+  if (level <= 6) return [5, 8];
+  return [6, 10];
+}
+
+function emptyRun() {
+  return {
+    score: 0,
+    lives: LIVES,
+    level: 1,
+    destroyed: 0,
+    typing: '',
+    targetId: null,
+    over: false,
+    paused: false,
+    deckI: 0,
+    spawnIn: 0.45,
+    startedAt: new Date().toISOString()
+  };
+}
 
 export default {
   id: 'cattyping',
   title: 'Cat Typing',
   icon: 'cattyping',
   accent: '#ff7a3d',
-  desc: 'Digite frases fofas; cada acerto vira uma nota.',
-  async mount(root) {
-    const data = (await kv.get('cattyping').catch(() => null)) || { best: [] };
-    let phrase = PHRASES[Math.floor(Math.random() * PHRASES.length)];
-    let pos = 0;
-    let errors = 0;
-    let startedAt = 0;
-    let finished = null;
-    let synth = null;
-    let sound = true;
-    const log = createEventLog({ source: 'cattyping', bpm: 100, scale: 'penta', root: 0 });
+  desc: 'Gato espacial: digite a palavra do asteroide e atire o laser.',
+  hideDock: true,
+  async mount(root, { params } = {}) {
+    const saved = (await kv.get(STORE_KEY).catch(() => null)) || {};
+    let best = saved.version === 2 ? Number(saved.best) || 0 : 0;
+    let run =
+      saved.version === 2 && saved.game && !saved.game.over && saved.game.lives > 0
+        ? { ...emptyRun(), ...saved.game }
+        : emptyRun();
+    run.spawnIn = Math.min(3, Math.max(0.15, Number(run.spawnIn) || 0.45));
+    let data = null;
+    let deck = saved.version === 2 && Array.isArray(saved.deck) ? saved.deck : [];
+    let rocks = [];
+    let lasers = [];
+    let booms = [];
+    let stars = [];
+    let alive = true;
+    let raf = 0;
+    let lastT = 0;
+    let sound = saved.sound !== false;
+    let chip = null;
+    let idSeq = 1;
+    let lastShotAt = 0;
+    let locked = false;
+    const shotMode = Boolean(params && params.shot);
 
-    const textEl = el('p', { class: 'typing__text', 'aria-live': 'polite' });
-    const statsEl = el('div', { class: 'termo__stats' });
-    const bestEl = el('ol', { class: 'typing__best' });
-    const p = getProfile();
-    const cat = el('div', { class: 'typing__cat', html: creatureSVG('cat', p.cat, { size: 120, label: p.cat.name }) });
-    const soundBtn = el('button', { class: 'btn btn--ghost btn--sm' }, 'Som: ligado');
+    const canvas = el('canvas', { class: 'ct-canvas', 'aria-label': 'Campo de asteroides' });
+    const ship = el('div', { class: 'ct-ship' });
+    const typeHud = el('div', { class: 'ct-type', 'aria-live': 'polite' });
+    const overlay = el('div', { class: 'ct-overlay', hidden: true });
+    const stage = el('div', { class: 'ct-stage' }, canvas, ship, typeHud, overlay);
+    const nums = el('div', { class: 'ct-hud__nums' });
+    const livesEl = el('div', { class: 'ct-lives', 'aria-label': 'Vidas' });
+    const bestEl = el('p', { class: 'ct-best' });
+    const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Pausar');
+    const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => newGame() }, 'Nova partida');
+    const soundBtn = el('button', { class: 'btn btn--ghost btn--sm', onclick: () => toggleSound() }, '');
+    const hud = el(
+      'aside',
+      { class: 'ct-hud panel' },
+      el('h2', {}, 'Missão'),
+      nums,
+      el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Vidas'), livesEl),
+      bestEl,
+      el('div', { class: 'row-actions' }, pauseBtn, newBtn, soundBtn),
+      el(
+        'p',
+        { class: 'ct-hint' },
+        `Temas: ${Object.values(THEME_LABEL).join(', ')}. Digite a palavra do asteroide (acentos não importam). Espaço ou P pausa. O gato atira o laser.`
+      )
+    );
+    root.append(el('section', { class: 'ct' }, hud, stage));
 
-    function render() {
-      textEl.innerHTML = [...phrase]
-        .map((ch, i) => `<span class="${i < pos ? 'ok' : i === pos ? 'cur' : ''}">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`)
-        .join('');
-      const secs = startedAt ? ((finished || performance.now()) - startedAt) / 1000 : 0;
-      const wpm = secs > 0 ? Math.round((pos / 5) / (secs / 60)) : 0;
-      const acc = pos + errors ? Math.round((pos / (pos + errors)) * 100) : 100;
-      statsEl.innerHTML = '';
-      [
-        ['PPM', wpm],
-        ['Precisão', `${acc}%`],
-        ['Erros', errors],
-        ['Tempo', `${secs.toFixed(1)}s`]
-      ].forEach(([k, v]) => statsEl.append(el('div', { class: 'stat' }, el('b', {}, String(v)), el('span', {}, k))));
-      bestEl.innerHTML = data.best.length
-        ? data.best.map((b) => `<li><b>${b.wpm} PPM</b> · ${b.acc}% · ${esc(new Date(b.at).toLocaleDateString('pt-BR'))}</li>`).join('')
-        : '<li class="muted">Nenhum recorde salvo ainda.</li>';
-      return { wpm, acc };
+    function persist() {
+      if (run.score > best) best = run.score;
+      const game = {
+        score: run.score,
+        lives: run.lives,
+        level: run.level,
+        destroyed: run.destroyed,
+        typing: run.typing,
+        targetId: run.targetId,
+        over: run.over,
+        paused: run.paused,
+        deckI: run.deckI,
+        spawnIn: run.spawnIn,
+        startedAt: run.startedAt,
+        rocks: rocks.map((r) => ({ id: r.id, word: r.word, display: r.display, theme: r.theme, x: r.x, y: r.y, vy: r.vy, rad: r.rad }))
+      };
+      return kv.set(STORE_KEY, { version: 2, best, game: run.over ? null : game, deck, sound }).catch(() => {});
     }
 
-    function reset() {
-      phrase = PHRASES[Math.floor(Math.random() * PHRASES.length)];
-      pos = 0;
-      errors = 0;
-      startedAt = 0;
-      finished = null;
-      render();
+    function renderShip(p = getProfile()) {
+      ship.innerHTML = `
+        <span class="ct-ship__pad" aria-hidden="true"></span>
+        <figure class="ct-ship__cat">${creatureSVG('cat', p.cat, { size: 108, label: `Gato espacial ${p.cat.name}` })}</figure>
+        <figure class="ct-ship__otter">${creatureSVG('otter', p.otter, { size: 78, label: `Copiloto ${p.otter.name}` })}</figure>`;
     }
+    const offProfile = onProfile((p) => renderShip(p));
 
-    async function blip(i) {
-      log.note({ note: SCALE_MIDI[i % SCALE.length], inst: 'chip', track: 'digitacao', trackName: 'Teclas certas', dur: 0.12, vel: 0.7 });
-      if (!sound) return;
+    async function ensureSound() {
+      if (!sound || chip) return chip;
       try {
         const Tone = await startAudio();
-        if (!synth) synth = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.005, decay: 0.08, sustain: 0, release: 0.05 }, volume: -18 }).toDestination();
-        synth.triggerAttackRelease(SCALE[i % SCALE.length], '32n');
-      } catch {}
+        const out = new Tone.Gain(0.7).toDestination();
+        const square = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.001, decay: 0.09, sustain: 0, release: 0.04 }, volume: -12 }).connect(out);
+        const noise = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.12, sustain: 0 }, volume: -18 }).connect(out);
+        let nextT = 0;
+        const at = (gap = 0.05) => {
+          const n = Tone.now() + 0.02;
+          nextT = Math.max(nextT + gap, n);
+          return nextT;
+        };
+        const safe = (fn) => {
+          try {
+            const ret = fn();
+            if (ret && typeof ret.catch === 'function') ret.catch(() => {});
+          } catch {}
+        };
+        chip = {
+          blip(n = 'C5') {
+            safe(() => square.triggerAttackRelease(n, '32n', at(0.04)));
+          },
+          laser() {
+            safe(() => {
+              const t = at(0.08);
+              square.frequency.cancelScheduledValues(t);
+              square.triggerAttackRelease('C6', 0.12, t);
+              square.frequency.setValueAtTime(1400, t);
+              square.frequency.exponentialRampToValueAtTime(280, t + 0.12);
+            });
+          },
+          boom() {
+            safe(() => noise.triggerAttackRelease(0.14, at(0.06)));
+          },
+          miss() {
+            safe(() => square.triggerAttackRelease('E3', 0.18, at(0.08)));
+          },
+          level() {
+            safe(() => {
+              const t = at(0.08);
+              square.triggerAttackRelease('C5', '16n', t);
+              square.triggerAttackRelease('E5', '16n', t + 0.08);
+              square.triggerAttackRelease('G5', '16n', t + 0.16);
+            });
+          },
+          over() {
+            safe(() => {
+              const t = at(0.1);
+              square.triggerAttackRelease('G3', 0.2, t);
+              square.triggerAttackRelease('E3', 0.25, t + 0.18);
+              square.triggerAttackRelease('C3', 0.4, t + 0.38);
+            });
+          },
+          dispose() {
+            [square, noise, out].forEach((n) => n.dispose());
+          }
+        };
+      } catch {
+        chip = { blip() {}, laser() {}, boom() {}, miss() {}, level() {}, over() {}, dispose() {} };
+      }
+      return chip;
+    }
+
+    function toggleSound() {
+      sound = !sound;
+      soundBtn.textContent = `Som: ${sound ? 'ligado' : 'desligado'}`;
+      persist();
+    }
+
+    function hudRefresh() {
+      nums.innerHTML = '';
+      [
+        ['Pontos', run.score],
+        ['Nível', run.level],
+        ['Abates', run.destroyed],
+        ['Recorde', Math.max(best, run.score)]
+      ].forEach(([k, v]) => nums.append(el('div', { class: 'stat' }, el('b', {}, String(v)), el('span', {}, k))));
+      livesEl.innerHTML = '';
+      for (let i = 0; i < LIVES; i++) livesEl.append(el('i', { class: i >= run.lives ? 'is-lost' : '', 'aria-hidden': 'true' }));
+      bestEl.textContent = best ? `Melhor: ${best}` : 'Ainda sem recorde local.';
+      pauseBtn.textContent = run.paused ? 'Continuar' : 'Pausar';
+      pauseBtn.disabled = run.over;
+      soundBtn.textContent = `Som: ${sound ? 'ligado' : 'desligado'}`;
+      typeHud.textContent = run.typing ? run.typing.toUpperCase() : '';
+    }
+
+    function showOverlay() {
+      if (shotMode) {
+        overlay.hidden = true;
+        return;
+      }
+      if (run.over) {
+        overlay.hidden = false;
+        overlay.innerHTML = '';
+        overlay.append(
+          el('h2', {}, 'Fim de jogo'),
+          el('p', {}, `${run.score} pontos · nível ${run.level} · ${run.destroyed} asteroides`),
+          el('button', { class: 'btn btn--primary', onclick: () => newGame() }, 'Jogar de novo')
+        );
+      } else if (run.paused) {
+        overlay.hidden = false;
+        overlay.innerHTML = '';
+        overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Espaço ou P continua. O universo espera o gato.'), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Continuar'));
+      } else overlay.hidden = true;
+    }
+
+    function nextWord() {
+      if (!data) return null;
+      const [lo, hi] = lenRange(run.level);
+      for (let n = 0; n < deck.length; n++) {
+        const i = (run.deckI + n) % deck.length;
+        const w = data.words[deck[i]];
+        if (w && w.len >= lo && w.len <= hi && !rocks.some((r) => r.word === w.word)) {
+          run.deckI = (i + 1) % deck.length;
+          return w;
+        }
+      }
+      const w = data.words[deck[run.deckI % deck.length]];
+      run.deckI++;
+      return w;
+    }
+
+    function spawn(opts = {}) {
+      if (!opts.word && rocks.length >= MAX_ROCKS) return null;
+      const w = opts.word
+        ? { word: norm(opts.word), display: opts.display || opts.word, theme: opts.theme || 'gerais', len: norm(opts.word).length }
+        : nextWord();
+      if (!w) return null;
+      const rock = {
+        id: opts.id || idSeq++,
+        word: w.word,
+        display: (w.display || w.word).toUpperCase(),
+        theme: w.theme || 'gerais',
+        x: opts.x ?? 0.12 + Math.random() * 0.76,
+        y: opts.y ?? -0.08,
+        vy: opts.vy ?? 0.035 + run.level * 0.008 + Math.random() * 0.01,
+        rad: 0.05 + Math.min(0.04, w.word.length * 0.004),
+        rot: Math.random() * Math.PI
+      };
+      rocks.push(rock);
+      return rock;
+    }
+
+    function fireAt(rock) {
+      const rect = canvas.getBoundingClientRect();
+      const cat = ship.querySelector('.ct-ship__cat');
+      const cr = cat ? cat.getBoundingClientRect() : ship.getBoundingClientRect();
+      const x0 = (cr.left + cr.width / 2 - rect.left) / rect.width;
+      const y0 = (cr.top + 18 - rect.top) / rect.height;
+      lasers.push({ x0, y0, x1: rock.x, y1: rock.y, t: 0, life: 0.18 });
+      lastShotAt = performance.now();
+      ship.classList.remove('is-shot');
+      void ship.offsetWidth;
+      ship.classList.add('is-shot');
+      ensureSound().then((s) => s && s.laser()).catch(() => {});
+    }
+
+    function explode(rock, pts) {
+      booms.push({ x: rock.x, y: rock.y, t: 0, life: 0.45, pts });
+      rocks = rocks.filter((r) => r.id !== rock.id);
+      if (run.targetId === rock.id) {
+        run.targetId = null;
+        run.typing = '';
+      }
+      ensureSound().then((s) => s && s.boom()).catch(() => {});
+    }
+
+    function destroy(rock) {
+      const pts = rock.word.length * 10 * run.level;
+      run.score += pts;
+      run.destroyed++;
+      if (run.score > best) best = run.score;
+      fireAt(rock);
+      explode(rock, pts);
+      if (run.destroyed > 0 && run.destroyed % 10 === 0) {
+        run.level++;
+        ensureSound().then((s) => s && s.level()).catch(() => {});
+        toast(`Nível ${run.level}! Os asteroides aceleram.`, 'ok');
+      }
+      persist();
+    }
+
+    function miss(rock) {
+      explode(rock, 0);
+      run.lives--;
+      run.typing = '';
+      run.targetId = null;
+      ensureSound().then((s) => s && s.miss()).catch(() => {});
+      if (run.lives <= 0) gameOver();
+      persist();
+    }
+
+    function gameOver() {
+      run.over = true;
+      run.paused = false;
+      if (run.score > best) {
+        best = run.score;
+        toast(`Novo recorde: ${run.score}!`, 'ok');
+      }
+      ensureSound().then((s) => s && s.over()).catch(() => {});
+      persist();
+      showOverlay();
+      hudRefresh();
+    }
+
+    function togglePause() {
+      if (run.over) return;
+      run.paused = !run.paused;
+      persist();
+      showOverlay();
+      hudRefresh();
+    }
+
+    function newGame(seed) {
+      if (!data) return;
+      run = emptyRun();
+      rocks = [];
+      lasers = [];
+      booms = [];
+      locked = false;
+      const rng = typeof seed === 'number' ? mulberry32(seed) : () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
+      deck = shuffle(
+        data.words.map((_, i) => i),
+        rng
+      );
+      persist();
+      showOverlay();
+      hudRefresh();
+    }
+
+    function typeChar(ch) {
+      if (run.over || run.paused) return false;
+      const letter = norm(ch);
+      if (!letter) return false;
+      const next = run.typing + letter;
+      const pool = rocks.filter((r) => r.word.startsWith(next));
+      const locked = run.targetId != null ? pool.find((r) => r.id === run.targetId) : null;
+      const target = locked || pool.sort((a, b) => b.y - a.y)[0];
+      if (!target) {
+        ensureSound().then((s) => s && s.miss()).catch(() => {});
+        return false;
+      }
+      run.targetId = target.id;
+      run.typing = next;
+      ensureSound().then((s) => s && s.blip(['C5', 'E5', 'G5', 'C6'][next.length % 4])).catch(() => {});
+      if (next === target.word) destroy(target);
+      hudRefresh();
+      return true;
+    }
+
+    function tick(dt, force = false) {
+      if (run.over) return;
+      if (!force && (run.paused || locked || shotMode)) return;
+      run.spawnIn -= dt;
+      if (run.spawnIn <= 0) {
+        spawn();
+        run.spawnIn = Math.max(0.55, 2.1 * Math.pow(0.9, run.level - 1));
+      }
+      const limit = 0.82;
+      rocks.forEach((r) => {
+        r.y += r.vy * dt;
+        r.rot += dt * 0.6;
+      });
+      rocks.filter((r) => r.y > limit).forEach(miss);
+      lasers.forEach((l) => (l.t += dt));
+      lasers = lasers.filter((l) => l.t < l.life);
+      booms.forEach((b) => (b.t += dt));
+      booms = booms.filter((b) => b.t < b.life);
+    }
+
+    const ctx = canvas.getContext('2d');
+    function resize() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const w = stage.clientWidth || 640;
+      const h = stage.clientHeight || 520;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!stars.length) {
+        stars = Array.from({ length: 48 }, () => ({ x: Math.random(), y: Math.random(), s: 1 + Math.random() * 2, a: 0.3 + Math.random() * 0.7 }));
+      }
+    }
+
+    function draw() {
+      const w = stage.clientWidth || 640;
+      const h = stage.clientHeight || 520;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#070414';
+      ctx.fillRect(0, 0, w, h);
+      stars.forEach((st) => {
+        ctx.fillStyle = `rgba(246,236,255,${st.a})`;
+        ctx.fillRect(Math.floor(st.x * w), Math.floor(st.y * h), st.s, st.s);
+      });
+      lasers.forEach((l) => {
+        const k = Math.min(1, l.t / l.life);
+        ctx.strokeStyle = k < 0.5 ? '#5ff3ff' : '#ff4fd8';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(l.x0 * w, l.y0 * h);
+        ctx.lineTo(l.x1 * w, l.y1 * h);
+        ctx.stroke();
+      });
+      rocks.forEach((r) => {
+        const cx = r.x * w;
+        const cy = r.y * h;
+        const rad = r.rad * Math.min(w, h);
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(r.rot);
+        const fill = { psicologia: '#4a1d73', arte: '#7a1848', historia: '#6a4a12', gerais: '#4a2d1a' };
+        ctx.fillStyle = r.id === run.targetId ? '#9b5cff' : fill[r.theme] || fill.gerais;
+        ctx.strokeStyle = '#120a20';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let i = 0; i < 7; i++) {
+          const a = (i / 7) * Math.PI * 2;
+          const rr = rad * (0.72 + ((i * 37) % 5) * 0.06);
+          const x = Math.cos(a) * rr;
+          const y = Math.sin(a) * rr;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#2a1810';
+        ctx.fillRect(-rad * 0.2, -rad * 0.15, rad * 0.25, rad * 0.2);
+        ctx.restore();
+        ctx.font = '9px "Press Start 2P", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const typed = r.id === run.targetId ? run.typing.length : 0;
+        const label = r.display;
+        const tw = ctx.measureText(label).width;
+        ctx.fillStyle = '#120a20';
+        ctx.fillRect(cx - tw / 2 - 6, cy - 28, tw + 12, 18);
+        ctx.strokeStyle = r.id === run.targetId ? '#ffd23f' : '#3b2266';
+        ctx.strokeRect(cx - tw / 2 - 6, cy - 28, tw + 12, 18);
+        let acc = 0;
+        for (let i = 0; i < label.length; i++) {
+          const ch = label[i];
+          const cw = ctx.measureText(ch).width;
+          ctx.fillStyle = i < typed ? '#5dff9b' : '#f6ecff';
+          ctx.fillText(ch, cx - tw / 2 + acc + cw / 2, cy - 19);
+          acc += cw;
+        }
+      });
+      booms.forEach((b) => {
+        const k = b.t / b.life;
+        ctx.strokeStyle = `rgba(255,79,216,${1 - k})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(b.x * w, b.y * h, 8 + k * 28, 0, Math.PI * 2);
+        ctx.stroke();
+        if (b.pts) {
+          ctx.fillStyle = `rgba(255,210,63,${1 - k})`;
+          ctx.font = '8px "Press Start 2P", monospace';
+          ctx.fillText(`+${b.pts}`, b.x * w, b.y * h - 20 - k * 20);
+        }
+      });
+    }
+
+    function loop(ts) {
+      if (!alive) return;
+      if (!lastT) lastT = ts;
+      const dt = Math.min(0.05, (ts - lastT) / 1000);
+      lastT = ts;
+      tick(dt);
+      draw();
+      raf = requestAnimationFrame(loop);
     }
 
     const onKey = (e) => {
-      if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1 || finished) return;
-      e.preventDefault();
-      if (!startedAt) startedAt = performance.now();
-      cat.classList.remove('is-tap');
-      void cat.offsetWidth;
-      cat.classList.add('is-tap');
-      if (e.key.toLowerCase() === phrase[pos]) {
-        blip(pos);
-        pos++;
-        if (pos >= phrase.length) {
-          finished = performance.now();
-          const r = render();
-          dockSay(`${r.wpm} palavras por minuto! Salve seu recorde.`);
-          return;
-        }
-      } else {
-        errors++;
-        textEl.classList.remove('is-shake');
-        void textEl.offsetWidth;
-        textEl.classList.add('is-shake');
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.target instanceof HTMLElement && e.target.matches('input, select, textarea')) return;
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape' || e.key === ' ') {
+        if (e.key === ' ' && run.typing) return;
+        e.preventDefault();
+        togglePause();
+        return;
       }
-      render();
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        run.typing = run.typing.slice(0, -1);
+        if (!run.typing) run.targetId = null;
+        hudRefresh();
+        return;
+      }
+      if (e.key.length === 1) {
+        e.preventDefault();
+        typeChar(e.key);
+      }
     };
     window.addEventListener('keydown', onKey);
-    soundBtn.addEventListener('click', () => {
-      sound = !sound;
-      soundBtn.textContent = `Som: ${sound ? 'ligado' : 'desligado'}`;
-    });
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(stage);
 
-    root.append(
-      el(
-        'div',
-        { class: 'typing' },
-        el(
-          'section',
-          { class: 'panel typing__main' },
-          el('div', { class: 'typing__top' }, cat, statsEl),
-          textEl,
-          el(
-            'div',
-            { class: 'row-actions' },
-            el('button', { class: 'btn btn--ghost', onclick: reset }, 'Nova frase'),
-            soundBtn,
-            el('button', {
-              class: 'btn btn--ghost',
-              title: 'Cada tecla certa virou uma nota: leve a melodia para o Studio',
-              onclick: () => {
-                const json = log.recent();
-                if (!json) return dockSay('Digite um pouco primeiro: cada acerto vira uma nota!');
-                openInStudio({ ...json, name: 'Melodia digitada' });
-              }
-            }, 'Melodia no Studio')
-          ),
-          el('p', { class: 'hint' }, 'Comece a digitar — o cronômetro começa na primeira tecla. Salvar guarda seu resultado nos recordes.')
+    overlay.hidden = false;
+    overlay.innerHTML = '';
+    overlay.append(el('div', { class: 'boot__spinner' }), el('p', {}, 'Carregando o dicionário espacial…'));
+    renderShip();
+    hudRefresh();
+    try {
+      data = await loadWords();
+    } catch (err) {
+      overlay.innerHTML = '';
+      overlay.append(el('h2', {}, 'Sem palavras'), el('p', {}, `${err.message || err} Rode npm run cattyping:words.`));
+      return { save: async () => false, unmount: () => cleanup() };
+    }
+    if (!alive) return { save: async () => false, unmount() {} };
+    if (!deck.length) deck = shuffle(data.words.map((_, i) => i), () => Math.random());
+    if (Array.isArray(saved.game && saved.game.rocks) && saved.game.rocks.length && !shotMode) {
+      rocks = saved.game.rocks.map((r) => ({ ...r, rot: Math.random() }));
+      idSeq = rocks.reduce((m, r) => Math.max(m, Number(r.id) || 0), 0) + 1;
+    }
+    if (shotMode) {
+      run.paused = true;
+      run.score = 420;
+      best = Math.max(best, 420);
+      run.level = 3;
+      run.destroyed = 12;
+      run.typing = 'sol';
+      rocks = [];
+      spawn({ word: 'sol', display: 'SOL', theme: 'gerais', x: 0.28, y: 0.38, vy: 0 });
+      spawn({ word: 'piano', display: 'PIANO', theme: 'arte', x: 0.55, y: 0.22, vy: 0 });
+      spawn({ word: 'roma', display: 'ROMA', theme: 'historia', x: 0.78, y: 0.45, vy: 0 });
+      spawn({ word: 'afeto', display: 'AFETO', theme: 'psicologia', x: 0.42, y: 0.18, vy: 0 });
+      run.targetId = rocks[0].id;
+      lasers = [{ x0: 0.42, y0: 0.82, x1: 0.28, y1: 0.38, t: 0.04, life: 0.9 }];
+    }
+    overlay.hidden = true;
+    showOverlay();
+    hudRefresh();
+    resize();
+    raf = requestAnimationFrame(loop);
+
+    window.__mmpCatTyping = {
+      data: () => ({
+        words: data.words.length,
+        minLen: data.meta.minLen,
+        maxLen: data.meta.maxLen,
+        themes: data.meta.themes,
+        byLen: data.meta.byLen
+      }),
+      state: () =>
+        JSON.parse(
+          JSON.stringify({
+            score: run.score,
+            lives: run.lives,
+            level: run.level,
+            paused: run.paused,
+            over: run.over,
+            typing: run.typing,
+            rocks: rocks.map((r) => ({ id: r.id, word: r.word, y: r.y, vy: r.vy, theme: r.theme })),
+            lasers: lasers.length,
+            destroyed: run.destroyed,
+            best: Math.max(best, run.score),
+            lastShotAt,
+            spawnIn: run.spawnIn
+          })
         ),
-        el('section', { class: 'panel typing__side' }, el('h2', {}, 'Recordes'), bestEl)
-      )
-    );
-    render();
+      type: typeChar,
+      pause: () => {
+        if (!run.paused) togglePause();
+      },
+      resume: () => {
+        if (run.paused) togglePause();
+      },
+      lock: (on) => {
+        locked = !!on;
+      },
+      setLevel: (n) => {
+        run.level = Math.max(1, Number(n) || 1);
+        hudRefresh();
+      },
+      deckPreview: () => deck.slice(0, 12).map((i) => data.words[i] && data.words[i].word),
+      newGame,
+      spawn,
+      tick: (dt) => tick(dt, true),
+      clear() {
+        rocks = [];
+        lasers = [];
+        booms = [];
+        run.typing = '';
+        run.targetId = null;
+      }
+    };
+
+    function cleanup() {
+      alive = false;
+      cancelAnimationFrame(raf);
+      window.removeEventListener('keydown', onKey);
+      ro.disconnect();
+      offProfile && offProfile();
+      if (chip && chip.dispose) chip.dispose();
+      if (window.__mmpCatTyping) delete window.__mmpCatTyping;
+    }
 
     return {
       async save() {
-        if (!finished) throw new Error('Termine a frase para salvar o resultado.');
-        const { wpm, acc } = render();
-        data.best = [...data.best, { wpm, acc, at: new Date().toISOString() }].sort((a, b) => b.wpm - a.wpm).slice(0, 5);
-        await kv.set('cattyping', data);
-        render();
-        return `Recorde de ${wpm} PPM salvo!`;
+        await persist();
+        return run.over
+          ? `Recorde local: ${best} pontos.`
+          : `Missão salva: ${run.score} pontos, nível ${run.level}, ${run.lives} vida${run.lives === 1 ? '' : 's'}.`;
       },
       unmount() {
-        window.removeEventListener('keydown', onKey);
-        if (synth) synth.dispose();
+        persist();
+        cleanup();
       }
     };
   }

@@ -15,6 +15,19 @@ const pre = spawnSync(process.execPath, [path.join(__dirname, 'build-conexoes.mj
 });
 if (pre.status) process.exit(pre.status || 1);
 
+const wordsFile = path.join(__dirname, '..', 'data', 'cattyping', 'words.json');
+let wordsJson;
+try {
+  wordsJson = JSON.parse(fs.readFileSync(wordsFile, 'utf8'));
+} catch (err) {
+  console.error('Cat Typing: rode npm run cattyping:words para gerar data/cattyping/words.json');
+  process.exit(1);
+}
+if (!Array.isArray(wordsJson.words) || wordsJson.words.length < 5000) {
+  console.error(`Cat Typing: words.json tem ${wordsJson.words ? wordsJson.words.length : 0} palavras (precisa 5000+)`);
+  process.exit(1);
+}
+
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mmp-check-'));
 const args = ['.'];
 if (process.platform === 'linux') args.push('--no-sandbox', '--disable-gpu');

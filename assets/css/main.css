@@ -1192,9 +1192,6 @@ svg.pixel-icon {
   font-size: 16px;
   color: var(--muted);
 }
-.typing__text.is-shake {
-  animation: shake 0.3s steps(4);
-}
 @keyframes shake {
   25% {
     transform: translateX(-6px);
@@ -1204,56 +1201,10 @@ svg.pixel-icon {
   }
 }
 
-/* ---------- CAT TYPING ---------- */
-.typing {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
-  gap: 20px;
-  align-items: start;
-}
-.typing__top {
-  display: flex;
-  align-items: flex-end;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-.typing__cat.is-tap {
-  animation: hop 0.15s steps(2);
-}
-.typing__text {
-  font-size: clamp(26px, 3.2vw, 38px);
-  line-height: 1.35;
-  padding: 16px;
-  margin: 0;
-  background: #120a20;
-  border: 3px solid var(--line);
-  color: #6f5a92;
-  word-break: break-word;
-}
-.typing__text .ok {
-  color: var(--green);
-}
-.typing__text .cur {
-  color: #10051d;
-  background: var(--pink);
-  animation: pulse 0.8s steps(2) infinite;
-}
-.typing__best {
-  margin: 12px 0 0;
-  padding-left: 28px;
-  font-size: 20px;
-}
-.typing__best b {
-  color: var(--gold);
-  font-weight: normal;
-}
-
 /* ---------- Responsivo ---------- */
 @media (max-width: 960px) {
   .hub__hero,
-  .mycat,
-  .typing {
+  .mycat {
     grid-template-columns: 1fr;
   }
   .mycat__stage {

@@ -258,13 +258,90 @@
     ok('Beat Cats: “Editar no Studio” leva as camadas como faixas', sst && sst.notes > 10 && sst.tracks.some((t) => t.id === 'bumbo' && t.inst === 'drums') && sst.origin.includes('Beat Cats'), sst && JSON.stringify(sst.tracks.map((t) => `${t.id}:${t.notes}`)));
 
     await go('cattyping');
-    const phraseText = $('.typing__text').textContent.replace(/\u00a0/g, ' ');
-    for (const ch of phraseText.slice(0, 6)) window.dispatchEvent(new KeyboardEvent('keydown', { key: ch, bubbles: true, cancelable: true }));
-    await sleep(100);
-    [...$$('.typing .btn')].find((b) => b.textContent === 'Melodia no Studio').click();
-    await sleep(900);
-    sst = window.__mmpStudio && window.__mmpStudio.state();
-    ok('Cat Typing: cada acerto vira nota e a melodia abre no Studio', sst && sst.notes === 6 && sst.tracks[0].inst === 'chip', sst && `${sst.notes} notas`);
+    let CT = null;
+    for (let i = 0; i < 50 && !window.__mmpCatTyping; i++) await sleep(100);
+    CT = window.__mmpCatTyping;
+    ok('Cat Typing: módulo carregou o dicionário', CT, CT ? 'ok' : 'sem __mmpCatTyping');
+    const ctd = CT && CT.data();
+    ok(
+      'Cat Typing: 5000+ palavras, 3–10 letras, 4 temas',
+      ctd &&
+        ctd.words >= 5000 &&
+        ctd.minLen === 3 &&
+        ctd.maxLen === 10 &&
+        ['psicologia', 'arte', 'historia', 'gerais'].every((t) => ctd.themes[t] >= 50) &&
+        [3, 4, 5, 6, 7, 8, 9, 10].every((n) => ctd.byLen[n] > 0),
+      ctd && JSON.stringify({ words: ctd.words, themes: ctd.themes, byLen: ctd.byLen })
+    );
+    ok(
+      'Cat Typing: gato espacial e lontra copiloto com a roupa do Meu Gato',
+      CT &&
+        $('.ct-ship__cat svg.creature--cat') &&
+        $('.ct-ship__otter svg.creature--otter') &&
+        $('.ct-ship__cat .acc--coroa') &&
+        $('.ct-ship__otter .acc--astronauta'),
+      $$('.ct-ship .acc').map((a) => a.className).join(' | ')
+    );
+    if (!CT) throw new Error('Cat Typing não montou');
+    CT.newGame(1);
+    const deckA = CT.deckPreview().join('|');
+    CT.newGame(2);
+    const deckB = CT.deckPreview().join('|');
+    ok('Cat Typing: palavras embaralhadas a cada partida', deckA && deckB && deckA !== deckB, `${deckA} vs ${deckB}`);
+    CT.lock(true);
+    CT.clear();
+    CT.setLevel(1);
+    const slow = CT.spawn({ word: 'sol', y: 0.3, vy: undefined });
+    CT.clear();
+    CT.setLevel(6);
+    const fast = CT.spawn({ word: 'planeta', y: 0.3 });
+    ok('Cat Typing: velocidade sobe com o nível', slow && fast && fast.vy > slow.vy, slow && fast && `${slow.vy} → ${fast.vy}`);
+    CT.setLevel(1);
+    CT.clear();
+    CT.spawn({ word: 'gato', display: 'GATO', y: 0.4, vy: 0 });
+    for (const ch of 'gato') CT.type(ch);
+    let cts = CT.state();
+    ok(
+      'Cat Typing: digitar a palavra atira laser e destrói o asteroide',
+      cts.destroyed === 1 && cts.score > 0 && cts.lasers >= 1 && cts.rocks.length === 0 && cts.lastShotAt > 0,
+      JSON.stringify(cts)
+    );
+    CT.clear();
+    CT.spawn({ word: 'acao', display: 'AÇÃO', y: 0.35, vy: 0 });
+    for (const ch of ['Á', 'c', 'ã', 'O']) {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: ch, bubbles: true, cancelable: true }));
+    }
+    await sleep(40);
+    cts = CT.state();
+    ok('Cat Typing: teclado físico ignora acentos', cts.destroyed === 2 && cts.typing === '', cts.typing + ' · ' + cts.destroyed);
+    CT.pause();
+    ok('Cat Typing: pausa', CT.state().paused && $('.ct-overlay h2') && $('.ct-overlay h2').textContent.includes('Pausa'));
+    ok('Cat Typing: não atira pausado', CT.type('x') === false);
+    CT.resume();
+    ok('Cat Typing: continua depois da pausa', !CT.state().paused);
+    CT.lock(true);
+    const livesBefore = CT.state().lives;
+    CT.spawn({ word: 'fim', y: 0.95, vy: 2 });
+    CT.tick(1);
+    cts = CT.state();
+    ok('Cat Typing: asteroide que chega embaixo tira vida', cts.lives === livesBefore - 1 && cts.lives >= 0, `${livesBefore} → ${cts.lives}`);
+    CT.clear();
+    CT.spawn({ word: 'lua', y: 0.3, vy: 0 });
+    for (const ch of 'lua') CT.type(ch);
+    $('.topbar__save').click();
+    await sleep(400);
+    const savedCt = await window.mmp.store.read('cattyping');
+    ok(
+      'Cat Typing: Salvar persiste pontos e recorde',
+      savedCt && savedCt.version === 2 && savedCt.game && savedCt.game.destroyed >= 1 && savedCt.best >= savedCt.game.score,
+      JSON.stringify(savedCt && { best: savedCt.best, score: savedCt.game && savedCt.game.score, destroyed: savedCt.game && savedCt.game.destroyed })
+    );
+    CT.pause();
+    await go('hub');
+    await go('cattyping');
+    for (let i = 0; i < 50 && !window.__mmpCatTyping; i++) await sleep(100);
+    cts = window.__mmpCatTyping && window.__mmpCatTyping.state();
+    ok('Cat Typing: partida em andamento continua ao voltar', cts && !cts.over && cts.destroyed >= 1 && cts.score > 0, cts && JSON.stringify(cts));
 
     /* ---------- Studio ---------- */
     await go('studio?demo=1');
