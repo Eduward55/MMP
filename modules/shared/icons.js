@@ -15,7 +15,9 @@ const C = {
   n: '#94a3b8',
   b: '#2563eb',
   s: '#64748b',
-  m: '#f472b6'
+  m: '#f472b6',
+  t: '#c25c1c',
+  e: '#ffd8a8'
 };
 
 const MAPS = {
@@ -118,18 +120,18 @@ const MAPS = {
     '............'
   ],
   cantar: [
-    '.o........o.',
-    '.omo....omo.',
-    '.oooooooooo.',
-    'oogkooookgoo',
-    'ooooommooooo',
-    '.oooowkwooo.',
-    '..oooooooo..',
-    '.....nn.....',
-    '....nwwwn...',
-    '...nwkkwn...',
-    '....nnnn....',
-    '.....nn.....'
+    '.to......ot.',
+    '.too....oot.',
+    'tomot..tomot',
+    'toooooooooot',
+    'togkwoowkgot',
+    'toooommoooot',
+    '.tekkmke.yyy',
+    '.ttoooo.ywwy',
+    '...tttt.ykky',
+    '........yyyy',
+    '.........n..',
+    '........nnn.'
   ],
   tetris: [
     '..pppppp....',
