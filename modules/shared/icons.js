@@ -16,7 +16,8 @@ const C = {
   b: '#2563eb',
   s: '#64748b',
   m: '#f472b6',
-  e: '#9a3412'
+  t: '#c25c1c',
+  e: '#ffd8a8'
 };
 
 const MAPS = {
@@ -35,18 +36,18 @@ const MAPS = {
     '............'
   ],
   beatcats: [
-    '.eo......oe.',
-    'eoo.nnnn.ooe',
-    'eomoooooomoe',
-    'eooooooooooe',
-    'dvowkookwovd',
-    'dvogkookgovd',
-    'dvooommooovd',
-    '.eooowkwooe.',
-    '..eooooooe..',
-    '...eeeeee...',
-    '.....cc.....',
-    '....ckkc....'
+    '.o........o.',
+    '.omo....omo.',
+    '.oooooooooo.',
+    'oogkooookgoo',
+    'ooooommooooo',
+    '.oooowkwooo.',
+    '..oooooooo..',
+    '...y....y...',
+    '..yyy..yyy..',
+    '.ywy....ywy.',
+    '.yyy....yyy.',
+    '............'
   ],
   studio: [
     'kkkkkkkkkkkk',
@@ -119,18 +120,18 @@ const MAPS = {
     '............'
   ],
   cantar: [
-    '.o........o.',
-    '.omo....omo.',
-    '.oooooooooo.',
-    'oogkooookgoo',
-    'ooooommooooo',
-    '.oooowkwooo.',
-    '..oooooooo..',
-    '.....nn.....',
-    '....nwwwn...',
-    '...nwkkwn...',
-    '....nnnn....',
-    '.....nn.....'
+    '.to......ot.',
+    '.too....oot.',
+    'tomot..tomot',
+    'toooooooooot',
+    'togkwoowkgot',
+    'toooommoooot',
+    '.tekkmke.yyy',
+    '.ttoooo.ywwy',
+    '...tttt.ykky',
+    '........yyyy',
+    '.........n..',
+    '........nnn.'
   ],
   tetris: [
     '..pppppp....',

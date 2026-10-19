@@ -1319,6 +1319,13 @@ body:has(.airx .btn--rec.is-active) #dock-root,
   border: 1px solid var(--hairline);
   border-radius: 10px;
 }
+a.card[href='#/cantar'] .card__icon {
+  padding: 6px;
+}
+a.card[href='#/cantar'] .card__icon svg.pixel-icon {
+  width: 60px;
+  height: 60px;
+}
 .card__body {
   display: flex;
   flex-direction: column;
