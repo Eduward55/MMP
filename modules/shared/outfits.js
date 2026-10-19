@@ -396,6 +396,107 @@ export const BONUS_OUTFITS = [
       g.ring(A.cx, A.headTop - 4, 5.5, 1.8, 1, P.gold);
       g.points([[A.cx - 7, A.headTop - 6], [A.cx + 7, A.headTop - 7], [A.cx + 1, A.headTop - 8]], P.white);
     }
+  },
+  {
+    id: 'surdo',
+    name: 'Surdo',
+    slot: 'hand',
+    front(g, A) {
+      g.map(['.oooo.', 'o....o', 'oooooo', 'obbobo', 'oooooo'], { o: P.brown, b: P.gold }, A.handX - 3, A.handY - 6);
+    }
+  },
+  {
+    id: 'chocalho',
+    name: 'Chocalho',
+    slot: 'hand',
+    front(g, A) {
+      g.map(['.yyy.', 'ywywy', 'yyyyy', '.yyy.', '..d..', '..d..'], { y: P.gold, w: P.white, d: P.brown }, A.handX - 2, A.handY - 7);
+    }
+  },
+  {
+    id: 'agogo',
+    name: 'Agogô',
+    slot: 'hand',
+    front(g, A) {
+      g.map(['gg..yy', 'g.g.y.y', 'g.g.y.y', '.d..d.', '..dd..'], { g: P.gold, y: P.goldDark, d: P.brown }, A.handX - 2, A.handY - 6);
+    }
+  },
+  {
+    id: 'luva',
+    name: 'Luva',
+    slot: 'hand',
+    front(g, A) {
+      g.map(['.pp.p', 'ppppp', 'ppppp', '.ppp.'], { p: P.pink }, A.handX - 2, A.handY - 3);
+    }
+  },
+  {
+    id: 'bola-disco',
+    name: 'Bola disco',
+    slot: 'head',
+    front(g, A) {
+      g.map(['.csc.', 'scscs', 'cscsc', 'scscs', '.csc.'], { c: P.cyan, s: P.pink }, center(A, 5), A.headTop - 6);
+      g.set(A.cx, A.headTop - 4, P.white);
+    }
+  },
+  {
+    id: 'teclado',
+    name: 'Teclado',
+    slot: 'hand',
+    front(g, A) {
+      g.map(['wwwwww', 'wkwkwk', 'dddddd'], { w: P.white, k: P.night, d: P.pink }, A.handX - 4, A.handY - 4);
+    }
+  },
+  {
+    id: 'guitarra',
+    name: 'Guitarra',
+    slot: 'hand',
+    front(g, A) {
+      g.map(['..r..', '.rrr.', 'r.k.r', '.rrr.', '..d..', '..d..', '..d..', '.ddd.'], { r: P.red, k: P.gold, d: P.brown }, A.handX - 2, A.handY - 8);
+    }
+  },
+  {
+    id: 'kalimba',
+    name: 'Kalimba',
+    slot: 'hand',
+    front(g, A) {
+      g.map(['y.y.y', 'yyyyy', 'bbbbb', '.bbb.'], { y: P.gold, b: P.brown }, A.handX - 2, A.handY - 5);
+    }
+  },
+  {
+    id: 'saxofone',
+    name: 'Saxofone',
+    slot: 'hand',
+    front(g, A) {
+      g.map(['...gg', '..g..', '.ggg.', '.g...', 'gg...', '.g...'], { g: P.gold }, A.handX - 2, A.handY - 7);
+      g.set(A.handX + 2, A.handY - 7, P.white);
+    }
+  },
+  {
+    id: 'violino',
+    name: 'Violino',
+    slot: 'hand',
+    front(g, A) {
+      g.map(['..n..', '.nnn.', 'n.w.n', '.nnn.', '..d..', '..d..'], { n: P.brown, w: P.white, d: P.goldDark }, A.handX - 2, A.handY - 7);
+    }
+  },
+  {
+    id: 'gota',
+    name: 'Gota',
+    slot: 'ear',
+    outline: false,
+    front(g, A) {
+      g.map(['.c.', 'ccc', 'ccc', '.c.'], { c: P.cyan }, A.earRX - 1, A.headTop - 1);
+      g.set(A.earRX, A.headTop, P.white);
+    }
+  },
+  {
+    id: 'lua',
+    name: 'Lua',
+    slot: 'head',
+    front(g, A) {
+      g.map(['.yy.', 'y..y', 'y...', 'y..y', '.yy.'], { y: P.gold }, center(A, 4) + 4, A.headTop - 6);
+      g.set(A.cx + 5, A.headTop - 4, P.white);
+    }
   }
 ];
 

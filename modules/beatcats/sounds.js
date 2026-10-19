@@ -1,4 +1,4 @@
-// 24 sons sintetizados com Tone.js. Cada som é uma camada em loop de 4 compassos (64 semicolcheias)
+// 40 sons sintetizados com Tone.js. Cada som é uma camada em loop de 4 compassos (64 semicolcheias)
 // sobre a progressão Lá menor – Fá – Dó – Sol. tick(step, time) devolve true quando o gato "canta".
 
 import { createEventLog, tapTone } from '../shared/events.js';
@@ -456,6 +456,167 @@ export const SOUNDS = [
         dispose: disposer(d, b)
       };
     }
+  },
+
+  /* ---------- +12 acessórios ---------- */
+  {
+    id: 'surdo', name: 'Surdo Macio', group: 'drums', outfit: 'surdo',
+    make(Tone, out) {
+      const k = new Tone.MembraneSynth({ pitchDecay: 0.06, octaves: 3.2, oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.55, sustain: 0 }, volume: -3 }).connect(out);
+      return { tick: (s, t) => (at(s, [0, 6]) ? (k.triggerAttackRelease(s % 16 === 0 ? 'C2' : 'G1', '8n', t), true) : false), dispose: disposer(k) };
+    }
+  },
+  {
+    id: 'ganza', name: 'Ganzá Tchuc', group: 'drums', outfit: 'chocalho',
+    make(Tone, out) {
+      const hp = new Tone.Filter(3500, 'highpass').connect(out);
+      const n = new Tone.NoiseSynth({ noise: { type: 'pink' }, envelope: { attack: 0.001, decay: 0.045, sustain: 0 }, volume: -7 }).connect(hp);
+      return {
+        tick: (s, t) => {
+          if (s % 2 === 0) return false;
+          n.triggerAttackRelease(0.04, t, s % 4 === 3 ? 0.55 : 0.9);
+          return true;
+        },
+        dispose: disposer(hp, n)
+      };
+    }
+  },
+  {
+    id: 'agogo', name: 'Agogô Ding', group: 'drums', outfit: 'agogo',
+    make(Tone, out) {
+      const hi = new Tone.MetalSynth({ envelope: { attack: 0.001, decay: 0.18, release: 0.08 }, harmonicity: 3.1, modulationIndex: 16, resonance: 2600, octaves: 0.8, volume: -18 }).connect(out);
+      const lo = new Tone.MetalSynth({ envelope: { attack: 0.001, decay: 0.28, release: 0.1 }, harmonicity: 2.4, modulationIndex: 12, resonance: 1800, octaves: 0.6, volume: -16 }).connect(out);
+      return {
+        tick: (s, t) => {
+          if (!at(s, [2, 6, 10, 14])) return false;
+          if (at(s, [2, 10])) hi.triggerAttackRelease(1320, '16n', t);
+          else lo.triggerAttackRelease(880, '8n', t);
+          return true;
+        },
+        dispose: disposer(hi, lo)
+      };
+    }
+  },
+  {
+    id: 'baixo-slap', name: 'Baixo Slap', group: 'bass', outfit: 'luva',
+    make(Tone, out) {
+      const click = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.028, sustain: 0 }, volume: -18 }).connect(out);
+      const b = new Tone.PluckSynth({ attackNoise: 2.2, dampening: 2600, resonance: 0.82 }).connect(out);
+      b.volume.value = -8;
+      const u = T(Tone);
+      const pattern = { 1: 12, 4: 19, 7: 12, 11: 24, 14: 12 };
+      return {
+        tick: (s, t) => {
+          const semis = pattern[s % 16];
+          if (semis === undefined) return false;
+          click.triggerAttackRelease(0.025, t);
+          b.triggerAttackRelease(u.up(ROOTS[bar(s)], semis), '16n', t);
+          return true;
+        },
+        dispose: disposer(click, b)
+      };
+    }
+  },
+  {
+    id: 'baixo-disco', name: 'Baixo Disco', group: 'bass', outfit: 'bola-disco',
+    make(Tone, out) {
+      const b = new Tone.MonoSynth({ oscillator: { type: 'pulse', width: 0.32 }, filter: { Q: 1.4, type: 'lowpass' }, envelope: { attack: 0.012, decay: 0.22, sustain: 0.5, release: 0.16 }, filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.28, baseFrequency: 170, octaves: 2.4 }, volume: -8 }).connect(out);
+      const u = T(Tone);
+      const pattern = { 0: 12, 3: 12, 6: 24, 8: 12, 11: 19 };
+      return {
+        tick: (s, t) => {
+          const semis = pattern[s % 16];
+          if (semis === undefined) return false;
+          b.triggerAttackRelease(u.up(ROOTS[bar(s)], semis), u.s16 * (s % 16 === 8 ? 3 : 2), t);
+          return true;
+        },
+        dispose: disposer(b)
+      };
+    }
+  },
+  {
+    id: 'piano-nuvem', name: 'Piano Nuvem', group: 'chords', outfit: 'teclado',
+    make(Tone, out) {
+      const p = new Tone.PolySynth(Tone.FMSynth, { harmonicity: 1.4, modulationIndex: 3.2, oscillator: { type: 'sine' }, modulation: { type: 'triangle' }, envelope: { attack: 0.004, decay: 1.05, sustain: 0.08, release: 0.7 }, modulationEnvelope: { attack: 0.002, decay: 0.45, sustain: 0, release: 0.35 }, volume: -14 }).connect(out);
+      const u = T(Tone);
+      return { tick: (s, t) => (at(s, [0, 8]) ? (p.triggerAttackRelease(CHORDS[bar(s)], u.s16 * 7, t), true) : false), stop: (t) => p.releaseAll(t), dispose: disposer(p) };
+    }
+  },
+  {
+    id: 'guitarra-fofa', name: 'Guitarra Fofa', group: 'chords', outfit: 'guitarra',
+    make(Tone, out) {
+      const f = new Tone.Filter(780, 'lowpass').connect(out);
+      f.Q.value = 1.6;
+      const p = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.001, decay: 0.09, sustain: 0, release: 0.05 }, volume: -18 }).connect(f);
+      const u = T(Tone);
+      return { tick: (s, t) => (at(s, [4, 7, 11, 15]) ? (p.triggerAttackRelease(CHORDS[bar(s)].map((n) => u.up(n, -12)), '16n', t), true) : false), dispose: disposer(f, p) };
+    }
+  },
+  {
+    id: 'melodia-kalimba', name: 'Kalimba Doce', group: 'melody', outfit: 'kalimba',
+    make(Tone, out) {
+      const k = new Tone.FMSynth({ harmonicity: 11, modulationIndex: 6, oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.7, sustain: 0, release: 0.25 }, modulationEnvelope: { attack: 0.001, decay: 0.18, sustain: 0, release: 0.08 }, volume: -10 }).connect(out);
+      const u = T(Tone);
+      const ph = phrase([[0, 'A5', 3], [3, 'C6', 2], [6, 'E6', 3], [10, 'G5', 4], [16, 'F5', 3], [20, 'A5', 2], [24, 'C6', 4], [32, 'G5', 3], [36, 'B5', 2], [40, 'D6', 4], [48, 'E5', 3], [52, 'A5', 2], [56, 'C6', 6]]);
+      return { tick: (s, t) => { const n = ph.get(s); if (!n) return false; k.triggerAttackRelease(n.note, u.s16 * n.len, t); return true; }, dispose: disposer(k) };
+    }
+  },
+  {
+    id: 'melodia-sax', name: 'Sax Ronron', group: 'melody', outfit: 'saxofone',
+    make(Tone, out) {
+      const vib = new Tone.Vibrato(4.6, 0.14).connect(out);
+      const formant = new Tone.Filter(880, 'bandpass').connect(vib);
+      formant.Q.value = 1.7;
+      const s1 = new Tone.AMSynth({ harmonicity: 2.4, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.07, decay: 0.14, sustain: 0.55, release: 0.28 }, modulation: { type: 'square' }, modulationEnvelope: { attack: 0.04, decay: 0.2, sustain: 0.25, release: 0.18 }, volume: -14 }).connect(formant);
+      const u = T(Tone);
+      const ph = phrase([[0, 'A3', 6], [8, 'C4', 6], [16, 'F3', 7], [24, 'A3', 6], [32, 'G3', 6], [40, 'E4', 6], [48, 'D4', 6], [56, 'C4', 7]]);
+      return { tick: (s, t) => { const n = ph.get(s); if (!n) return false; s1.triggerAttackRelease(n.note, u.s16 * n.len, t); return true; }, stop: (t) => s1.triggerRelease(t), dispose: disposer(vib, formant, s1) };
+    }
+  },
+  {
+    id: 'melodia-pizz', name: 'Pizzicato', group: 'melody', outfit: 'violino',
+    make(Tone, out) {
+      const p = new Tone.PluckSynth({ attackNoise: 0.45, dampening: 5200, resonance: 0.93 }).connect(out);
+      p.volume.value = -8;
+      const u = T(Tone);
+      const ph = phrase([[2, 'E5'], [4, 'A5'], [8, 'C5'], [12, 'E5'], [18, 'F5'], [22, 'A5'], [26, 'C6'], [34, 'G5'], [38, 'E5'], [42, 'B5'], [50, 'D5'], [54, 'G5'], [58, 'B5']]);
+      return { tick: (s, t) => { const n = ph.get(s); if (!n) return false; p.triggerAttackRelease(n.note, u.s16 * 2, t); return true; }, dispose: disposer(p) };
+    }
+  },
+  {
+    id: 'fx-gota', name: 'Gotinha', group: 'fx', outfit: 'gota',
+    make(Tone, out) {
+      const s1 = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.05 }, volume: -12 }).connect(out);
+      return {
+        tick: (s, t) => {
+          if (![13, 29, 45, 61].includes(s)) return false;
+          s1.triggerAttackRelease(1400, 0.2, t);
+          s1.frequency.setValueAtTime(1400, t);
+          s1.frequency.exponentialRampToValueAtTime(380, t + 0.18);
+          return true;
+        },
+        dispose: disposer(s1)
+      };
+    }
+  },
+  {
+    id: 'fx-uivo', name: 'Uivo Lunar', group: 'fx', outfit: 'lua',
+    make(Tone, out) {
+      const s1 = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.18, decay: 0.2, sustain: 0.7, release: 0.45 }, volume: -14 }).connect(out);
+      const u = T(Tone);
+      return {
+        tick: (s, t) => {
+          if (![16, 48].includes(s)) return false;
+          const dur = u.s16 * 10;
+          s1.triggerAttackRelease(420, dur, t);
+          s1.frequency.setValueAtTime(280, t);
+          s1.frequency.exponentialRampToValueAtTime(720, t + dur * 0.45);
+          s1.frequency.exponentialRampToValueAtTime(240, t + dur);
+          return true;
+        },
+        dispose: disposer(s1)
+      };
+    }
   }
 ];
 
@@ -482,14 +643,17 @@ export function otterSplash(Tone, master, filter, time) {
 }
 
 /* ---------- Eventos (nota, tempo, instrumento) para o Studio ---------- */
-const SOUND_INST = { 'pad-neon': 'pad', stab: 'chip', arpejo: 'keys', orgao: 'keys', 'coral-miau': 'meow', 'melodia-flauta': 'theremin', 'melodia-8bit': 'chip', 'melodia-miau': 'meow', 'melodia-sinos': 'bells', 'melodia-harpa': 'bells', 'melodia-slide': 'theremin', 'fx-eco-miau': 'meow', 'fx-trovao': 'fx' };
+const SOUND_INST = { 'pad-neon': 'pad', stab: 'chip', arpejo: 'keys', orgao: 'keys', 'coral-miau': 'meow', 'piano-nuvem': 'piano', 'guitarra-fofa': 'keys', 'melodia-flauta': 'theremin', 'melodia-8bit': 'chip', 'melodia-miau': 'meow', 'melodia-sinos': 'bells', 'melodia-harpa': 'bells', 'melodia-slide': 'theremin', 'melodia-kalimba': 'bells', 'melodia-sax': 'meow', 'melodia-pizz': 'keys', 'fx-eco-miau': 'meow', 'fx-trovao': 'fx' };
 const DRUM_FOR = {
   bumbo: () => 36,
   caixa: (kind) => (kind === 'NoiseSynth' ? 38 : null),
   chimbal: (_k, d) => (d > 0.1 ? 46 : 42),
   palmas: () => 39,
   tamborim: () => 76,
-  beatbox: (kind) => (kind === 'MembraneSynth' ? 36 : 38)
+  beatbox: (kind) => (kind === 'MembraneSynth' ? 36 : 38),
+  surdo: () => 45,
+  ganza: () => 37,
+  agogo: () => 49
 };
 
 export function soundInstrument(id) {

@@ -104,7 +104,7 @@ export default {
     const otter = el(
       'button',
       { class: 'bc-otter', title: 'Efeito especial da lontra' },
-      el('span', { class: 'bc-otter__art', html: creatureSVG('otter', profile.otter, { size: 96, label: profile.otter.name }) }),
+      el('span', { class: 'bc-otter__art', html: creatureSVG('otter', profile.otter, { size: 80, label: profile.otter.name }) }),
       el('span', { class: 'bc-otter__name' }, profile.otter.name),
       el('span', { class: 'bc-otter__hint' }, 'Splash!')
     );
@@ -118,7 +118,7 @@ export default {
         const t = el(
           'button',
           { class: 'bc-token', 'data-sound': s.id, style: `--c:${g.color}`, title: `${s.name} (${g.name})` },
-          el('span', { class: 'bc-token__art', html: accessorySVG(s.outfit, { size: 44, label: s.name }) }),
+          el('span', { class: 'bc-token__art', html: accessorySVG(s.outfit, { size: 28, label: s.name }) }),
           el('span', { class: 'bc-token__name' }, s.name),
           el('span', { class: 'bc-token__who' })
         );
