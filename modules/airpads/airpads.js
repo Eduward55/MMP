@@ -319,15 +319,36 @@ export default {
     }
 
     /* ---------- Pontas dos dedos ---------- */
+    const HIT_R = 1.08;
+    const SRC_RANK = { mouse: 0, key: 1, sim: 2, cam: 3, demo: 4, 'cam-tip': 5 };
+
+    function clientToArena(clientX, clientY) {
+      const a = arena.getBoundingClientRect();
+      return { x: clientX - a.left - arena.clientLeft, y: clientY - a.top - arena.clientTop };
+    }
+
+    function pointerInArena(clientX, clientY) {
+      const a = arena.getBoundingClientRect();
+      return clientX >= a.left && clientX <= a.right && clientY >= a.top && clientY <= a.bottom;
+    }
+
     function geom(i) {
       const a = arena.getBoundingClientRect();
-      const r = circles[i].getBoundingClientRect();
-      return { cx: r.left - a.left + r.width / 2, cy: r.top - a.top + r.height / 2, r: r.width / 2 };
+      const b = circles[i].getBoundingClientRect();
+      return {
+        cx: b.left + b.width / 2 - a.left - arena.clientLeft,
+        cy: b.top + b.height / 2 - a.top - arena.clientTop,
+        r: Math.min(b.width, b.height) / 2
+      };
     }
 
     function collectTips(now, geoms) {
       const tips = [];
+      const mouseOn = mouseTip
+        ? geoms.map((g) => Math.hypot(mouseTip.x - g.cx, mouseTip.y - g.cy) <= g.r * HIT_R)
+        : [false, false];
       camHands.forEach((h) => {
+        if (mouseOn[h.hand]) return;
         tips.push({ hand: h.hand, x: h.x, y: h.y, src: 'cam' });
         (h.tips || []).forEach((p) => tips.push({ hand: h.hand, x: p.x, y: p.y, src: 'cam-tip' }));
       });
@@ -347,6 +368,18 @@ export default {
       return tips;
     }
 
+    function pickTip(i, g, tips) {
+      const list = tips.filter((t) => (t.hand === i || t.hand === null) && Math.hypot(t.x - g.cx, t.y - g.cy) <= g.r * HIT_R);
+      if (!list.length) return null;
+      list.sort((a, b) => {
+        const ra = SRC_RANK[a.src] == null ? 9 : SRC_RANK[a.src];
+        const rb = SRC_RANK[b.src] == null ? 9 : SRC_RANK[b.src];
+        if (ra !== rb) return ra - rb;
+        return Math.hypot(a.x - g.cx, a.y - g.cy) - Math.hypot(b.x - g.cx, b.y - g.cy);
+      });
+      return list[0];
+    }
+
     function runDetect(now) {
       if (!landmarker || !stream || !alive || video.readyState < 2) return;
       const ts = Math.round(now);
@@ -356,7 +389,7 @@ export default {
       lastVideoTime = frame;
       lastDetectTs = ts;
       try {
-        camHands = mapHands(landmarker.detectForVideo(video, ts), video, arena.clientWidth, arena.clientHeight);
+        camHands = mapHands(landmarker.detectForVideo(video, ts), video, arena);
       } catch (err) {
         if (!/timestamp/i.test(String(err && err.message))) console.error(err);
       }
@@ -404,16 +437,14 @@ export default {
       }
       [0, 1].forEach((i) => {
         const g = geoms[i];
-        const tip = tips
-          .filter((t) => (t.hand === i || t.hand === null) && Math.hypot(t.x - g.cx, t.y - g.cy) <= g.r * 1.22)
-          .sort((a, b) => Math.hypot(a.x - g.cx, a.y - g.cy) - Math.hypot(b.x - g.cx, b.y - g.cy))[0];
+        const tip = pickTip(i, g, tips);
         const continuous = INSTRUMENT_BY_ID[config.instruments[i]].continuous;
         const bead = circles[i].querySelector('.air-bead');
         if (tip) {
           const rel = { rx: (tip.x - g.cx) / g.r, ry: (tip.y - g.cy) / g.r };
           pos[i] = rel;
-          circles[i].style.setProperty('--bx', `${rel.rx * 42}%`);
-          circles[i].style.setProperty('--by', `${rel.ry * 42}%`);
+          circles[i].style.setProperty('--bx', `${tip.x - g.cx}px`);
+          circles[i].style.setProperty('--by', `${tip.y - g.cy}px`);
           if (bead) bead.classList.add('is-on');
           const n = Math.max(1, sliceLabels(i).length);
           const slice = sliceIndex(rel.rx, rel.ry, n);
@@ -583,20 +614,35 @@ export default {
       if (on) ensureAudio().catch(() => {});
     }
 
-    arena.addEventListener('pointermove', (e) => {
-      const a = arena.getBoundingClientRect();
-      mouseTip = { x: e.clientX - a.left, y: e.clientY - a.top };
-    });
-    arena.addEventListener('pointerleave', () => (mouseTip = null));
+    function onPointerMove(e) {
+      if (!alive) return;
+      if (e.type === 'pointerup' && e.pointerType !== 'mouse') {
+        mouseTip = null;
+        return;
+      }
+      if (!pointerInArena(e.clientX, e.clientY)) {
+        mouseTip = null;
+        return;
+      }
+      mouseTip = clientToArena(e.clientX, e.clientY);
+    }
+    const onBlur = () => {
+      mouseTip = null;
+    };
+    window.addEventListener('pointermove', onPointerMove, { capture: true });
+    window.addEventListener('pointerdown', onPointerMove, { capture: true });
+    window.addEventListener('pointerup', onPointerMove, { capture: true });
+    window.addEventListener('blur', onBlur);
     arena.addEventListener('pointerdown', (e) => {
       ensureAudio().catch(() => {});
+      onPointerMove(e);
       const c = e.target.closest('[data-circle]');
       if (!c) return;
       const i = Number(c.dataset.circle);
       if (inside[i] && pos[i]) {
         const label = play(i, pos[i]);
-        const a = arena.getBoundingClientRect();
-        if (label) burst(e.clientX - a.left, e.clientY - a.top, INSTRUMENT_BY_ID[config.instruments[i]].color, label);
+        const p = clientToArena(e.clientX, e.clientY);
+        if (label) burst(p.x, p.y, INSTRUMENT_BY_ID[config.instruments[i]].color, label);
       }
     });
 
@@ -811,6 +857,10 @@ export default {
         clearTimeout(pointTimer);
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('keyup', onKeyUp);
+        window.removeEventListener('pointermove', onPointerMove, { capture: true });
+        window.removeEventListener('pointerdown', onPointerMove, { capture: true });
+        window.removeEventListener('pointerup', onPointerMove, { capture: true });
+        window.removeEventListener('blur', onBlur);
         if (window.__mmpAirPads) delete window.__mmpAirPads;
         if (stream) stream.getTracks().forEach((t) => t.stop());
         if (rec) stopRecording().then((item) => toast(`Gravação “${item.name}” salva na Galeria.`, 'ok')).catch(() => {});
