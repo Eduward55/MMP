@@ -1,11 +1,13 @@
-// Tetris fofo: peças nas cores do gato, WASD / setas.
+// Tetris fofo: peças nas cores do gato, WASD / setas, chiptune baixinho.
+import { createTetrisKit } from '../shared/audio.js';
 import { creatureSVG } from '../shared/creatures.js';
 import { getProfile, kv } from '../shared/store.js';
-import { el, toast } from '../shared/ui.js';
+import { el, startAudio, toast } from '../shared/ui.js';
 
 const COLS = 10;
 const ROWS = 20;
 const KEY = 'tetris';
+const VOL_DEFAULT = 70;
 const SHAPES = {
   I: [[1, 1, 1, 1]],
   O: [
@@ -56,6 +58,12 @@ function emptyGrid() {
   return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 }
 
+function clampVolume(n, fallback = VOL_DEFAULT) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return fallback;
+  return Math.max(0, Math.min(100, Math.round(v)));
+}
+
 export default {
   id: 'tetris',
   title: 'Tetris',
@@ -67,6 +75,11 @@ export default {
     const profile = getProfile();
     const saved = (await kv.get(KEY).catch(() => null)) || {};
     let best = Number(saved.best) || 0;
+    let volume = clampVolume(saved.volume, VOL_DEFAULT);
+    let sound = saved.sound !== false;
+    if (volume <= 0) sound = false;
+    let chip = null;
+    let boot = null;
     let grid = emptyGrid();
     let piece = null;
     let nextId = NAMES[Math.floor(Math.random() * NAMES.length)];
@@ -98,8 +111,20 @@ export default {
       el('span', { html: creatureSVG('cat', profile.cat, { size: 88, extraClass: 'is-idle', label: profile.cat.name }) }),
       el('span', { html: creatureSVG('otter', profile.otter, { size: 70, extraClass: 'is-dancing', label: profile.otter.name }) })
     );
-    const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Pausar');
-    const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => newGame() }, 'Nova partida');
+    const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => { armAudio(); togglePause(); } }, 'Pausar');
+    const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => { armAudio(); newGame(); } }, 'Nova partida');
+    const soundBtn = el('button', { class: 'btn btn--ghost btn--sm', type: 'button', onclick: () => toggleSound() }, '');
+    const volInput = el('input', {
+      class: 'range tz-vol',
+      type: 'range',
+      min: '0',
+      max: '100',
+      step: '1',
+      value: String(volume),
+      'aria-label': 'Volume',
+      oninput: (e) => setVolume(e.target.value)
+    });
+    const soundRow = el('div', { class: 'tz-sound' }, soundBtn, volInput);
 
     root.append(
       el(
@@ -112,12 +137,115 @@ export default {
           mascot,
           nums,
           el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Próxima'), nextBox),
-          el('div', { class: 'row-actions' }, pauseBtn, newBtn),
+          el('div', { class: 'row-actions' }, pauseBtn, newBtn, soundRow),
           el('p', { class: 'hint' }, '← → ou A D andam. ↑ / W gira. ↓ / S acelera. Espaço cai de uma vez. Esc pausa.')
         ),
         el('div', { class: 'tz-stage panel' }, canvas, overlay)
       )
     );
+
+    function liveGain() {
+      return sound ? volume / 100 : 0;
+    }
+
+    function applyGain() {
+      if (chip && typeof chip.setGain === 'function') chip.setGain(liveGain());
+    }
+
+    function syncMusic() {
+      if (chip && typeof chip.setMusic === 'function') chip.setMusic(Boolean(sound && volume > 0 && !paused && !over));
+    }
+
+    function refreshSoundUi() {
+      const on = sound && volume > 0;
+      soundBtn.textContent = `Som: ${on ? 'ligado' : 'desligado'}`;
+      soundBtn.setAttribute('aria-pressed', String(on));
+      volInput.value = String(volume);
+      volInput.setAttribute('aria-valuenow', String(volume));
+      volInput.title = `Volume ${volume}%`;
+    }
+
+    async function ensureAudio() {
+      if (chip) {
+        applyGain();
+        syncMusic();
+        return chip;
+      }
+      if (!sound || volume <= 0) return null;
+      if (!boot) {
+        boot = (async () => {
+          try {
+            const Tone = await startAudio();
+            if (!alive) return null;
+            if (chip) {
+              applyGain();
+              syncMusic();
+              return chip;
+            }
+            const kit = createTetrisKit(Tone, { gain: liveGain(), music: !paused && !over && sound && volume > 0 });
+            if (!alive) {
+              try {
+                kit.dispose();
+              } catch {}
+              return null;
+            }
+            chip = kit;
+            applyGain();
+            syncMusic();
+            return chip;
+          } catch {
+            chip = {
+              setGain() {},
+              setMusic() {},
+              move() {},
+              rotate() {},
+              soft() {},
+              hard() {},
+              clear() {},
+              level() {},
+              over() {},
+              dispose() {}
+            };
+            return chip;
+          }
+        })();
+      }
+      return boot;
+    }
+
+    function armAudio() {
+      ensureAudio().catch(() => {});
+    }
+
+    function cue(name, arg) {
+      ensureAudio()
+        .then((s) => {
+          if (s && typeof s[name] === 'function') s[name](arg);
+        })
+        .catch(() => {});
+    }
+
+    function toggleSound() {
+      if (sound && volume > 0) sound = false;
+      else {
+        sound = true;
+        if (volume <= 0) volume = VOL_DEFAULT;
+        armAudio();
+      }
+      applyGain();
+      syncMusic();
+      refreshSoundUi();
+      persist();
+    }
+
+    function setVolume(n) {
+      volume = clampVolume(n, volume);
+      sound = volume > 0;
+      applyGain();
+      syncMusic();
+      refreshSoundUi();
+      persist();
+    }
 
     function spawn() {
       const id = nextId;
@@ -126,6 +254,8 @@ export default {
       if (collides(piece.m, piece.x, piece.y)) {
         over = true;
         paused = false;
+        cue('over');
+        syncMusic();
         toast(`Fim de jogo · ${score} pontos`, 'info');
         showOverlay();
       }
@@ -198,17 +328,24 @@ export default {
         comboT = 0.9;
         lines += n;
         score += [0, 100, 300, 500, 800][n] * level * (combo > 1 ? combo : 1);
-        level = 1 + Math.floor(lines / 10);
+        const nextLevel = 1 + Math.floor(lines / 10);
+        const leveled = nextLevel > level;
+        level = nextLevel;
         dropMs = Math.max(120, 700 - (level - 1) * 50);
         if (score > best) best = score;
+        cue('clear', n);
+        if (leveled) cue('level');
       } else combo = 0;
     }
 
-    function move(dx, dy) {
+    function move(dx, dy, kind) {
       if (!piece || over || paused) return false;
+      const mode = kind || (dx !== 0 ? 'shift' : dy > 0 ? 'gravity' : 'shift');
       if (!collides(piece.m, piece.x + dx, piece.y + dy)) {
         piece.x += dx;
         piece.y += dy;
+        if (mode === 'shift') cue('move');
+        else if (mode === 'soft') cue('soft');
         return true;
       }
       if (dy > 0) {
@@ -223,19 +360,26 @@ export default {
     function spin() {
       if (!piece || over || paused) return;
       const m = rotate(piece.m);
-      if (!collides(m, piece.x, piece.y)) piece.m = m;
-      else if (!collides(m, piece.x - 1, piece.y)) {
+      let turned = false;
+      if (!collides(m, piece.x, piece.y)) {
+        piece.m = m;
+        turned = true;
+      } else if (!collides(m, piece.x - 1, piece.y)) {
         piece.x -= 1;
         piece.m = m;
+        turned = true;
       } else if (!collides(m, piece.x + 1, piece.y)) {
         piece.x += 1;
         piece.m = m;
+        turned = true;
       }
+      if (turned) cue('rotate');
     }
 
     function hardDrop() {
       if (!piece || over || paused) return;
-      while (move(0, 1)) {}
+      while (move(0, 1, 'hard')) {}
+      if (!over) cue('hard');
     }
 
     function cell(x, y, color, alpha = 1) {
@@ -333,13 +477,18 @@ export default {
       ].forEach(([k, v]) => nums.append(el('div', { class: 'stat' }, el('b', {}, String(v)), el('span', {}, k))));
       pauseBtn.textContent = paused ? 'Continuar' : 'Pausar';
       pauseBtn.disabled = over;
+      refreshSoundUi();
     }
 
     function showOverlay() {
       if (over) {
         overlay.hidden = false;
         overlay.innerHTML = '';
-        overlay.append(el('h2', {}, 'Fim de jogo'), el('p', {}, `${score} pontos · ${lines} linhas`), el('button', { class: 'btn btn--primary', onclick: () => newGame() }, 'De novo'));
+        overlay.append(
+          el('h2', {}, 'Fim de jogo'),
+          el('p', {}, `${score} pontos · ${lines} linhas`),
+          el('button', { class: 'btn btn--primary', onclick: () => { armAudio(); newGame(); } }, 'De novo')
+        );
       } else if (paused) {
         overlay.hidden = false;
         overlay.innerHTML = '';
@@ -350,6 +499,7 @@ export default {
     function togglePause() {
       if (over) return;
       paused = !paused;
+      syncMusic();
       showOverlay();
       hud();
     }
@@ -362,13 +512,14 @@ export default {
       dropMs = 700;
       over = false;
       paused = false;
+      syncMusic();
       spawn();
       hud();
       showOverlay();
     }
 
     function persist() {
-      return kv.set(KEY, { best: Math.max(best, score) }).catch(() => {});
+      return kv.set(KEY, { best: Math.max(best, score), sound, volume }).catch(() => {});
     }
 
     function loop(ts) {
@@ -381,7 +532,7 @@ export default {
         acc += dt;
         if (acc >= dropMs) {
           acc = 0;
-          move(0, 1);
+          move(0, 1, 'gravity');
         }
       }
       particles.forEach((p) => {
@@ -403,38 +554,57 @@ export default {
       const k = e.key.toLowerCase();
       if (k === 'escape') {
         e.preventDefault();
+        armAudio();
         togglePause();
         return;
       }
       if (over || paused) return;
       if (k === 'arrowleft' || k === 'a') {
         e.preventDefault();
-        move(-1, 0);
+        armAudio();
+        move(-1, 0, 'shift');
       } else if (k === 'arrowright' || k === 'd') {
         e.preventDefault();
-        move(1, 0);
+        armAudio();
+        move(1, 0, 'shift');
       } else if (k === 'arrowdown' || k === 's') {
         e.preventDefault();
-        move(0, 1);
+        armAudio();
+        move(0, 1, 'soft');
       } else if (k === 'arrowup' || k === 'w') {
         e.preventDefault();
+        armAudio();
         spin();
       } else if (k === ' ') {
         e.preventDefault();
+        armAudio();
         hardDrop();
       }
     };
     window.addEventListener('keydown', onKey);
+    refreshSoundUi();
     newGame();
     raf = requestAnimationFrame(loop);
 
     window.__mmpTetris = {
-      state: () => ({ score, lines, level, over, paused, piece: piece && { id: piece.id, x: piece.x, y: piece.y }, filled: grid.flat().filter(Boolean).length }),
+      state: () => ({
+        score,
+        lines,
+        level,
+        over,
+        paused,
+        sound,
+        volume,
+        piece: piece && { id: piece.id, x: piece.x, y: piece.y },
+        filled: grid.flat().filter(Boolean).length
+      }),
       move,
       rotate: spin,
       drop: hardDrop,
-      tick: () => move(0, 1),
-      newGame
+      tick: () => move(0, 1, 'gravity'),
+      newGame,
+      setVolume,
+      toggleSound
     };
 
     return {
@@ -447,6 +617,13 @@ export default {
         cancelAnimationFrame(raf);
         window.removeEventListener('keydown', onKey);
         persist();
+        if (chip && chip.dispose) {
+          try {
+            chip.dispose();
+          } catch {}
+        }
+        chip = null;
+        boot = null;
         if (window.__mmpTetris) delete window.__mmpTetris;
       }
     };
