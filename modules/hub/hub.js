@@ -69,7 +69,22 @@ export default {
       })
       .catch(() => {});
     appInfo()
-      .then((info) => footer.append(el('span', { class: 'hub__data', title: info.dataDir }, `v${info.version} · dados em ${info.dataDir}`)))
+      .then((info) => {
+        footer.append(el('span', { class: 'hub__data', title: info.dataDir }, `v${info.version} · dados em ${info.dataDir}`));
+        if (info.preview) {
+          footer.append(
+            el(
+              'a',
+              {
+                class: 'hub__download',
+                href: '/dist/MyMusicPlace-0.1.0-win-x64.zip',
+                download: 'MyMusicPlace-0.1.0-win-x64-portable.zip'
+              },
+              'Baixar Windows (zip com o .exe e o ícone do gato)'
+            )
+          );
+        }
+      })
       .catch(() => {});
 
     return {

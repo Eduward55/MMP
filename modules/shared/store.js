@@ -1,6 +1,7 @@
 // Ponte única com o processo principal (IPC). Todos os módulos usam isto para salvar/ler.
+import { ensureMmp } from './browser-shim.js';
 
-const api = window.mmp;
+const api = ensureMmp();
 
 const DEFAULT_PROFILE = {
   version: 1,

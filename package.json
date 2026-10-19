@@ -9,12 +9,13 @@
   "scripts": {
     "start": "electron .",
     "start:local-data": "electron . --local-data",
+    "preview": "node scripts/preview-server.mjs",
     "vendor": "node scripts/setup-vendor.js",
     "screenshots": "node scripts/screenshots.js",
     "check": "node scripts/check.js",
     "icon": "node scripts/build-icon.mjs",
     "dist": "npm run icon && electron-builder --publish never",
-    "dist:win": "npm run icon && electron-builder --win nsis --publish never",
+    "dist:win": "npm run icon && electron-builder --win zip --publish never",
     "dist:mac": "npm run icon && electron-builder --mac dmg --publish never",
     "termo:words": "node scripts/build-termo-words.mjs",
     "conexoes:check": "node scripts/build-conexoes.mjs",
@@ -96,9 +97,16 @@
     },
     "win": {
       "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
       "target": [
         {
           "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
           "arch": [
             "x64"
           ]

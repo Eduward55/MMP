@@ -18,6 +18,7 @@ Outros comandos:
 | Comando | O que faz |
 |---|---|
 | `npm run start:local-data` | Roda salvando os dados em `./data/user` em vez do `userData` do Electron |
+| `npm run preview` | Prévia no navegador em `http://127.0.0.1:47261` (o gato anima; dados ficam no localStorage) |
 | `npm run check` | Autoteste ponta a ponta dentro do Electron (Galeria, Meu Gato, Air Pads, Beat Cats, eventos, Studio com export WAV/WebM e webcam falsa, Termo, Conexões, Cat Typing, MediaPipe local, rede bloqueada) |
 | `npm run screenshots` | Gera PNGs do Hub, Meu Gato e Galeria em `out/screenshots/` |
 | `npm run termo:words` | Regera `data/termo/answers.json` e `valid.json` a partir de dicionários Hunspell e da lista de frequência (ver `data/termo/README.md`) |
@@ -35,11 +36,16 @@ Em Linux sem tela (CI/servidor), use o `xvfb`: `xvfb-run -a npm run check`.
 O app se chama **My Music Place**, usa o **ícone do gato** em `build/icon.png` e pede **permissão de câmera** (Air Pads e webcam do Studio). No macOS isso vai no `Info.plist` (`NSCameraUsageDescription`) e nos entitlements; no Windows o Chromium pergunta na hora, e o processo principal autoriza `camera` / `media`.
 
 ```bash
-npm run dist:win   # MyMusicPlace-0.1.0-win-x64-Setup.exe
+npm run dist:win   # instalador NSIS + zip portátil (ícone do gato pixel)
 npm run dist:mac   # MyMusicPlace-0.1.0-mac-universal.dmg  (só no macOS)
 ```
 
-Os artefatos saem em `dist/`. O instalador Windows cria atalho “My Music Place”; o DMG monta com o mesmo nome.
+Os artefatos saem em `dist/`:
+
+- `MyMusicPlace-0.1.0-win-x64-Setup.exe` — instalador (atalho “My Music Place”)
+- `MyMusicPlace-0.1.0-win-x64.zip` — pasta portátil; extraia e abra `My Music Place.exe`
+
+O NSIS completo no Linux pede Wine; nesta VM geramos o zip/.exe portátil. O instalador NSIS e o DMG saem na Action do GitHub (tag `v*`) quando o repositório existir.
 
 ### Release no GitHub (repo privado)
 

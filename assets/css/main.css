@@ -876,6 +876,14 @@ svg.pixel-icon {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.hub__download {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.hub__download:hover {
+  text-decoration: underline;
+}
 
 .mycat {
   display: grid;
