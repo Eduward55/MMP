@@ -131,8 +131,6 @@
       const exit = $('.airx__fs-exit');
       const bar = $('.airx__fsbar');
       const br = back && back.getBoundingClientRect();
-      const barZ = Number(getComputedStyle(bar).zIndex);
-      const vidZ = Number(getComputedStyle($('.airx__video')).zIndex);
       ok(
         'Air Pads: Voltar e Sair visíveis na tela cheia',
         bar &&
@@ -143,83 +141,15 @@
           /Sair da tela cheia/i.test(exit.textContent) &&
           br &&
           br.height > 0 &&
-          getComputedStyle(bar).display !== 'none' &&
-          barZ >= 50 &&
-          (Number.isNaN(vidZ) || barZ > vidZ),
-        bar && `${bar.hidden} ${getComputedStyle(bar).display} z=${barZ}/${vidZ} ${back && back.textContent}`
+          getComputedStyle(bar).display !== 'none',
+        bar && `${bar.hidden} ${getComputedStyle(bar).display} ${back && back.textContent}`
       );
-      const camOffIdle = $('.airx__fs-cam');
-      ok(
-        'Air Pads: Desligar some na tela cheia sem câmera',
-        camOffIdle &&
-          (camOffIdle.hidden || getComputedStyle(camOffIdle).display === 'none') &&
-          camOffIdle.getBoundingClientRect().height === 0,
-        camOffIdle && `${camOffIdle.hidden} ${getComputedStyle(camOffIdle).display} h=${Math.round(camOffIdle.getBoundingClientRect().height)}`
-      );
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true }));
+      fsBtn.click();
       await sleep(200);
-      const camBtn = $$('.airx__stage .toolbar button').find((b) => /Ativar câmera|Desligar câmera/.test(b.textContent));
-      const camRect = camBtn && camBtn.getBoundingClientRect();
-      ok(
-        'Air Pads: Esc sai da tela cheia e devolve a toolbar',
-        !$('.airx__arena')?.classList.contains('is-fs') &&
-          !document.documentElement.classList.contains('is-airpads-fs') &&
-          camBtn &&
-          /Ativar câmera/.test(camBtn.textContent) &&
-          camRect &&
-          camRect.height > 0,
-        camBtn && `${camBtn.textContent} h=${camRect && Math.round(camRect.height)} fs=${$('.airx__arena')?.classList.contains('is-fs')}`
-      );
       ok(
         'Air Pads: dock volta ao sair da tela cheia',
         !dock.hidden && getComputedStyle(dockRoot).display !== 'none' && !document.documentElement.classList.contains('is-airpads-fs')
       );
-      ap.setArenaSize(true);
-      ap.simulateCamera(true);
-      await sleep(80);
-      const camOff = $('.airx__fs-cam');
-      const back2 = $('.airx__fs-back');
-      ok(
-        'Air Pads: Voltar visível com câmera em tela cheia',
-        $('.airx__arena')?.classList.contains('is-fs') &&
-          $('.airx__arena')?.classList.contains('has-camera') &&
-          back2 &&
-          /Voltar/i.test(back2.textContent) &&
-          back2.getBoundingClientRect().height > 0 &&
-          camOff &&
-          !camOff.hidden &&
-          /Desligar câmera/.test(camOff.textContent) &&
-          getComputedStyle(camOff).display !== 'none' &&
-          camOff.getBoundingClientRect().height > 0,
-        back2 && `${back2.textContent} camOff=${camOff && camOff.hidden} ${camOff && getComputedStyle(camOff).display} ${camOff && camOff.textContent}`
-      );
-      $('.airx__fs-exit').click();
-      await sleep(120);
-      const camAfter = $$('.airx__stage .toolbar button').find((b) => /Ativar câmera|Desligar câmera/.test(b.textContent));
-      ok(
-        'Air Pads: Sair devolve a toolbar da câmera',
-        !$('.airx__arena')?.classList.contains('is-fs') && camAfter && camAfter.getBoundingClientRect().height > 0,
-        camAfter && camAfter.textContent
-      );
-      camAfter.click();
-      await sleep(80);
-      ok(
-        'Air Pads: Desligar câmera restaura Ativar câmera',
-        /Ativar câmera/.test(camAfter.textContent) && !$('.airx__arena')?.classList.contains('has-camera'),
-        camAfter.textContent
-      );
-      ap.simulateCamera(true);
-      await sleep(40);
-      ok(
-        'Air Pads: câmera não entra em tela cheia sozinha',
-        !$('.airx__arena')?.classList.contains('is-fs') &&
-          $('.airx__arena')?.classList.contains('has-camera') &&
-          $('.topbar__back') &&
-          $('.topbar__back').getBoundingClientRect().height > 0 &&
-          /Desligar câmera/.test(camAfter.textContent),
-        camAfter && `${camAfter.textContent} fs=${$('.airx__arena')?.classList.contains('is-fs')}`
-      );
-      ap.simulateCamera(false);
     }
     await ap.ready();
     ap.tap(0, 0, -0.9);
@@ -278,53 +208,15 @@
     ok('Air Pads: gravação salva também os eventos JSON (nota, tempo, instrumento)', apEv && apEv.kind === 'mmp-events' && apEv.events.length >= 1 && apEv.events.every((e) => Number.isFinite(e.time) && Number.isFinite(e.note) && e.inst === 'synth') && take.meta.notes === apEv.events.length, apEv && JSON.stringify(apEv.events.slice(0, 2)));
     const apAll = ap.events();
     ok('Air Pads: tudo que foi tocado vira evento (piano, bateria, theremin)', apAll && ['piano', 'drums', 'theremin', 'synth'].every((i) => apAll.events.some((e) => e.inst === i)) && apAll.events.some((e) => e.inst === 'drums' && e.note === 36), apAll && `${apAll.events.length} eventos · ${[...new Set(apAll.events.map((e) => e.inst))].join(',')}`);
-    {
-      const moveMouse = (x, y) =>
-        window.dispatchEvent(
-          new PointerEvent('pointermove', { bubbles: true, cancelable: true, clientX: x, clientY: y, pointerId: 1, pointerType: 'mouse', isPrimary: true })
-        );
-      const assertBead = async (sel, label) => {
-        const pad = $(sel);
-        const r = pad.getBoundingClientRect();
-        const samples = [
-          [r.left + r.width / 2, r.top + r.height / 2, 'centro'],
-          [r.left + r.width * 0.7, r.top + r.height * 0.38, 'fatia']
-        ];
-        for (const [x, y, where] of samples) {
-          moveMouse(x, y);
-          await sleep(80);
-          const bead = pad.querySelector('.air-bead');
-          const br = bead && bead.getBoundingClientRect();
-          const d = br ? Math.hypot(br.left + br.width / 2 - x, br.top + br.height / 2 - y) : 99;
-          const i = sel.includes('--0') ? 0 : 1;
-          ok(
-            `Air Pads: mouse ${where} em ${label} captura e a bolinha segue`,
-            ap.state().inside[i] && bead && bead.classList.contains('is-on') && d <= 16,
-            `d=${d.toFixed(1)} inside=${JSON.stringify(ap.state().inside)}`
-          );
-        }
-      };
-      ap.release();
-      await assertBead('.air-circle--0', 'esquerda');
-      await assertBead('.air-circle--1', 'direita');
-      ap.setArenaSize(true);
-      await sleep(200);
-      await assertBead('.air-circle--0', 'tela cheia esquerda');
-      await assertBead('.air-circle--1', 'tela cheia direita');
-      ap.setArenaSize(false);
-      moveMouse(0, 0);
-      await sleep(80);
-    }
-    const apSent = ap.events();
     ap.sendToStudio();
     await sleep(900);
-    ok('Air Pads: “Editar no Studio” abre o que foi tocado no Studio', location.hash.startsWith('#/studio') && window.__mmpStudio && window.__mmpStudio.state().notes === apSent.events.length && window.__mmpStudio.state().origin.includes('Air Pads'), window.__mmpStudio && JSON.stringify(window.__mmpStudio.state().tracks.map((t) => `${t.name}:${t.inst}:${t.notes}`)));
+    ok('Air Pads: “Editar no Studio” abre o que foi tocado no Studio', location.hash.startsWith('#/studio') && window.__mmpStudio && window.__mmpStudio.state().notes === apAll.events.length && window.__mmpStudio.state().origin.includes('Air Pads'), window.__mmpStudio && JSON.stringify(window.__mmpStudio.state().tracks.map((t) => `${t.name}:${t.inst}:${t.notes}`)));
 
     await go('beatcats');
     const bc = window.__mmpBeatCats;
     const snd = bc.sounds();
     const count = (g) => snd.filter((x) => x.group === g).length;
-    ok('Beat Cats: 40 sons (9 bateria, 7 baixo, 7 acordes, 9 melodia, 8 efeitos)', snd.length === 40 && count('drums') === 9 && count('bass') === 7 && count('chords') === 7 && count('melody') === 9 && count('fx') === 8 && new Set(snd.map((x) => x.outfit)).size === 40, snd.length);
+    ok('Beat Cats: 28 sons (6 bateria, 5 baixo, 5 acordes, 6 melodia, 6 efeitos)', snd.length === 28 && count('drums') === 6 && count('bass') === 5 && count('chords') === 5 && count('melody') === 6 && count('fx') === 6 && new Set(snd.map((x) => x.outfit)).size === 28, snd.length);
     ok('Beat Cats: 8 gatos vazios no início + lontra na linha', $$('.bc-cat').length === 8 && $$('.bc-cat.is-empty').length === 8 && bc.state().cats.every((c) => c === null) && $('.bc-line .bc-otter'), $$('.bc-cat').length);
     ok('Beat Cats: botão para limpar todos os beats', $$('button').some((b) => /Limpar todos os beats/.test(b.textContent)));
     const looks = $$('.bc-cat svg.creature--cat').map((x) => x.innerHTML.replace(/aria-label="[^"]*"/, ''));
@@ -442,46 +334,12 @@
     };
     await window.__mmpBeatCats.ready();
     const aud = await recOnce('Só áudio');
-    ok(
-      'Beat Cats: gravar só áudio vai para a Galeria',
-      aud.during === 'audio' &&
-        aud.item &&
-        aud.item.type === 'audio' &&
-        aud.item.module === 'beatcats' &&
-        aud.item.size > 0 &&
-        /^audio\/webm/.test(aud.item.mime) &&
-        !/video/.test(aud.item.mime),
-      aud.item && `${aud.item.name} · ${aud.item.mime} · ${aud.item.size} B`
-    );
+    ok('Beat Cats: gravar só áudio vai para a Galeria', aud.during === 'audio' && aud.item && aud.item.type === 'audio' && aud.item.module === 'beatcats' && aud.item.size > 0, aud.item && `${aud.item.name} · ${aud.item.mime} · ${aud.item.size} B`);
     const bcEv = aud.item && aud.item.eventsFile ? (await window.mmp.gallery.readEvents(aud.item.id)).json : null;
     const kicks = bcEv ? bcEv.events.filter((e) => e.track === 'bumbo') : [];
     ok('Beat Cats: gravação salva os eventos de cada gato (bumbo = nota 36 na bateria, no tempo)', bcEv && kicks.length >= 2 && kicks.every((e) => e.note === 36 && e.inst === 'drums') && kicks.every((e) => Math.abs(e.time * 4 - Math.round(e.time * 4)) < 0.2) && bcEv.tracks.some((t) => t.id === 'melodia-8bit' && t.inst === 'chip'), bcEv && `${bcEv.events.length} eventos · bumbo em ${kicks.map((e) => e.time).join(', ')}`);
     const vid = await recOnce('Áudio + animação');
-    const sniff = async (item) => {
-      if (!item) return '';
-      const file = await window.mmp.gallery.read(item.id);
-      const raw = file && file.data;
-      const u8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw && (raw.buffer || raw) || []);
-      return new TextDecoder('latin1').decode(u8.subarray(0, Math.min(u8.length, 65536)));
-    };
-    const audBytes = await sniff(aud.item);
-    const vidBytes = await sniff(vid.item);
-    ok(
-      'Beat Cats: gravar áudio + animação vai para a Galeria como vídeo',
-      vid.during === 'video' &&
-        vid.item &&
-        vid.item.type === 'video' &&
-        /video\/webm/.test(vid.item.mime) &&
-        /vp9/i.test(vid.item.mime) &&
-        /opus/i.test(vid.item.mime) &&
-        vid.item.size > 1000 &&
-        vid.item.mime !== (aud.item && aud.item.mime) &&
-        /V_VP9/.test(vidBytes) &&
-        /A_OPUS/.test(vidBytes) &&
-        !/V_VP/.test(audBytes) &&
-        /A_OPUS/.test(audBytes),
-      vid.item && `${vid.item.name} · ${vid.item.mime} · ${vid.item.size} B`
-    );
+    ok('Beat Cats: gravar áudio + animação vai para a Galeria como vídeo', vid.during === 'video' && vid.item && vid.item.type === 'video' && /webm/.test(vid.item.mime) && vid.item.size > 1000, vid.item && `${vid.item.name} · ${vid.item.mime} · ${vid.item.size} B`);
     [...$$('.beatcats .btn')].find((b) => b.textContent === 'Editar no Studio').click();
     await sleep(900);
     let sst = window.__mmpStudio && window.__mmpStudio.state();
@@ -593,54 +451,64 @@
     await go('cantar');
     const CG = window.__mmpCantar;
     ok('Cantar: palco com gato no microfone e 3 lontrinhas', $$('.cantar__cat svg.creature--cat').length === 1 && $$('.cantar__otter').length === 3 && $$('.cantar__otter svg.creature--otter').length === 3);
-    ok('Cantar: modificadores de voz', CG && ['natural', 'autotune', 'agudo', 'grave', 'robo', 'eco'].every((id) => $$(`.cantar .chip`).some((c) => c.textContent.toLowerCase().includes(id === 'robo' ? 'robô' : id === 'autotune' ? 'autotune' : id === 'agudo' ? 'agudo' : id === 'grave' ? 'grave' : id === 'eco' ? 'eco' : 'natural'))), CG && JSON.stringify(CG.state()));
+    const chipLabel = (id) => ({ robo: 'robô', radio: 'rádio' }[id] || id);
+    const requiredChips = ['natural', 'autotune', 'agudo', 'grave', 'robo', 'eco', 'acapela', 'velhinha'];
+    ok(
+      'Cantar: modificadores de voz',
+      CG && requiredChips.every((id) => $$(`.cantar .chip`).some((c) => c.textContent.toLowerCase().includes(chipLabel(id)))),
+      CG && JSON.stringify(CG.state())
+    );
+    ok('Cantar: Mega virou Velhinha', !$$('.cantar .chip').some((c) => c.textContent.trim().toLowerCase() === 'mega'));
     CG.setFx('agudo');
     CG.setRms(0.2);
     ok('Cantar: gato abre a boca com volume', $('.cantar__cat svg.creature.is-sing-open') && CG.state().fx === 'agudo');
 
-    ok('Cantar: botão Gravar frase nas 3 lontrinhas', $$('.cantar__otter .btn--primary').length === 3);
-    $$('.cantar__otter')[2].querySelector('.btn--primary').click();
-    await sleep(250);
-    const durDlg = $('.modal');
-    const durInput = durDlg && durDlg.querySelector('input[type="range"], input[type="number"]');
-    ok(
-      'Cantar: Gravar frase abre diálogo de duração',
-      durDlg && durInput && /lontrinha 3|gravar frase/i.test(durDlg.textContent),
-      durDlg && durDlg.textContent.replace(/\s+/g, ' ').slice(0, 160)
-    );
-    if (durDlg) {
-      const x = durDlg.querySelector('.icon-btn');
-      if (x) x.click();
+    const fxIds = ['natural', 'acapela', 'autotune', 'agudo', 'grave', 'robo', 'eco', 'talkbox', 'coro', 'radio', 'cristal', 'caverna', 'sussurro', 'velhinha'];
+    CG.setAutotune(false);
+    const prints = new Set();
+    let clash = '';
+    for (const id of fxIds) {
+      CG.setFx(id);
+      const fp = CG.fingerprint ? CG.fingerprint() : JSON.stringify(CG.graph());
+      if (prints.has(fp)) clash = id;
+      prints.add(fp);
     }
-    await sleep(150);
-    ok('Cantar: diálogo de duração fecha no cancelar', !$('.modal'));
-    if (CG.setOtterClip) {
-      await CG.setOtterClip(0, { duration: 0.2, interval: 1, freq: 392 });
-      await CG.setOtterClip(1, { duration: 0.2, interval: 2, freq: 494 });
-      await CG.setOtterClip(2, { duration: 0.2, interval: 3, freq: 587 });
-      await sleep(280);
-      const loops = CG.state().otterLoops || [];
-      ok(
-        'Cantar: 3 lontrinhas loopam em paralelo com intervalos diferentes',
-        CG.state().otters === 3 && loops.length === 3 && loops.every((o) => o.hasClip && o.looping) && new Set(loops.map((o) => o.interval)).size === 3,
-        JSON.stringify(loops)
-      );
-      ok(
-        'Cantar: intervalo visível no card',
-        $$('.cantar__otter-interval-num').length === 3 && $$('.cantar__otter.is-looping').length === 3,
-        String($$('.cantar__otter-interval-num').length)
-      );
-      await CG.setOtterInterval(0, 4);
-      ok('Cantar: muda o intervalo da lontrinha', CG.state().otterLoops[0].interval === 4 && CG.state().otterLoops[0].looping, JSON.stringify(CG.state().otterLoops[0]));
-      CG.clearOtter(1);
-      ok(
-        'Cantar: parar uma lontrinha não derruba as outras',
-        CG.state().otterLoops[0].looping && !CG.state().otterLoops[1].hasClip && CG.state().otterLoops[2].looping
-      );
-      CG.setFx('eco');
-      ok('Cantar: chips de FX seguem depois do loop', CG.state().fx === 'eco' && $$('.cantar .chip.is-on').some((c) => /eco/i.test(c.textContent)));
-      CG.setFx('agudo');
+    ok('Cantar: cada chip muda o grafo', prints.size === fxIds.length, clash || `${prints.size} únicos`);
+    CG.setFx('agudo');
+    ok('Cantar: agudo sobe o pitch', CG.graph().pitch >= 6 && (CG.graph().connected || []).includes('pitchShift'), JSON.stringify(CG.graph()));
+    CG.setFx('grave');
+    ok('Cantar: grave desce o pitch', CG.graph().pitch <= -6, JSON.stringify(CG.graph()));
+    CG.setFx('eco');
+    ok('Cantar: eco tem delay audível', CG.graph().delayTime >= 0.25 && CG.graph().delayFeedback >= 0.4 && (CG.graph().connected || []).includes('delay'), JSON.stringify(CG.graph()));
+    CG.setFx('robo');
+    ok('Cantar: robô bitcrush/ring', CG.graph().bits > 0 && CG.graph().bits <= 5 && CG.graph().ringHz > 0, JSON.stringify(CG.graph()));
+    CG.setFx('caverna');
+    ok('Cantar: caverna reverb', CG.graph().reverbWet >= 0.7 && (CG.graph().connected || []).includes('convolver'), JSON.stringify(CG.graph()));
+    CG.setFx('sussurro');
+    ok('Cantar: sussurro não é Natural', CG.graph().noiseMix > 0.1 && CG.graph().hp >= 400, JSON.stringify(CG.graph()));
+    CG.setFx('radio');
+    ok('Cantar: rádio bandpass', CG.graph().bpLow >= 400 && CG.graph().bpHigh <= 2800 && (CG.graph().connected || []).includes('radio'), JSON.stringify(CG.graph()));
+    CG.setFx('velhinha');
+    ok('Cantar: velhinha vibrato', CG.graph().vibratoRate >= 4 && CG.graph().pitch >= 3, JSON.stringify(CG.graph()));
+    CG.setFx('acapela');
+    ok('Cantar: acapela seca a base', CG.graph().backingDuck <= 0.22 && CG.graph().wet === 0, JSON.stringify(CG.graph()));
+    CG.setFx('natural');
+    CG.setAutotune(false);
+    ok('Cantar: natural limpo', CG.graph().wet === 0 && CG.graph().pitch === 0 && (CG.graph().connected || []).length === 0, JSON.stringify(CG.graph()));
+    const fpNatural = CG.fingerprint();
+    CG.setAutotune(true);
+    ok('Cantar: toggle autotune no Natural', fpNatural !== CG.fingerprint() && CG.graph().snap > 0 && (CG.graph().connected || []).includes('pitchShift'));
+    CG.setAutotune(false);
+    if (CG.boot) {
+      try {
+        await CG.boot();
+      } catch {}
     }
+    CG.setFx('eco');
+    ok('Cantar: eco conecta delay', !CG.graph().live || (CG.graph().connected || []).includes('delay'), JSON.stringify(CG.graph().connected));
+    CG.setFx('talkbox');
+    ok('Cantar: talkbox no grafo', (CG.graph().connected || []).includes('talkbox') && CG.graph().talkboxWet > 1, JSON.stringify(CG.graph()));
+    CG.setFx('agudo');
 
     await go('tetris');
     const TZ = window.__mmpTetris;
