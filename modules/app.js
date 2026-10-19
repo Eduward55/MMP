@@ -39,7 +39,6 @@ export const MODULES = [
 const loaded = { hub };
 const META = Object.fromEntries([hub, ...MODULES].map((m) => [m.id, m]));
 
-console.log('[mmp] app module');
 const app = document.getElementById('app');
 let current = null;
 let currentSave = null;

@@ -711,7 +711,8 @@ svg.creature:focus-visible {
 .creature-root,
 .creature .layer-tail,
 .creature .layer-eyes {
-  transform-box: view-box;
+  /* fill-box: view-box + infinite SVG animation wedges Chromium style recalc. */
+  transform-box: fill-box;
 }
 .creature--cat:not(.is-reacting) .creature-root {
   animation: cat-float 2.5s steps(1) infinite;
@@ -1352,8 +1353,6 @@ html.is-airpads-fs #dock-root,
 html.is-recording #dock-root,
 html:fullscreen #dock-root,
 html:-webkit-full-screen #dock-root,
-html:has(:fullscreen) #dock-root,
-html:has(:-webkit-full-screen) #dock-root,
 body:has(.airx.is-arena-fs) #dock-root,
 body:has(.airx__arena.is-fs) #dock-root,
 body:has(.airx .btn--rec.is-active) #dock-root,
