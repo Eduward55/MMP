@@ -1,13 +1,28 @@
 /* ---------- BEAT CATS ---------- */
 .beatcats {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  grid-template-areas:
+    'stage stage'
+    'desk palette';
+  gap: 16px;
   align-items: start;
 }
-.bc-main,
-.bc-side {
+.bc-stage-wrap {
+  grid-area: stage;
   min-width: 0;
+}
+.bc-main {
+  grid-area: desk;
+  min-width: 0;
+}
+.bc-side {
+  grid-area: palette;
+  min-width: 0;
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 88px);
+  overflow: auto;
 }
 .bc-opt {
   display: flex;
@@ -27,9 +42,11 @@
 .bc-stage {
   position: relative;
   display: block;
-  padding: 14px 10px 16px;
+  padding: 16px 12px 18px;
   overflow: hidden;
-  background: var(--surface);
+  background:
+    radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 55%),
+    var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
@@ -44,8 +61,8 @@
 }
 .bc-cats {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
   flex: 1;
   min-width: 0;
 }
@@ -57,8 +74,8 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 6px 2px 6px;
-  min-height: 148px;
+  padding: 10px 4px 10px;
+  min-height: 188px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -77,7 +94,7 @@
 .bc-cat__art {
   position: relative;
   z-index: 1;
-  width: 88px;
+  width: 118px;
   max-width: 100%;
   transform-origin: 50% 100%;
 }
@@ -249,7 +266,7 @@
   justify-content: flex-end;
   gap: 4px;
   padding: 6px 4px 6px;
-  flex: 0 0 92px;
+  flex: 0 0 110px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -480,6 +497,14 @@ body.is-dragging * {
 @media (max-width: 1180px) {
   .beatcats {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      'stage'
+      'desk'
+      'palette';
+  }
+  .bc-side {
+    position: static;
+    max-height: none;
   }
 }
 @media (max-width: 1100px) {
@@ -506,13 +531,16 @@ body.is-dragging * {
     gap: 8px;
   }
   .bc-cat {
-    min-height: 150px;
+    min-height: 160px;
   }
   .bc-cat__art {
-    width: 92px;
+    width: 100px;
   }
   .bc-otter__art {
     width: 64px;
+  }
+  .bc-main .toolbar {
+    flex-wrap: wrap;
   }
 }
 @media (prefers-reduced-motion: reduce) {

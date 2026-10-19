@@ -138,7 +138,7 @@ export default {
       const g = s && GROUP_BY_ID[s.group];
       c.className = `bc-cat ${current ? 'is-active' : 'is-empty'} ${s ? `bc-cat--${s.group}` : ''} ${pending.has(i) ? (target ? 'is-pending' : 'is-leaving') : ''}`;
       c.style.setProperty('--c', g ? g.color : '#2a2a32');
-      const svg = creatureSVG('cat', catLook(i, shown), { size: 88, label: members[i].name }).replace('</svg>', `${MOUTH}</svg>`);
+      const svg = creatureSVG('cat', catLook(i, shown), { size: 118, label: members[i].name }).replace('</svg>', `${MOUTH}</svg>`);
       c.innerHTML = `
         <div class="bc-cat__spot" aria-hidden="true"></div>
         <div class="bc-cat__art">${svg}</div>
@@ -548,6 +548,7 @@ export default {
       el(
         'div',
         { class: 'beatcats' },
+        el('section', { class: 'panel bc-stage-wrap' }, stage, roundBar),
         el(
           'section',
           { class: 'panel bc-main' },
@@ -563,15 +564,13 @@ export default {
             clearBtn,
             studioBtn
           ),
-          el('div', { class: 'form-grid form-grid--tight' }, el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome do beat'), nameInput), el('div', { class: 'field field--end' }, status)),
-          stage,
-          roundBar
+          el('div', { class: 'form-grid form-grid--tight' }, el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome do beat'), nameInput), el('div', { class: 'field field--end' }, status))
         ),
         el(
           'section',
           { class: 'panel bc-side' },
           el('div', { class: 'panel__head' }, el('h2', {}, 'Acessórios sonoros'), el('span', { class: 'pill' }, `${SOUNDS.length} sons`)),
-          el('p', { class: 'hint' }, 'Arraste (mouse ou dedo) um acessório para um gato: ele entra no loop cantando e dançando. Arraste para fora ou toque no gato para silenciar. Toque num acessório e depois num gato também funciona. Toque na lontra (ou tecla O) para o efeito especial.'),
+          el('p', { class: 'hint' }, 'Arraste um acessório para um gato. Toque na lontra (ou O) para o splash.'),
           palette
         )
       )

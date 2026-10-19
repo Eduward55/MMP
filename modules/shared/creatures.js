@@ -44,11 +44,9 @@ function otterLook(look = {}) {
 }
 
 function drawHindPaws(body, y, paw, pad) {
-  body.ellipse(13, y, 3.6, 2.4, paw);
-  body.ellipse(27, y, 3.6, 2.4, paw);
-  body.points([[11, y - 2], [13, y - 2], [15, y - 2], [25, y - 2], [27, y - 2], [29, y - 2]], pad);
-  body.set(13, y, pad);
-  body.set(27, y, pad);
+  body.ellipse(10, y, 3.1, 1.8, paw);
+  body.ellipse(30, y, 3.1, 1.8, paw);
+  body.points([[9, y - 1], [11, y - 1], [29, y - 1], [31, y - 1]], pad);
 }
 
 function drawFrontPaws(body, y, fur, paw) {
@@ -83,16 +81,20 @@ function drawCat(look) {
   if (coat.stripes) tail.points([[31, 33], [32, 29], [31, 25]], coat.stripe, 2);
   if (coat.id === 'tuxedo') tail.points([[30, 24]], coat.light, 2);
 
-  body.ellipse(20, 30, 9, 7, coat.fur);
+  body.ellipse(20, 29.5, 9, 6.6, coat.fur);
   body.ellipse(20, 18, 10, 8, coat.fur);
   body.tri([11, 15], [13, 7], [18, 11], coat.fur);
   body.tri([29, 15], [27, 7], [22, 11], coat.fur);
   body.tri([13, 13], [14, 9], [16, 12], coat.ear);
   body.tri([27, 13], [26, 9], [24, 12], coat.ear);
-  body.ellipse(20, 31, 5, 5, coat.light);
   body.ellipse(20, 21, 4, 2.5, coat.light);
   drawFrontPaws(body, 32, coat.fur, coat.paw);
   drawHindPaws(body, 37, coat.paw, coat.ear);
+  for (let x = 16; x <= 24; x++) {
+    for (let y = 33; y <= 36; y++) {
+      if (x >= 18 && x <= 22) body.set(x, y, coat.fur);
+    }
+  }
   if (coat.stripes) {
     body.points([[17, 12], [17, 13], [20, 11], [20, 12], [20, 13], [23, 12], [23, 13]], coat.stripe);
     body.points([[11, 18], [12, 18], [11, 20], [12, 20], [28, 18], [29, 18], [28, 20], [29, 20]], coat.stripe);
@@ -106,11 +108,10 @@ function drawCat(look) {
   body.points([[19, 23], [21, 23]], MOUTH);
   body.points([[13, 21], [14, 21], [26, 21], [27, 21]], BLUSH);
 
-  for (const ex of [14, 24]) {
-    eyes.rect(ex, 16, 3, 4, eye);
-    eyes.rect(ex + 1, 17, 1, 3, '#140a1e');
+  for (const ex of [15, 24]) {
+    eyes.rect(ex, 16, 2, 2, eye);
+    eyes.set(ex + 1, 17, '#140a1e');
     eyes.set(ex, 16, '#ffffff');
-    eyes.set(ex + 2, 19, 'rgba(255,255,255,0.55)');
   }
 
   return { coat, body, tail, eyes, anchors: CAT_ANCHORS, outline: coat.outline, glow: coat.glow };
@@ -140,7 +141,7 @@ function drawCatRear(look) {
   tail.points(tailPts, coat.fur, 2);
   if (coat.stripes) tail.points([[8, 32], [7, 27], [8, 22]], coat.stripe, 2);
 
-  body.ellipse(20, 31, 9, 7, coat.fur);
+  body.ellipse(20, 30, 9, 6.6, coat.fur);
   body.ellipse(20, 18, 10, 8, coat.fur);
   body.tri([11, 14], [13, 5], [18, 11], coat.fur);
   body.tri([29, 14], [27, 5], [22, 11], coat.fur);
@@ -189,21 +190,21 @@ function drawOtter(look = {}) {
   body.ellipse(20, 17, 8.5, 7, c.fur);
   body.ellipse(12.5, 11.5, 1.8, 1.8, c.dark);
   body.ellipse(27.5, 11.5, 1.8, 1.8, c.dark);
-  body.ellipse(20, 20, 5, 3, c.light);
-  body.ellipse(20, 30, 4.5, 6.5, c.light);
+  body.ellipse(20, 20, 4.5, 2.6, c.light);
+  body.ellipse(20, 26.5, 3, 3.6, c.light);
   body.ellipse(12, 26, 2.6, 2.2, c.fur);
   body.ellipse(28, 26, 2.6, 2.2, c.fur);
   body.ellipse(12, 27.4, 2.4, 1.6, c.dark);
   body.ellipse(28, 27.4, 2.4, 1.6, c.dark);
   body.points([[11, 25], [13, 25], [27, 25], [29, 25]], c.light);
   drawHindPaws(body, 37, c.dark, c.light);
-  body.points([[19, 18], [20, 18], [21, 18], [20, 19]], MOUTH);
-  body.points([[19, 21], [21, 21]], MOUTH);
-  body.points([[16, 20], [17, 21], [24, 20], [23, 21]], c.dark);
+  body.points([[20, 18], [20, 19]], MOUTH);
+  body.points([[19, 21], [20, 22], [21, 21]], MOUTH);
+  body.points([[15, 20], [25, 20]], c.dark);
   body.points([[13, 19], [14, 19], [26, 19], [27, 19]], BLUSH);
 
   for (const ex of [15, 24]) {
-    eyes.rect(ex, 15, 2, 3, eye);
+    eyes.rect(ex, 15, 2, 2, eye);
     eyes.set(ex + 1, 16, '#140a1e');
     eyes.set(ex, 15, '#ffffff');
   }

@@ -80,6 +80,12 @@ export default {
     let last = 0;
     let raf = 0;
     let alive = true;
+    let particles = [];
+    let flashRows = [];
+    let combo = 0;
+    let comboText = '';
+    let comboT = 0;
+    let shake = 0;
 
     const canvas = el('canvas', { class: 'tz-canvas', width: '300', height: '600' });
     const ctx = canvas.getContext('2d');
@@ -150,23 +156,52 @@ export default {
       );
     }
 
+    function burst(row, color) {
+      for (let i = 0; i < 18; i++) {
+        particles.push({
+          x: Math.random() * COLS,
+          y: row + Math.random(),
+          vx: (Math.random() - 0.5) * 8,
+          vy: -2 - Math.random() * 4,
+          life: 0.45 + Math.random() * 0.25,
+          color
+        });
+      }
+    }
+
+    function ghostY() {
+      if (!piece) return 0;
+      let y = piece.y;
+      while (!collides(piece.m, piece.x, y + 1)) y++;
+      return y;
+    }
+
     function clearLines() {
       let n = 0;
-      grid = grid.filter((row) => {
+      const gone = [];
+      grid = grid.filter((row, y) => {
         if (row.every(Boolean)) {
           n++;
+          gone.push(y);
+          burst(y, COLORS[row.find(Boolean)]);
           return false;
         }
         return true;
       });
       while (grid.length < ROWS) grid.unshift(Array(COLS).fill(0));
       if (n) {
+        combo += 1;
+        flashRows = gone;
+        shake = 0.18;
+        const names = ['', 'Linha!', 'Dupla!', 'Tripla!', 'TETRIS!'];
+        comboText = combo > 1 ? `Combo x${combo} · ${names[n]}` : names[n];
+        comboT = 0.9;
         lines += n;
-        score += [0, 100, 300, 500, 800][n] * level;
+        score += [0, 100, 300, 500, 800][n] * level * (combo > 1 ? combo : 1);
         level = 1 + Math.floor(lines / 10);
         dropMs = Math.max(120, 700 - (level - 1) * 50);
         if (score > best) best = score;
-      }
+      } else combo = 0;
     }
 
     function move(dx, dy) {
@@ -203,30 +238,79 @@ export default {
       while (move(0, 1)) {}
     }
 
-    function cell(x, y, color) {
+    function cell(x, y, color, alpha = 1) {
       const w = canvas.width / COLS;
       const h = canvas.height / ROWS;
+      ctx.globalAlpha = alpha;
       ctx.fillStyle = color;
       ctx.fillRect(x * w + 1, y * h + 1, w - 2, h - 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.25)';
-      ctx.fillRect(x * w + 3, y * h + 3, 5, 5);
+      ctx.fillStyle = 'rgba(255,255,255,0.28)';
+      ctx.fillRect(x * w + 3, y * h + 3, 6, 6);
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      ctx.fillRect(x * w + 1, y * h + h - 6, w - 2, 4);
+      ctx.globalAlpha = 1;
     }
 
     function draw() {
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0f0f12';
+      const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0f0f12';
+      const line = getComputedStyle(document.documentElement).getPropertyValue('--hairline').trim() || '#2a2a32';
+      ctx.save();
+      if (shake > 0) ctx.translate((Math.random() - 0.5) * 6, (Math.random() - 0.5) * 4);
+      ctx.fillStyle = bg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const cw = canvas.width / COLS;
+      const ch = canvas.height / ROWS;
+      ctx.strokeStyle = line;
+      ctx.globalAlpha = 0.35;
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= COLS; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * cw, 0);
+        ctx.lineTo(x * cw, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= ROWS; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * ch);
+        ctx.lineTo(canvas.width, y * ch);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
       for (let y = 0; y < ROWS; y++) {
         for (let x = 0; x < COLS; x++) {
           if (grid[y][x]) cell(x, y, COLORS[grid[y][x]]);
         }
       }
+      flashRows.forEach((y) => {
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.fillRect(0, y * ch, canvas.width, ch);
+      });
       if (piece) {
+        const gy = ghostY();
+        piece.m.forEach((row, r) =>
+          row.forEach((v, c) => {
+            if (v) cell(piece.x + c, gy + r, COLORS[piece.id], 0.22);
+          })
+        );
         piece.m.forEach((row, r) =>
           row.forEach((v, c) => {
             if (v) cell(piece.x + c, piece.y + r, COLORS[piece.id]);
           })
         );
       }
+      particles.forEach((p) => {
+        ctx.globalAlpha = Math.max(0, p.life * 2);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x * cw, p.y * ch, 4, 4);
+      });
+      ctx.globalAlpha = 1;
+      if (comboT > 0 && comboText) {
+        ctx.fillStyle = `rgba(255,255,255,${Math.min(1, comboT * 2)})`;
+        ctx.font = 'bold 22px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(comboText, canvas.width / 2, 48);
+      }
+      ctx.restore();
     }
 
     function paintNext() {
@@ -292,6 +376,7 @@ export default {
       if (!last) last = ts;
       const dt = ts - last;
       last = ts;
+      const sec = dt / 1000;
       if (!paused && !over) {
         acc += dt;
         if (acc >= dropMs) {
@@ -299,6 +384,16 @@ export default {
           move(0, 1);
         }
       }
+      particles.forEach((p) => {
+        p.x += p.vx * sec;
+        p.y += p.vy * sec;
+        p.vy += 12 * sec;
+        p.life -= sec;
+      });
+      particles = particles.filter((p) => p.life > 0);
+      if (comboT > 0) comboT -= sec;
+      if (shake > 0) shake -= sec;
+      if (flashRows.length && comboT < 0.7) flashRows = [];
       draw();
       raf = requestAnimationFrame(loop);
     }

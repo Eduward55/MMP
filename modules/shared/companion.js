@@ -5,7 +5,7 @@ import { el, esc } from './ui.js';
 
 const CAT_MOODS = ['heart', 'wink', 'bounce', 'spin', 'stretch', 'meow'];
 const OTTER_MOODS = ['splash', 'wiggle', 'bounce', 'peek', 'clap', 'spin'];
-const ALL_REACTS = [...new Set([...CAT_MOODS, ...OTTER_MOODS, 'sparkle', 'bob', 'sway', 'bow', 'conduct', 'sing', 'float', 'party', 'bloom', 'jingle'])];
+const ALL_REACTS = [...new Set([...CAT_MOODS, ...OTTER_MOODS, 'sparkle', 'bob', 'sway', 'bow', 'conduct', 'sing', 'float', 'party', 'bloom', 'jingle', 'zap', 'flutter'])];
 const OUTFIT_REACT = {
   coroa: 'sparkle',
   fone: 'bob',
@@ -26,8 +26,17 @@ const OUTFIT_REACT = {
   maid: 'bow',
   sueter: 'bounce',
   capa: 'sway',
-  boina: 'wiggle'
+  boina: 'wiggle',
+  harpa: 'jingle',
+  raio: 'zap',
+  bolha: 'float',
+  cristal: 'sparkle',
+  antena: 'wiggle',
+  asas: 'flutter',
+  visor: 'wink',
+  aureola: 'sparkle'
 };
+let lastReact = '';
 
 function outfitKinds(svg) {
   return [...svg.querySelectorAll('[class*="acc--"]')]
@@ -46,8 +55,11 @@ export function reactCreature(fig, svg) {
   const otter = svg.classList.contains('creature--otter');
   const moods = otter ? OTTER_MOODS : CAT_MOODS;
   const kinds = outfitKinds(svg);
-  const fromOutfit = kinds.map((id) => OUTFIT_REACT[id]).find(Boolean);
-  const kind = fromOutfit || moods[Math.floor(Math.random() * moods.length)];
+  const fromOutfit = kinds.map((id) => OUTFIT_REACT[id]).filter(Boolean);
+  const pool = [...new Set([...fromOutfit, ...moods])].filter((k) => k !== lastReact);
+  const pick = pool.length ? pool : moods;
+  const kind = pick[Math.floor(Math.random() * pick.length)];
+  lastReact = kind;
   const host = fig || svg.parentElement;
   clearReact(svg);
   void svg.offsetWidth;

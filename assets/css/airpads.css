@@ -46,7 +46,7 @@
 .air-circle {
   --c: var(--accent);
   position: absolute;
-  top: 58%;
+  top: 56%;
   width: min(34%, 62cqh, 60%);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
@@ -55,7 +55,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 0;
   z-index: 2;
   color: var(--text);
   background: color-mix(in srgb, var(--c) 10%, transparent);
@@ -104,28 +104,55 @@
   color: color-mix(in srgb, var(--text) 92%, var(--c));
   transform: rotate(calc((var(--i) + 0.5) * 360deg / var(--n))) translateY(-38%) rotate(calc((var(--i) + 0.5) * -360deg / var(--n)));
 }
-.air-circle__name,
-.air-circle__note {
+.air-circle__name {
   position: relative;
   z-index: 1;
-}
-.air-circle__name {
   font-family: var(--font);
-  font-size: clamp(0.85rem, 1.5vw, 1.15rem);
+  font-size: clamp(0.78rem, 1.3vw, 1rem);
   font-weight: 650;
   color: var(--c);
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   padding: 2px 8px;
   border-radius: 999px;
+  pointer-events: none;
 }
 .air-circle__note {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  min-height: 1.1em;
   font-family: var(--font);
-  font-size: clamp(0.72rem, 1.1vw, 0.85rem);
+  font-size: clamp(0.68rem, 1vw, 0.8rem);
+  font-weight: 700;
   color: var(--text);
   background: var(--bg);
-  padding: 4px 8px;
+  padding: 2px 8px;
   border: 1px solid var(--c);
   border-radius: 999px;
+  pointer-events: none;
+}
+.air-circle__note:empty {
+  visibility: hidden;
+}
+.air-bead {
+  position: absolute;
+  top: 6%;
+  left: calc(50% + var(--bx, 0%));
+  z-index: 3;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--c);
+  border: 2px solid #fff;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--c) 70%, transparent);
+}
+.air-bead.is-on {
+  opacity: 1;
 }
 .air-axis {
   position: absolute;
@@ -150,24 +177,26 @@
 .air-hud {
   --c: var(--accent);
   position: absolute;
-  top: 12px;
+  top: 10px;
   z-index: 5;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 150px;
-  padding: 8px 12px;
+  gap: 2px;
+  min-width: 132px;
+  max-width: 42%;
+  padding: 8px 10px;
   background: var(--bg);
   border: 1px solid var(--c);
   border-radius: 10px;
   pointer-events: none;
+  text-align: left;
 }
 .air-hud--0 {
-  left: 12px;
+  left: 10px;
 }
 .air-hud--1 {
-  right: 12px;
-  text-align: right;
+  right: 10px;
+  left: auto;
 }
 .air-hud__hand {
   font-family: var(--font);
@@ -241,6 +270,19 @@
   border-radius: 999px;
 }
 
+.airx.is-cam .airx__arena,
+.airx__arena.is-fs,
+.airx__arena:fullscreen {
+  max-height: none;
+  height: min(86vh, 920px);
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+.airx__arena:fullscreen {
+  height: 100vh;
+  width: 100vw;
+  background: #0c0c10;
+}
 .airx__dist {
   margin: 0 0 4px;
 }
@@ -283,5 +325,9 @@
   .air-hud {
     min-width: 0;
     max-width: 46%;
+    padding: 6px 8px;
+  }
+  .airx .toolbar {
+    flex-wrap: wrap;
   }
 }

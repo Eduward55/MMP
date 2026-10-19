@@ -816,6 +816,23 @@ svg.creature:focus-visible {
 .creature--otter.is-react-clap .layer-body {
   animation: otter-clap 0.5s ease;
 }
+.creature.is-react-zap .acc--raio {
+  animation: sparkle 0.45s ease;
+}
+.creature.is-react-zap {
+  animation: hop 0.35s ease;
+}
+.creature.is-react-flutter .acc--asas {
+  animation: flutter-acc 0.7s ease;
+}
+@keyframes flutter-acc {
+  25% {
+    transform: rotate(-12deg) scale(1.05);
+  }
+  75% {
+    transform: rotate(12deg) scale(1.05);
+  }
+}
 .acc--lacinho {
   animation: bow-idle 2.4s ease-in-out infinite;
 }
@@ -1086,15 +1103,24 @@ svg.creature:focus-visible {
   position: absolute;
   top: -10px;
   right: -6px;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   font-family: var(--font);
-  font-size: 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 700;
   color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
   cursor: pointer;
+  filter: none;
+  backdrop-filter: none;
+  image-rendering: pixelated;
+  transform: none;
+}
+.dock.is-collapsed {
+  filter: none;
+  backdrop-filter: none;
 }
 .dock.is-collapsed .dock__bubble,
 .dock.is-collapsed .dock__duo {
@@ -1102,8 +1128,16 @@ svg.creature:focus-visible {
 }
 .dock.is-collapsed .dock__toggle {
   position: static;
-  width: 34px;
-  height: 34px;
+  width: 48px;
+  height: 48px;
+  font-size: 1.4rem;
+  background: var(--surface);
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  box-shadow: none;
+  filter: none;
+  backdrop-filter: none;
+  image-rendering: pixelated;
 }
 .dock[hidden] {
   display: none;
@@ -1381,6 +1415,28 @@ svg.creature:focus-visible {
 .eye-dot.is-on {
   border-color: var(--accent);
 }
+.outfit-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.outfit-tab {
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 650;
+  padding: 4px 10px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.outfit-tab.is-on {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: transparent;
+}
 .outfits {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
@@ -1553,6 +1609,12 @@ svg.creature:focus-visible {
   }
   .stage {
     min-height: 280px;
+  }
+  .toolbar {
+    flex-wrap: wrap;
+  }
+  .page__main {
+    padding-bottom: 28px;
   }
 }
 

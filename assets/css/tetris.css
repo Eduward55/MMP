@@ -14,9 +14,15 @@
 .tz-canvas {
   width: min(100%, 320px);
   height: auto;
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 55%),
+    var(--bg);
   border: 1px solid var(--border);
   image-rendering: pixelated;
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.tz-mascot svg.creature.is-idle {
+  animation: hop 1.4s ease-in-out infinite;
 }
 .tz-overlay {
   position: absolute;

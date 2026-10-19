@@ -7,7 +7,7 @@ import { createEventLog, eventsSummary, openInStudio } from '../shared/events.js
 import { gallery, getProfile, kv } from '../shared/store.js';
 import { themeTokens } from '../shared/theme.js';
 import { el, startAudio, stamp, toast } from '../shared/ui.js';
-import { loadHandLandmarker, mapHands } from './hands.js';
+import { loadHandLandmarker, mapHands, resetHandSmooth } from './hands.js';
 import {
   DRUM_ZONES,
   INSTRUMENTS,
@@ -104,8 +104,9 @@ export default {
     const demoBtn = el('button', { class: 'btn btn--ghost', 'aria-pressed': 'false' }, 'Simular dedos: Não');
     const recBtn = el('button', { class: 'btn btn--rec', 'aria-pressed': 'false' }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar: Não'));
     const timer = el('span', { class: 'pill' }, '00:00');
-    const status = el('p', { class: 'muted airx__status' }, 'Sem câmera? Passe o mouse pelos círculos (vale como ponta do dedo) ou segure A e L.');
-    const distHint = el('p', { class: 'airx__dist hint' }, 'Quando a câmera pegar bem: dê um passo pra trás se a imagem estiver grande. Não encoste na lente.');
+    const status = el('p', { class: 'muted airx__status' }, 'Mouse nos círculos ou A / L. Câmera: tela cheia ajuda.');
+    const distHint = el('p', { class: 'airx__dist hint', hidden: true }, '');
+    const fsBtn = el('button', { class: 'btn btn--ghost' }, 'Tela cheia');
 
     const chipRows = [0, 1].map(() => el('div', { class: 'chips', role: 'radiogroup' }));
     const scaleSel = el('select', { class: 'input input--select', 'aria-label': 'Escala' }, ...SCALES.map((s) => el('option', { value: s.id }, s.name)));
@@ -147,8 +148,7 @@ export default {
       const slices = labels
         .map((lab, k) => `<span class="air-slice" style="--i:${k};--n:${n}">${lab}</span>`)
         .join('');
-      const extra = inst.continuous ? '<span class="air-axis air-axis--x">grave ◀ X ▶ agudo</span>' : '';
-      c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span>${extra}<span class="air-circle__name">${inst.name}</span><span class="air-circle__note">${lastLabel[i] || '—'}</span>`;
+      c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span><span class="air-circle__note">${lastLabel[i] || ''}</span><span class="air-bead" aria-hidden="true"></span><span class="air-circle__name">${inst.name}</span>`;
     }
 
     function renderHud(i) {
@@ -254,8 +254,10 @@ export default {
       else ensureAudio().then(fire).catch(() => {});
       const show = () => {
         lastLabel[i] = label;
-        circles[i].querySelector('.air-circle__note').textContent = label;
-        huds[i].querySelector('.air-hud__note').textContent = label;
+        const noteEl = circles[i].querySelector('.air-circle__note');
+        const hudEl = huds[i].querySelector('.air-hud__note');
+        if (noteEl) noteEl.textContent = label;
+        if (hudEl) hudEl.textContent = label;
         pulse(i);
       };
       if (time !== undefined && Tone) Tone.Draw.schedule(show, time);
@@ -275,8 +277,10 @@ export default {
       else ensureAudio().catch(() => {});
       const label = `${midiName(m)} · ${Math.round(vol * 100)}%`;
       lastLabel[i] = label;
-      circles[i].querySelector('.air-circle__note').textContent = label;
-      huds[i].querySelector('.air-hud__note').textContent = label;
+      const noteEl = circles[i].querySelector('.air-circle__note');
+      const hudEl = huds[i].querySelector('.air-hud__note');
+      if (noteEl) noteEl.textContent = label;
+      if (hudEl) hudEl.textContent = label;
       if (changed) pulse(i);
     }
 
@@ -317,7 +321,10 @@ export default {
 
     function collectTips(now, geoms) {
       const tips = [];
-      camHands.forEach((h) => tips.push({ hand: h.hand, x: h.x, y: h.y, src: 'cam' }));
+      camHands.forEach((h) => {
+        tips.push({ hand: h.hand, x: h.x, y: h.y, src: 'cam' });
+        (h.tips || []).forEach((p) => tips.push({ hand: h.hand, x: p.x, y: p.y, src: 'cam-tip' }));
+      });
       if (mouseTip) tips.push({ ...mouseTip, hand: null, src: 'mouse' });
       keyHeld.forEach((i) => tips.push({ hand: i, x: geoms[i].cx, y: geoms[i].cy - geoms[i].r * 0.2, src: 'key' }));
       if (demo) {
@@ -358,11 +365,16 @@ export default {
       }
       [0, 1].forEach((i) => {
         const g = geoms[i];
-        const tip = tips.find((t) => (t.hand === i || t.hand === null) && Math.hypot(t.x - g.cx, t.y - g.cy) <= g.r);
+        const tip = tips.find((t) => (t.hand === i || t.hand === null) && Math.hypot(t.x - g.cx, t.y - g.cy) <= g.r * 1.06);
         const continuous = INSTRUMENT_BY_ID[config.instruments[i]].continuous;
+        const bead = circles[i].querySelector('.air-bead');
         if (tip) {
           const rel = { rx: (tip.x - g.cx) / g.r, ry: (tip.y - g.cy) / g.r };
           pos[i] = rel;
+          if (bead) {
+            bead.classList.add('is-on');
+            bead.style.setProperty('--bx', `${rel.rx * 38}%`);
+          }
           if (!inside[i]) {
             inside[i] = true;
             hits[i]++;
@@ -380,7 +392,10 @@ export default {
             holdTheremin(i, rel);
             if (Math.random() < 0.25) effects.push({ kind: 'spark', x: tip.x, y: tip.y, vx: (Math.random() - 0.5) * 2, vy: -1 - Math.random() * 2, color: INSTRUMENT_BY_ID.theremin.color, t0: now, size: 4 });
           }
-        } else if (inside[i]) {
+        } else {
+          if (bead) bead.classList.remove('is-on');
+        }
+        if (!tip && inside[i]) {
           inside[i] = false;
           pos[i] = null;
           circles[i].classList.remove('is-inside');
@@ -443,11 +458,16 @@ export default {
       ctx.globalAlpha = 1;
 
       tips.forEach((t) => {
+        if (t.src === 'cam-tip') return;
         const color = t.hand === null ? theme.text : INSTRUMENT_BY_ID[config.instruments[t.hand]].color;
         ctx.fillStyle = color;
-        ctx.fillRect(Math.round(t.x - 7), Math.round(t.y - 7), 14, 14);
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, 7, 0, Math.PI * 2);
+        ctx.fill();
         ctx.fillStyle = theme.bg;
-        ctx.fillRect(Math.round(t.x - 3), Math.round(t.y - 3), 6, 6);
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, 3, 0, Math.PI * 2);
+        ctx.fill();
       });
     }
 
@@ -462,16 +482,28 @@ export default {
       camBtn.disabled = true;
       status.textContent = 'Carregando o detector de mãos local (MediaPipe)…';
       try {
-        const [lm, s] = await Promise.all([loadHandLandmarker(), navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false })]);
+        const [lm, s] = await Promise.all([
+          loadHandLandmarker(),
+          navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user', frameRate: { ideal: 30 } },
+            audio: false
+          })
+        ]);
         if (!alive) return s.getTracks().forEach((t) => t.stop());
         landmarker = lm;
         stream = s;
+        resetHandSmooth();
         video.srcObject = s;
         await video.play();
         arena.classList.add('has-camera');
+        root.querySelector('.airx')?.classList.add('is-cam');
+        distHint.hidden = false;
         camBtn.textContent = 'Câmera ligada';
-        status.textContent = 'Mostre as duas mãos! Encoste a ponta do indicador em cada círculo.';
+        status.textContent = 'Mostre as palmas. Qualquer ponta de dedo toca o círculo.';
         ensureAudio().catch(() => {});
+        try {
+          if (arena.requestFullscreen) await arena.requestFullscreen();
+        } catch {}
       } catch (err) {
         console.error(err);
         camBtn.disabled = false;
@@ -574,6 +606,14 @@ export default {
 
     camBtn.addEventListener('click', enableCamera);
     demoBtn.addEventListener('click', () => setDemo(!demo));
+    fsBtn.addEventListener('click', async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else if (arena.requestFullscreen) await arena.requestFullscreen();
+      } catch {
+        arena.classList.toggle('is-fs');
+      }
+    });
     scaleSel.addEventListener('change', () => {
       config.scale = scaleSel.value;
       log.set({ scale: config.scale });
@@ -621,7 +661,7 @@ export default {
           ),
           distHint
         ),
-        el('section', { class: 'panel airx__stage' }, el('div', { class: 'toolbar' }, camBtn, demoBtn, recBtn, timer, studioBtn, status), arena)
+        el('section', { class: 'panel airx__stage' }, el('div', { class: 'toolbar' }, camBtn, fsBtn, demoBtn, recBtn, timer, studioBtn, status), arena)
       )
     );
     renderAll();

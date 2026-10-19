@@ -1,4 +1,4 @@
-// Cantar: voz no microfone, autotune, mix com arpejo/beat e lontrinhas em loop.
+// Cantar: voz no microfone, autotune, talkbox e mix com arpejo/beat.
 import { createOutputRecorder } from '../shared/audio.js';
 import { creatureSVG } from '../shared/creatures.js';
 import { beatFromJson } from '../beatcats/beatcats.js';
@@ -6,6 +6,7 @@ import { LOOP_STEPS, SOUND_BY_ID, makeCaptured } from '../beatcats/sounds.js';
 import { createEventLog } from '../shared/events.js';
 import { gallery, getProfile } from '../shared/store.js';
 import { el, startAudio, stamp, toast } from '../shared/ui.js';
+import { createTalkbox } from './vocoder.js';
 
 const FX = [
   { id: 'natural', name: 'Natural' },
@@ -13,26 +14,52 @@ const FX = [
   { id: 'agudo', name: 'Agudo' },
   { id: 'grave', name: 'Grave' },
   { id: 'robo', name: 'Robô' },
-  { id: 'eco', name: 'Eco' }
+  { id: 'eco', name: 'Eco' },
+  { id: 'talkbox', name: 'Talkbox' },
+  { id: 'coro', name: 'Coro' },
+  { id: 'mega', name: 'Mega' }
 ];
 const SCALE = [0, 2, 3, 5, 7, 8, 10];
 const OTTER_SLOTS = 3;
 
-function detectPitch(buf, sr) {
-  let best = -1;
-  let bestCorr = 0;
-  const minL = Math.floor(sr / 900);
-  const maxL = Math.floor(sr / 80);
-  for (let lag = minL; lag <= maxL; lag++) {
-    let corr = 0;
-    for (let i = 0; i < buf.length - lag; i++) corr += buf[i] * buf[i + lag];
-    if (corr > bestCorr) {
-      bestCorr = corr;
-      best = lag;
+function detectPitchYin(buf, sr) {
+  const half = Math.floor(buf.length / 2);
+  if (half < 32) return 0;
+  const yin = new Float32Array(half);
+  for (let tau = 1; tau < half; tau++) {
+    let sum = 0;
+    for (let i = 0; i < half; i++) {
+      const d = buf[i] - buf[i + tau];
+      sum += d * d;
+    }
+    yin[tau] = sum;
+  }
+  yin[0] = 1;
+  let run = 0;
+  for (let tau = 1; tau < half; tau++) {
+    run += yin[tau];
+    yin[tau] *= tau / (run || 1);
+  }
+  const thresh = 0.12;
+  let tau = Math.floor(sr / 900);
+  const maxTau = Math.min(half - 2, Math.floor(sr / 70));
+  let found = 0;
+  for (; tau < maxTau; tau++) {
+    if (yin[tau] < thresh) {
+      while (tau + 1 < maxTau && yin[tau + 1] < yin[tau]) tau++;
+      found = tau;
+      break;
     }
   }
-  if (best < 0 || bestCorr < 0.01) return 0;
-  return sr / best;
+  if (!found) return 0;
+  const x0 = yin[found - 1];
+  const x1 = yin[found];
+  const x2 = yin[found + 1];
+  const denom = 2 * (2 * x1 - x2 - x0);
+  const better = found + (denom ? (x2 - x0) / denom : 0);
+  const hz = sr / better;
+  if (hz < 70 || hz > 900) return 0;
+  return hz;
 }
 
 function snapHz(hz) {
@@ -54,12 +81,16 @@ function snapHz(hz) {
   return 440 * Math.pow(2, (nearest - 69) / 12);
 }
 
+function setWet(node, v) {
+  if (node && node.wet && typeof node.wet.value === 'number') node.wet.value = v;
+}
+
 export default {
   id: 'cantar',
   title: 'Cantar',
   icon: 'cantar',
   accent: '#f472b6',
-  desc: 'Cante no microfone, coloque autotune e misture com arpejo ou um beat da Galeria.',
+  desc: 'Cante no microfone, coloque autotune ou talkbox e misture com arpejo ou um beat da Galeria.',
   async mount(root) {
     const profile = getProfile();
     let alive = true;
@@ -74,10 +105,18 @@ export default {
     let crusher = null;
     let voiceGain = null;
     let backingGain = null;
+    let dryGain = null;
+    let fxGain = null;
+    let hpf = null;
+    let comp = null;
+    let talkbox = null;
     let rec = null;
     let recTimer = 0;
     let raf = 0;
     let rms = 0;
+    let pitchHz = 0;
+    let pitchFrame = 0;
+    let mouthOpen = false;
     let fx = 'natural';
     let autotune = true;
     let backing = 'arpeggio';
@@ -99,14 +138,21 @@ export default {
     const syncBtn = el('button', { class: 'btn btn--ghost btn--sm', 'aria-pressed': 'true' }, 'Sync: Sim');
     const bpmInput = el('input', { class: 'range', type: 'range', min: '70', max: '140', value: String(bpm), 'aria-label': 'BPM' });
     const bpmLabel = el('span', { class: 'pill' }, `${bpm} BPM`);
-    const mixInput = el('input', { class: 'range', type: 'range', min: '0', max: '100', value: '70', 'aria-label': 'Mix da voz' });
+    const mixInput = el('input', { class: 'range', type: 'range', min: '0', max: '100', value: '78', 'aria-label': 'Mix da voz' });
     const backingSel = el('select', { class: 'input input--select', 'aria-label': 'Base' });
     const catStage = el('div', { class: 'cantar__cat' });
     const ottersRow = el('div', { class: 'cantar__otters' });
+    const meterFill = el('div', { class: 'cantar__meter-fill' });
+    const meter = el('div', { class: 'cantar__meter', title: 'Volume da voz' }, meterFill);
 
-    function renderCat() {
-      const open = rms > 0.06;
-      catStage.innerHTML = creatureSVG('cat', { ...profile.cat, outfit: { ...profile.cat.outfit, hand: 'microfone' } }, { size: 220, label: `${profile.cat.name} cantando`, extraClass: open ? 'is-sing-open' : 'is-idle' });
+    function paintCat() {
+      const svg = catStage.querySelector('svg.creature');
+      if (!svg) {
+        catStage.innerHTML = creatureSVG('cat', { ...profile.cat, outfit: { ...profile.cat.outfit, hand: 'microfone' } }, { size: 220, label: `${profile.cat.name} cantando`, extraClass: mouthOpen ? 'is-sing-open' : 'is-idle' });
+        return;
+      }
+      svg.classList.toggle('is-sing-open', mouthOpen);
+      svg.classList.toggle('is-idle', !mouthOpen);
     }
 
     function renderOtters() {
@@ -169,18 +215,19 @@ export default {
       backing = backingSel.value;
     }
 
-    function setWet(node, v) {
-      if (node && node.wet && typeof node.wet.value === 'number') node.wet.value = v;
-    }
-
     function applyFx() {
       if (!pitchShift) return;
-      setWet(chorus, fx === 'eco' ? 0.2 : 0.05);
-      setWet(delay, fx === 'eco' ? 0.35 : 0.02);
-      setWet(crusher, fx === 'robo' ? 0.7 : 0);
+      const talk = fx === 'talkbox' || fx === 'mega';
+      const wantTune = autotune && (fx === 'autotune' || fx === 'natural' || fx === 'talkbox' || fx === 'mega' || fx === 'coro');
+      setWet(chorus, fx === 'eco' || fx === 'coro' || fx === 'mega' ? (fx === 'eco' ? 0.45 : 0.55) : 0.04);
+      setWet(delay, fx === 'eco' || fx === 'coro' || fx === 'mega' ? (fx === 'eco' ? 0.42 : 0.22) : 0);
+      setWet(crusher, fx === 'robo' || fx === 'mega' ? (fx === 'robo' ? 0.55 : 0.28) : 0);
       if (fx === 'agudo') pitchShift.pitch = 7;
       else if (fx === 'grave') pitchShift.pitch = -5;
-      else if (!autotune) pitchShift.pitch = 0;
+      else if (!wantTune) pitchShift.pitch = 0;
+      if (dryGain) dryGain.gain.value = fx === 'natural' && !autotune ? 0.95 : fx === 'talkbox' ? 0.12 : fx === 'robo' ? 0.18 : 0.42;
+      if (fxGain) fxGain.gain.value = fx === 'natural' && !autotune ? 0.08 : talk ? 0.15 : 0.85;
+      if (talkbox) talkbox.setWet(talk ? (fx === 'mega' ? 1.1 : 1.35) : 0);
     }
 
     async function ensureAudio() {
@@ -188,12 +235,20 @@ export default {
         audioPromise = (async () => {
           Tone = await startAudio();
           if (!alive) return;
-          voiceGain = new Tone.Gain(0.7).toDestination();
-          backingGain = new Tone.Gain(0.45).toDestination();
-          pitchShift = new Tone.PitchShift({ pitch: 0, windowSize: 0.1 }).connect(voiceGain);
-          chorus = new Tone.Chorus(4, 2.5, 0.4).start().connect(pitchShift);
-          delay = new Tone.FeedbackDelay('8n', 0.25).connect(chorus);
-          crusher = new Tone.BitCrusher(4).connect(delay);
+          const ctx = Tone.getContext().rawContext;
+          voiceGain = new Tone.Gain(0.82).toDestination();
+          backingGain = new Tone.Gain(0.4).toDestination();
+          dryGain = new Tone.Gain(0.42).connect(voiceGain);
+          fxGain = new Tone.Gain(0.85);
+          pitchShift = new Tone.PitchShift({ pitch: 0, windowSize: 0.04 }).connect(fxGain);
+          chorus = new Tone.Chorus(3.2, 2.8, 0.35).start().connect(pitchShift);
+          delay = new Tone.FeedbackDelay('8n', 0.22).connect(chorus);
+          crusher = new Tone.BitCrusher(6).connect(delay);
+          fxGain.connect(voiceGain);
+          hpf = new Tone.Filter({ type: 'highpass', frequency: 80, Q: 0.7 });
+          comp = new Tone.Compressor({ threshold: -22, ratio: 3.2, attack: 0.004, release: 0.12, knee: 8 });
+          talkbox = createTalkbox(ctx);
+          Tone.connect(talkbox.output, voiceGain);
           Tone.Transport.bpm.value = bpm;
           applyFx();
         })();
@@ -207,18 +262,31 @@ export default {
 
     async function startMic() {
       await ensureAudio();
-      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: false });
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: true,
+          channelCount: 1
+        },
+        video: false
+      });
       const src = Tone.context.createMediaStreamSource(stream);
-      micNode = new Tone.Gain(1);
+      micNode = new Tone.Gain(1.15);
       Tone.connect(src, micNode);
       analyser = Tone.context.createAnalyser();
       analyser.fftSize = 2048;
-      src.connect(analyser);
-      micNode.connect(crusher);
+      analyser.smoothingTimeConstant = 0.35;
+      micNode.connect(hpf);
+      hpf.connect(comp);
+      Tone.connect(comp, analyser);
+      Tone.connect(comp, dryGain);
+      Tone.connect(comp, crusher);
+      Tone.connect(comp, talkbox.input);
       recBtn.disabled = false;
       micBtn.textContent = 'Microfone ligado';
       micBtn.disabled = true;
-      status.textContent = 'Pode cantar. Autotune cola a nota na escala; Sync prende no BPM da base.';
+      status.textContent = 'Cante perto do microfone. Natural deixa a voz limpa; Talkbox é o caninho robótico.';
       if (sync) Tone.Transport.start('+0.05');
       tickMouth();
       await startBacking();
@@ -229,17 +297,29 @@ export default {
       const buf = new Float32Array(analyser.fftSize);
       analyser.getFloatTimeDomainData(buf);
       let sum = 0;
-      for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
-      rms = Math.sqrt(sum / buf.length);
-      if (autotune && (fx === 'autotune' || fx === 'natural') && pitchShift) {
-        const hz = detectPitch(buf, Tone.context.sampleRate);
-        const snapped = snapHz(hz);
-        if (snapped && hz) {
-          const semis = 12 * Math.log2(snapped / hz);
-          pitchShift.pitch = Math.max(-12, Math.min(12, semis));
+      const n = Math.min(buf.length, 1024);
+      for (let i = 0; i < n; i++) sum += buf[i] * buf[i];
+      rms = Math.sqrt(sum / n);
+      const open = rms > 0.025;
+      if (open !== mouthOpen) {
+        mouthOpen = open;
+        paintCat();
+      }
+      meterFill.style.width = `${Math.min(100, rms * 420)}%`;
+      pitchFrame++;
+      const wantTune = autotune && (fx === 'autotune' || fx === 'natural' || fx === 'talkbox' || fx === 'mega' || fx === 'coro');
+      if (wantTune && pitchFrame % 2 === 0) {
+        const hz = detectPitchYin(buf, Tone.context.sampleRate);
+        if (hz) {
+          pitchHz = hz;
+          const snapped = snapHz(hz);
+          if (snapped && pitchShift && (fx === 'autotune' || fx === 'natural' || fx === 'coro' || fx === 'mega')) {
+            const semis = 12 * Math.log2(snapped / hz);
+            pitchShift.pitch = Math.max(-12, Math.min(12, semis * (fx === 'autotune' ? 1 : 0.82)));
+          }
+          if (talkbox) talkbox.setCarrierHz(fx === 'talkbox' || fx === 'mega' ? snapHz(hz) || hz : hz);
         }
       }
-      renderCat();
       raf = requestAnimationFrame(tickMouth);
     }
 
@@ -398,6 +478,7 @@ export default {
           'section',
           { class: 'panel cantar__stage' },
           el('div', { class: 'panel__head' }, el('h2', {}, 'Palco'), el('span', { class: 'pill' }, profile.cat.name)),
+          meter,
           catStage,
           el('h3', { class: 'subhead' }, `Sobrevoz · ${profile.otter.name}`),
           ottersRow
@@ -417,18 +498,18 @@ export default {
             el('div', { class: 'row-actions' }, syncBtn, bpmLabel, bpmInput)
           ),
           el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Mix da voz'), mixInput),
-          el('p', { class: 'hint' }, 'Grave uma frase curta em cada lontrinha: ela repete no tempo do BPM, como um coro. Salvar / Gravar manda o mix para a Galeria.')
+          el('p', { class: 'hint' }, 'Talkbox é o instrumento de caninho: sua voz “canta” um teclado robótico. Grave uma frase curta em cada lontrinha para o coro.')
         )
       )
     );
 
-    renderCat();
+    paintCat();
     renderOtters();
     renderFx();
     fillBacking();
 
     window.__mmpCantar = {
-      state: () => ({ fx, autotune, backing, bpm, sync, rms, otters: otterClips.filter(Boolean).length, mic: Boolean(stream) }),
+      state: () => ({ fx, autotune, backing, bpm, sync, rms, pitchHz, otters: otterClips.filter(Boolean).length, mic: Boolean(stream) }),
       setFx: (id) => {
         if (FX.some((f) => f.id === id)) {
           fx = id;
@@ -439,6 +520,7 @@ export default {
       setAutotune: (on) => {
         autotune = Boolean(on);
         autoBtn.textContent = `Autotune: ${autotune ? 'Sim' : 'Não'}`;
+        applyFx();
       },
       setBacking: (id) => {
         backing = id;
@@ -446,7 +528,8 @@ export default {
       },
       setRms: (v) => {
         rms = v;
-        renderCat();
+        mouthOpen = rms > 0.06;
+        paintCat();
       }
     };
 
@@ -463,7 +546,8 @@ export default {
         otterPlayers.forEach((p) => p.dispose && p.dispose());
         if (stream) stream.getTracks().forEach((t) => t.stop());
         if (rec) rec.dispose();
-        [pitchShift, chorus, delay, crusher, voiceGain, backingGain, micNode].forEach((n) => n && n.dispose && n.dispose());
+        if (talkbox) talkbox.dispose();
+        [pitchShift, chorus, delay, crusher, voiceGain, backingGain, micNode, dryGain, fxGain, hpf, comp].forEach((n) => n && n.dispose && n.dispose());
         if (window.__mmpCantar) delete window.__mmpCantar;
       }
     };

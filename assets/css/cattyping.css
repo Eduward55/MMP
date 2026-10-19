@@ -32,17 +32,17 @@
 .ct-ship {
   position: absolute;
   left: 50%;
-  bottom: 8px;
+  bottom: 4px;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   pointer-events: none;
   z-index: 6;
-  width: 230px;
+  width: 260px;
 }
 .ct-ship.is-hit {
-  animation: ct-shake 0.45s ease;
+  animation: ct-shake 0.55s ease, ct-hit-punch 0.45s ease;
 }
 .ct-ship figure {
   margin: 0;
@@ -53,18 +53,22 @@
   animation: ct-kick 0.18s ease;
 }
 .ct-ship__crew {
-  position: relative;
-  z-index: 2;
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  z-index: 4;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 2px;
-  margin-bottom: -18px;
+  gap: 0;
+  transform: translateX(-50%);
+  margin: 0;
+  pointer-events: none;
 }
 .ct-ship__hull {
   position: relative;
-  width: 200px;
-  height: 78px;
+  width: 220px;
+  height: 118px;
 }
 .ct-ship__nose {
   position: absolute;
@@ -80,24 +84,26 @@
 .ct-ship__canopy {
   position: absolute;
   left: 50%;
-  top: 16px;
-  width: 72px;
-  height: 22px;
+  top: 28px;
+  width: 96px;
+  height: 52px;
   transform: translateX(-50%);
-  background: color-mix(in srgb, var(--accent-hover) 55%, #9bd7ff);
+  background: color-mix(in srgb, var(--accent-hover) 40%, #9bd7ff);
   border: 2px solid var(--accent);
-  border-radius: 18px 18px 8px 8px;
-  opacity: 0.85;
+  border-radius: 18px 18px 10px 10px;
+  opacity: 0.38;
+  z-index: 5;
+  pointer-events: none;
 }
 .ct-ship__body {
   position: absolute;
-  left: 28px;
-  right: 28px;
+  left: 24px;
+  right: 24px;
   bottom: 16px;
-  height: 34px;
+  height: 64px;
   background: var(--surface);
   border: 2px solid var(--accent);
-  border-radius: 18px 18px 12px 12px;
+  border-radius: 18px 18px 14px 14px;
 }
 .ct-ship__wing {
   position: absolute;
@@ -179,7 +185,7 @@
 .ct-type {
   position: absolute;
   left: 50%;
-  bottom: 108px;
+  bottom: 132px;
   transform: translateX(-50%);
   min-width: 80px;
   padding: 4px 10px;
@@ -231,14 +237,44 @@
   align-items: center;
 }
 .ct-lives i {
-  width: 12px;
-  height: 12px;
-  background: var(--accent);
-  border: 1px solid var(--hairline);
-  border-radius: 50%;
+  width: 18px;
+  height: 16px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  position: relative;
+  font-style: normal;
 }
-.ct-lives i.is-lost {
-  background: var(--hairline);
+.ct-lives i::before {
+  content: '♥';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #ff4d6d;
+  font-size: 18px;
+  line-height: 1;
+  text-shadow: 0 0 8px color-mix(in srgb, #ff4d6d 50%, transparent);
+}
+.ct-lives i.is-lost::before {
+  color: var(--hairline);
+  text-shadow: none;
+  opacity: 0.45;
+}
+.ct-ship[data-skin='neon'] .ct-ship__body,
+.ct-ship[data-skin='neon'] .ct-ship__wing {
+  background: #5ff3ff;
+  border-color: #9b5cff;
+}
+.ct-ship[data-skin='gold'] .ct-ship__body,
+.ct-ship[data-skin='gold'] .ct-ship__wing {
+  background: #ffd23f;
+  border-color: #c99712;
+}
+.ct-ship[data-skin='mint'] .ct-ship__body,
+.ct-ship[data-skin='mint'] .ct-ship__wing {
+  background: #5dff9b;
+  border-color: #0f766e;
 }
 .ct-lives i.is-losing {
   animation: ct-life-out 0.5s ease forwards;
@@ -261,14 +297,25 @@
   }
 }
 @keyframes ct-shake {
-  20% {
-    transform: translateX(calc(-50% - 10px)) rotate(-4deg);
+  12% {
+    transform: translateX(calc(-50% - 16px)) rotate(-8deg);
   }
-  50% {
-    transform: translateX(calc(-50% + 8px)) rotate(3deg);
+  28% {
+    transform: translateX(calc(-50% + 14px)) rotate(7deg);
+  }
+  48% {
+    transform: translateX(calc(-50% - 8px)) rotate(-4deg);
   }
   100% {
     transform: translateX(-50%);
+  }
+}
+@keyframes ct-hit-punch {
+  30% {
+    filter: brightness(1.6) saturate(1.4);
+  }
+  100% {
+    filter: none;
   }
 }
 @keyframes ct-life-out {
@@ -309,10 +356,10 @@
     height: min(58vh, 480px);
   }
   .ct-type {
-    bottom: 92px;
+    bottom: 128px;
   }
   .ct-ship {
-    width: 160px;
+    width: 180px;
   }
   .ct-ship__cat svg {
     width: 52px;
@@ -323,8 +370,8 @@
     height: 42px;
   }
   .ct-ship__hull {
-    width: 140px;
-    height: 46px;
+    width: 160px;
+    height: 92px;
   }
   .ct-ship__gun--l {
     left: 48px;

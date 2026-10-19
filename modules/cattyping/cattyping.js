@@ -8,6 +8,12 @@ const LIVES = 3;
 const MAX_ROCKS = 6;
 const STORE_KEY = 'cattyping';
 const THEME_LABEL = { psicologia: 'Psicologia', arte: 'Arte', historia: 'História', gerais: 'Gerais' };
+const SHIPS = [
+  { id: 'classic', name: 'Clássica' },
+  { id: 'neon', name: 'Neon' },
+  { id: 'gold', name: 'Ouro' },
+  { id: 'mint', name: 'Menta' }
+];
 
 export const norm = (s) =>
   String(s || '')
@@ -96,6 +102,10 @@ export default {
     let lasers = [];
     let booms = [];
     let stars = [];
+    let meteors = [];
+    let flash = 0;
+    let pendingBoss = false;
+    let shipSkin = SHIPS.some((s) => s.id === saved.ship) ? saved.ship : 'classic';
     let alive = true;
     let raf = 0;
     let lastT = 0;
@@ -117,6 +127,7 @@ export default {
     const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Pausar');
     const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => newGame() }, 'Nova partida');
     const soundBtn = el('button', { class: 'btn btn--ghost btn--sm', onclick: () => toggleSound() }, '');
+    const skinRow = el('div', { class: 'chips ct-skins', role: 'radiogroup', 'aria-label': 'Nave' });
     const hud = el(
       'aside',
       { class: 'ct-hud panel' },
@@ -124,6 +135,7 @@ export default {
       nums,
       el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Vidas'), livesEl),
       bestEl,
+      el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Nave'), skinRow),
       el('div', { class: 'row-actions' }, pauseBtn, newBtn, soundBtn),
       el(
         'p',
@@ -149,28 +161,52 @@ export default {
         startedAt: run.startedAt,
         rocks: rocks.map((r) => ({ id: r.id, word: r.word, display: r.display, theme: r.theme, x: r.x, y: r.y, vy: r.vy, rad: r.rad }))
       };
-      return kv.set(STORE_KEY, { version: 2, best, game: run.over ? null : game, deck, sound }).catch(() => {});
+      return kv.set(STORE_KEY, { version: 2, best, game: run.over ? null : game, deck, sound, ship: shipSkin }).catch(() => {});
+    }
+
+    function renderSkins() {
+      skinRow.innerHTML = '';
+      SHIPS.forEach((s) => {
+        skinRow.append(
+          el(
+            'button',
+            {
+              class: `chip ${shipSkin === s.id ? 'is-on' : ''}`,
+              role: 'radio',
+              'aria-checked': String(shipSkin === s.id),
+              onclick: () => {
+                shipSkin = s.id;
+                ship.dataset.skin = s.id;
+                renderSkins();
+                persist();
+              }
+            },
+            s.name
+          )
+        );
+      });
     }
 
     function renderShip(p = getProfile()) {
+      ship.dataset.skin = shipSkin;
       ship.innerHTML = `
         <div class="ct-ship__hull" aria-hidden="true">
           <span class="ct-ship__nose"></span>
-          <span class="ct-ship__canopy"></span>
           <span class="ct-ship__wing ct-ship__wing--l"></span>
           <span class="ct-ship__wing ct-ship__wing--r"></span>
           <span class="ct-ship__fin ct-ship__fin--l"></span>
           <span class="ct-ship__fin ct-ship__fin--r"></span>
           <span class="ct-ship__body"></span>
+          <span class="ct-ship__canopy"></span>
           <span class="ct-ship__gun ct-ship__gun--l"></span>
           <span class="ct-ship__gun ct-ship__gun--r"></span>
           <span class="ct-ship__engine ct-ship__engine--l"></span>
           <span class="ct-ship__engine ct-ship__engine--r"></span>
           <span class="ct-ship__glow"></span>
-        </div>
-        <div class="ct-ship__crew">
-          <figure class="ct-ship__cat">${creatureSVG('cat', p.cat, { size: 72, pose: 'rear', label: `Gato espacial ${p.cat.name}` })}</figure>
-          <figure class="ct-ship__otter">${creatureSVG('otter', p.otter, { size: 58, pose: 'rear', label: `Copiloto ${p.otter.name}` })}</figure>
+          <div class="ct-ship__crew">
+            <figure class="ct-ship__cat">${creatureSVG('cat', p.cat, { size: 56, pose: 'rear', label: `Gato espacial ${p.cat.name}` })}</figure>
+            <figure class="ct-ship__otter">${creatureSVG('otter', p.otter, { size: 46, pose: 'rear', label: `Copiloto ${p.otter.name}` })}</figure>
+          </div>
         </div>`;
     }
     const offProfile = onProfile((p) => renderShip(p));
@@ -278,7 +314,7 @@ export default {
       } else if (run.paused) {
         overlay.hidden = false;
         overlay.innerHTML = '';
-          overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Tab ou Esc continua. A letra P atira, não pausa.'), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Continuar'));
+          overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Tab ou Esc continua. P escreve P e atira.'), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Continuar'));
       } else overlay.hidden = true;
     }
 
@@ -314,9 +350,33 @@ export default {
         y: opts.y ?? -0.08,
         vy: opts.vy ?? 0.035 + run.level * 0.008 + Math.random() * 0.01,
         rad: 0.05 + Math.min(0.04, w.word.length * 0.004),
-        rot: Math.random() * Math.PI
+        rot: Math.random() * Math.PI,
+        seed: Math.floor(Math.random() * 99),
+        boss: false
       };
       rocks.push(rock);
+      return rock;
+    }
+
+    function spawnBoss() {
+      const w = nextWord() || { word: 'dragao', display: 'DRAGÃO', theme: 'gerais' };
+      const rock = {
+        id: idSeq++,
+        word: w.word,
+        display: (w.display || w.word).toUpperCase(),
+        theme: w.theme || 'gerais',
+        x: 0.5,
+        y: -0.16,
+        vy: 0.016 + run.level * 0.002,
+        rad: 0.13,
+        rot: 0,
+        seed: 7,
+        boss: true,
+        flap: 0,
+        pebbleIn: 1.4
+      };
+      rocks.push(rock);
+      toast('Boss dragão! Digite a palavra do peito.', 'ok');
       return rock;
     }
 
@@ -365,6 +425,7 @@ export default {
         ensureSound().then((s) => s && s.level()).catch(() => {});
         toast(`Nível ${run.level}! Os asteroides aceleram.`, 'ok');
       }
+      if (run.destroyed > 0 && run.destroyed % 12 === 0) pendingBoss = true;
       persist();
     }
 
@@ -377,6 +438,7 @@ export default {
       ship.classList.remove('is-hit');
       void ship.offsetWidth;
       ship.classList.add('is-hit');
+      flash = 0.45;
       hudRefresh();
       const hearts = [...livesEl.querySelectorAll('i')];
       const dying = hearts[lost];
@@ -415,6 +477,8 @@ export default {
       rocks = [];
       lasers = [];
       booms = [];
+      pendingBoss = false;
+      flash = 0;
       locked = false;
       const rng = typeof seed === 'number' ? mulberry32(seed) : () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
       deck = shuffle(
@@ -451,20 +515,49 @@ export default {
       if (run.over) return;
       if (!force && (run.paused || locked || shotMode)) return;
       run.spawnIn -= dt;
-      if (run.spawnIn <= 0) {
+      if (pendingBoss && !rocks.some((r) => r.boss)) {
+        pendingBoss = false;
+        spawnBoss();
+        run.spawnIn = 2.2;
+      } else if (run.spawnIn <= 0) {
         spawn();
         run.spawnIn = Math.max(0.55, 2.1 * Math.pow(0.9, run.level - 1));
       }
       const limit = 0.82;
       rocks.forEach((r) => {
         r.y += r.vy * dt;
-        r.rot += dt * 0.6;
+        r.rot += r.boss ? dt * 0.15 : dt * 0.6;
+        if (r.boss) {
+          r.flap = (r.flap || 0) + dt;
+          r.pebbleIn = (r.pebbleIn || 1.2) - dt;
+          if (r.pebbleIn <= 0 && rocks.length < MAX_ROCKS + 2) {
+            r.pebbleIn = 1.6;
+            const side = Math.random() < 0.5 ? -1 : 1;
+            spawn({
+              word: side < 0 ? 'asa' : 'lua',
+              display: side < 0 ? 'ASA' : 'LUA',
+              x: r.x + side * 0.16,
+              y: r.y + 0.04,
+              vy: r.vy + 0.02,
+              theme: 'gerais'
+            });
+          }
+        }
       });
       rocks.filter((r) => r.y > limit).forEach(miss);
       lasers.forEach((l) => (l.t += dt));
       lasers = lasers.filter((l) => l.t < l.life);
       booms.forEach((b) => (b.t += dt));
       booms = booms.filter((b) => b.t < b.life);
+      if (flash > 0) flash -= dt;
+      meteors.forEach((m) => {
+        m.x += m.vx * dt;
+        m.y += m.vy * dt;
+      });
+      meteors = meteors.filter((m) => m.x < 1.2 && m.y < 1.2);
+      if (Math.random() < dt * 0.25) {
+        meteors.push({ x: Math.random() * 0.7, y: -0.05, vx: 0.18 + Math.random() * 0.12, vy: 0.35 + Math.random() * 0.2, len: 0.08 + Math.random() * 0.06 });
+      }
     }
 
     const ctx = canvas.getContext('2d');
@@ -476,8 +569,78 @@ export default {
       canvas.height = Math.floor(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       if (!stars.length) {
-        stars = Array.from({ length: 48 }, () => ({ x: Math.random(), y: Math.random(), s: 1 + Math.random() * 2, a: 0.3 + Math.random() * 0.7 }));
+        stars = Array.from({ length: 64 }, () => ({ x: Math.random(), y: Math.random(), s: 1 + Math.random() * 2, a: 0.3 + Math.random() * 0.7, tw: Math.random() * 6 }));
       }
+    }
+
+    function drawRockShape(ctx, rad, seed, color, stroke) {
+      ctx.fillStyle = color;
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const n = 8;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const wob = 0.72 + ((i * 19 + seed) % 7) * 0.04;
+        const x = Math.cos(a) * rad * wob;
+        const y = Math.sin(a) * rad * wob;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.beginPath();
+      ctx.arc(-rad * 0.22, -rad * 0.2, rad * 0.22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.beginPath();
+      ctx.arc(rad * 0.12, rad * 0.08, rad * 0.16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-rad * 0.05, rad * 0.22, rad * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawDragon(ctx, r, rad, theme) {
+      const flap = Math.sin((r.flap || 0) * 6) * 0.35;
+      ctx.fillStyle = '#6d3d1f';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rad * 0.55, rad * 0.72, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = theme.hairline;
+      ctx.stroke();
+      const wing = (dir) => {
+        ctx.save();
+        ctx.translate(dir * rad * 0.2, -rad * 0.05);
+        ctx.rotate(dir * (0.4 + flap));
+        ctx.fillStyle = '#8b4a24';
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(dir * rad * 1.15, -rad * 0.55, dir * rad * 1.05, rad * 0.35);
+        ctx.quadraticCurveTo(dir * rad * 0.45, rad * 0.12, 0, 0);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#c4a574';
+        ctx.font = `11px ${theme.font}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(dir < 0 ? 'ASA' : 'PEDRA', dir * rad * 0.55, 4);
+        ctx.restore();
+      };
+      wing(-1);
+      wing(1);
+      ctx.fillStyle = '#f4d7a8';
+      ctx.beginPath();
+      ctx.ellipse(0, rad * 0.18, rad * 0.28, rad * 0.32, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#e11d48';
+      ctx.beginPath();
+      ctx.arc(-rad * 0.12, -rad * 0.22, 4, 0, Math.PI * 2);
+      ctx.arc(rad * 0.12, -rad * 0.22, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#1a0c08';
+      ctx.fillRect(-6, rad * 0.28, 12, 4);
     }
 
     function draw() {
@@ -488,8 +651,21 @@ export default {
       ctx.fillStyle = theme.bg;
       ctx.fillRect(0, 0, w, h);
       stars.forEach((st) => {
-        ctx.fillStyle = hexToRgba(theme.text, st.a * 0.45);
+        st.tw += 0.04;
+        ctx.fillStyle = hexToRgba(theme.text, st.a * (0.35 + Math.sin(st.tw) * 0.2));
         ctx.fillRect(Math.floor(st.x * w), Math.floor(st.y * h), st.s, st.s);
+      });
+      meteors.forEach((m) => {
+        ctx.strokeStyle = hexToRgba('#ffe08a', 0.85);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(m.x * w, m.y * h);
+        ctx.lineTo((m.x - m.len) * w, (m.y - m.len * 0.6) * h);
+        ctx.stroke();
+        ctx.fillStyle = '#fff4c8';
+        ctx.beginPath();
+        ctx.arc(m.x * w, m.y * h, 2.4, 0, Math.PI * 2);
+        ctx.fill();
       });
       lasers.forEach((l) => {
         const k = Math.min(1, l.t / l.life);
@@ -518,6 +694,7 @@ export default {
         ctx.fill();
         ctx.restore();
       });
+      const pal = { psicologia: '#3a3348', arte: '#3a2a38', historia: '#2c3338', gerais: '#2a2a32' };
       rocks.forEach((r) => {
         const cx = r.x * w;
         const cy = r.y * h;
@@ -525,24 +702,8 @@ export default {
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(r.rot);
-        const fill = { psicologia: '#2a2a32', arte: '#32323a', historia: '#26262c', gerais: '#1c1c22' };
-        ctx.fillStyle = r.id === run.targetId ? theme.accent : fill[r.theme] || fill.gerais;
-        ctx.strokeStyle = theme.hairline;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        for (let i = 0; i < 7; i++) {
-          const a = (i / 7) * Math.PI * 2;
-          const rr = rad * (0.72 + ((i * 37) % 5) * 0.06);
-          const x = Math.cos(a) * rr;
-          const y = Math.sin(a) * rr;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = theme.bg;
-        ctx.fillRect(-rad * 0.2, -rad * 0.15, rad * 0.25, rad * 0.2);
+        if (r.boss) drawDragon(ctx, r, rad, theme);
+        else drawRockShape(ctx, rad, r.seed || 1, r.id === run.targetId ? theme.accent : pal[r.theme] || pal.gerais, theme.hairline);
         ctx.restore();
         ctx.font = `13px ${theme.font}`;
         ctx.textAlign = 'center';
@@ -551,15 +712,16 @@ export default {
         const label = r.display;
         const tw = ctx.measureText(label).width;
         ctx.fillStyle = theme.surface;
-        ctx.fillRect(cx - tw / 2 - 6, cy - 28, tw + 12, 18);
+        ctx.fillRect(cx - tw / 2 - 6, cy - (r.boss ? rad + 18 : 28), tw + 12, 18);
         ctx.strokeStyle = r.id === run.targetId ? theme.accent : theme.hairline;
-        ctx.strokeRect(cx - tw / 2 - 6, cy - 28, tw + 12, 18);
+        ctx.strokeRect(cx - tw / 2 - 6, cy - (r.boss ? rad + 18 : 28), tw + 12, 18);
         let acc = 0;
+        const ly = cy - (r.boss ? rad + 9 : 19);
         for (let i = 0; i < label.length; i++) {
           const ch = label[i];
           const cw = ctx.measureText(ch).width;
           ctx.fillStyle = i < typed ? theme.accentHover : theme.text;
-          ctx.fillText(ch, cx - tw / 2 + acc + cw / 2, cy - 19);
+          ctx.fillText(ch, cx - tw / 2 + acc + cw / 2, ly);
           acc += cw;
         }
       });
@@ -570,12 +732,20 @@ export default {
         ctx.beginPath();
         ctx.arc(b.x * w, b.y * h, 8 + k * 28, 0, Math.PI * 2);
         ctx.stroke();
+        ctx.fillStyle = hexToRgba('#ffd27a', 0.45 * (1 - k));
+        ctx.beginPath();
+        ctx.arc(b.x * w, b.y * h, 4 + k * 16, 0, Math.PI * 2);
+        ctx.fill();
         if (b.pts) {
           ctx.fillStyle = hexToRgba(theme.text, 1 - k);
           ctx.font = `12px ${theme.font}`;
           ctx.fillText(`+${b.pts}`, b.x * w, b.y * h - 20 - k * 20);
         }
       });
+      if (flash > 0) {
+        ctx.fillStyle = hexToRgba('#e11d48', flash * 0.35);
+        ctx.fillRect(0, 0, w, h);
+      }
     }
 
     function loop(ts) {
@@ -616,6 +786,7 @@ export default {
     overlay.innerHTML = '';
     overlay.append(el('div', { class: 'boot__spinner' }), el('p', {}, 'Carregando o dicionário espacial…'));
     renderShip();
+    renderSkins();
     hudRefresh();
     try {
       data = await loadWords();

@@ -44,7 +44,9 @@ export default {
     const coatLabel = el('span', { class: 'field__label' }, 'Pelagem do gato');
     const eyeLabel = el('span', { class: 'field__label' }, 'Olhos do gato');
     const targetTabs = el('div', { class: 'segmented', role: 'tablist' });
+    const slotTabs = el('div', { class: 'outfit-tabs', role: 'tablist', 'aria-label': 'Categoria da roupa' });
     const outfitGrid = el('div', { class: 'outfits' });
+    let slotFilter = 'all';
 
     function dirty() {
       return JSON.stringify(draft) !== saved;
@@ -184,11 +186,34 @@ export default {
       });
     }
 
+    function renderSlotTabs() {
+      slotTabs.innerHTML = '';
+      [['all', 'Tudo'], ...SLOTS.map((s) => [s.id, s.label])].forEach(([id, label]) => {
+        slotTabs.append(
+          el(
+            'button',
+            {
+              class: `outfit-tab ${slotFilter === id ? 'is-on' : ''}`,
+              type: 'button',
+              role: 'tab',
+              'aria-selected': String(slotFilter === id),
+              onclick: () => {
+                slotFilter = id;
+                renderSlotTabs();
+                renderOutfits();
+              }
+            },
+            label
+          )
+        );
+      });
+    }
+
     function renderOutfits() {
       outfitGrid.innerHTML = '';
       const who = draft[target];
       const baseLook = { coat: who.coat, eyes: who.eyes };
-      OUTFITS.forEach((o) => {
+      OUTFITS.filter((o) => slotFilter === 'all' || o.slot === slotFilter).forEach((o) => {
         const on = who.outfit[o.slot] === o.id;
         outfitGrid.append(
           el(
@@ -289,13 +314,14 @@ export default {
           el('div', { class: 'field' }, el('div', { class: 'field__row' }, el('span', { class: 'field__label' }, 'Quem você está editando'), targetTabs)),
           el('div', { class: 'field' }, coatLabel, el('p', { class: 'hint' }, 'A pelagem e os olhos valem só para o bichinho escolhido em cima.'), coats),
           el('div', { class: 'field' }, eyeLabel, eyes),
-          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Roupinhas e acessórios'), el('p', { class: 'hint' }, 'Um item por lugar (cabeça, rosto, pescoço…). Clique de novo para tirar.'), outfitGrid),
+          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Roupinhas e acessórios'), el('p', { class: 'hint' }, 'Separe por cabeça, pescoço, corpo… um item por lugar, então nada se sobrepõe no mesmo sítio. Clique de novo para tirar.'), slotTabs, outfitGrid),
           actions
         )
       )
     );
 
     renderTabs();
+    renderSlotTabs();
     refresh();
     ready = true;
 

@@ -405,7 +405,7 @@
 
     await go('corrida');
     const CR = window.__mmpCorrida;
-    ok('Corrida: pista com gato e lontra no carrinho', CR && $('.cr-canvas') && $('.cr-car__pilot svg.creature--cat') && $('.cr-car__co svg.creature--otter'));
+    ok('Corrida: pista com gato no carrinho e lontra na arquibancada', CR && $('.cr-canvas') && $('.cr-car__pilot svg.creature--cat') && $('.cr-fan svg.creature--otter'));
     const x0 = CR.state().x;
     CR.input('arrowleft', true);
     CR.tick(0.4);
