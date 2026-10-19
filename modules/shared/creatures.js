@@ -4,17 +4,18 @@ import { OUTFIT_BY_ID, SLOTS, OUTLINE } from './outfits.js';
 
 export const SIZE = 40;
 const WARM_LINE = '#6b5344';
+const WARM_DARK = '#3f2c22';
 
 export const COATS = [
-  { id: 'tabby', name: 'Tigresa', fur: '#a88a6a', stripe: '#5e4634', light: '#e6d3b6', paw: '#e6d3b6', ear: '#ff9ccf', outline: OUTLINE, stripes: true },
+  { id: 'tabby', name: 'Tigresa', fur: '#a88a6a', stripe: '#5e4634', light: '#e6d3b6', paw: '#e6d3b6', ear: '#ff9ccf', outline: WARM_DARK, stripes: true },
   { id: 'black', name: 'Preto', fur: '#2a2428', stripe: '#2a2428', light: '#3d353c', paw: '#3d353c', ear: '#ff7fc2', outline: '#05020a', stripes: false },
   { id: 'tuxedo', name: 'Frajola', fur: '#231d2e', stripe: '#231d2e', light: '#f6f2ea', paw: '#f6f2ea', ear: '#ff7fc2', outline: '#05020a', stripes: false },
   { id: 'white', name: 'Branco', fur: '#f4efe4', stripe: '#e4d8c4', light: '#fffdf8', paw: '#fffdf8', ear: '#ffa6d6', outline: WARM_LINE, stripes: false },
-  { id: 'orange', name: 'Laranja', fur: '#f28a3b', stripe: '#c25c1c', light: '#ffd8a8', paw: '#ffd8a8', ear: '#ff9ccf', outline: OUTLINE, stripes: true },
-  { id: 'gray', name: 'Cinza', fur: '#8f8ba3', stripe: '#6b667f', light: '#c9c5da', paw: '#c9c5da', ear: '#ff9ccf', outline: OUTLINE, stripes: true },
+  { id: 'orange', name: 'Laranja', fur: '#f28a3b', stripe: '#c25c1c', light: '#ffd8a8', paw: '#ffd8a8', ear: '#ff9ccf', outline: WARM_DARK, stripes: true },
+  { id: 'gray', name: 'Cinza', fur: '#8f8ba3', stripe: '#6b667f', light: '#c9c5da', paw: '#c9c5da', ear: '#ff9ccf', outline: WARM_DARK, stripes: true },
   { id: 'cream', name: 'Creme', fur: '#ead7b4', stripe: '#c4a574', light: '#fff6e4', paw: '#fff6e4', ear: '#ff9ccf', outline: WARM_LINE, stripes: true },
   { id: 'chocolate', name: 'Chocolate', fur: '#6b3a22', stripe: '#3d1f12', light: '#d4a574', paw: '#d4a574', ear: '#ff7fc2', outline: '#1a0c08', stripes: true },
-  { id: 'calico', name: 'Calicó', fur: '#f2d2b0', stripe: '#c45c28', light: '#fff8ee', paw: '#fff8ee', ear: '#ff9ccf', outline: OUTLINE, stripes: false, patches: true },
+  { id: 'calico', name: 'Calicó', fur: '#f2d2b0', stripe: '#c45c28', light: '#fff8ee', paw: '#fff8ee', ear: '#ff9ccf', outline: WARM_DARK, stripes: false, patches: true },
   { id: 'siamese', name: 'Siamês', fur: '#f3e2c8', stripe: '#6b4630', light: '#fff8ee', paw: '#5c3a28', ear: '#ff9ccf', outline: WARM_LINE, stripes: false, points: true },
   { id: 'peach', name: 'Pêssego', fur: '#f0b48a', stripe: '#d07a52', light: '#ffe2c8', paw: '#ffe2c8', ear: '#ff9ccf', outline: '#7a3f28', stripes: true },
   { id: 'ink', name: 'Tinta', fur: '#1c2430', stripe: '#0f141b', light: '#334155', paw: '#cbd5e1', ear: '#ff7fc2', outline: '#05080c', stripes: false }
@@ -23,12 +24,12 @@ export const COATS = [
 export const COAT_BY_ID = Object.fromEntries(COATS.map((c) => [c.id, c]));
 
 export const OTTER_COATS = [
-  { id: 'chocolate', name: 'Chocolate', fur: '#9a6a45', light: '#f1dcb8', dark: '#6e4529', outline: OUTLINE },
-  { id: 'honey', name: 'Mel', fur: '#c9893a', light: '#ffe4b0', dark: '#8a5520', outline: OUTLINE },
-  { id: 'cinnamon', name: 'Canela', fur: '#7a3f28', light: '#e8c4a0', dark: '#4e2416', outline: OUTLINE },
+  { id: 'chocolate', name: 'Chocolate', fur: '#9a6a45', light: '#f1dcb8', dark: '#6e4529', outline: WARM_DARK },
+  { id: 'honey', name: 'Mel', fur: '#c9893a', light: '#ffe4b0', dark: '#8a5520', outline: WARM_DARK },
+  { id: 'cinnamon', name: 'Canela', fur: '#7a3f28', light: '#e8c4a0', dark: '#4e2416', outline: WARM_DARK },
   { id: 'charcoal', name: 'Carvão', fur: '#3d3430', light: '#cfc4b8', dark: '#1f1a18', outline: '#05020a' },
   { id: 'cream', name: 'Creme', fur: '#e8d5b5', light: '#fff8ea', dark: '#b08968', outline: WARM_LINE },
-  { id: 'silver', name: 'Prata', fur: '#9aa3ad', light: '#e8eef4', dark: '#5c6670', outline: OUTLINE },
+  { id: 'silver', name: 'Prata', fur: '#9aa3ad', light: '#e8eef4', dark: '#5c6670', outline: WARM_DARK },
   { id: 'sand', name: 'Areia', fur: '#d2b48a', light: '#fff1d4', dark: '#8b6948', outline: WARM_LINE },
   { id: 'mocha', name: 'Moca', fur: '#5c3d2e', light: '#e6c8a8', dark: '#2f1c14', outline: '#140a08' }
 ];
@@ -50,40 +51,46 @@ function otterLook(look = {}) {
   return OTTER_COAT_BY_ID[look.coat] || OTTER_COATS[0];
 }
 
-function clearCrotch(body) {
-  for (let y = 27; y <= 39; y++) {
-    const inset = y <= 27 ? 19 : y <= 29 ? 18 : 16;
-    for (let x = inset; x <= 40 - inset; x++) body.clear(x, y);
+// Só achata uma pontinha central abaixo do oval — não cava o tronco.
+function flattenPip(body, bottomY = 36) {
+  for (let y = bottomY + 1; y <= 39; y++) {
+    for (let x = 17; x <= 23; x++) body.clear(x, y);
   }
 }
 
+// Fecha quadril/barriga num oval contínuo. Sem furo (corpo sumido) e sem pontinha no meio.
+function closeHips(body, fur, bottomY = 36) {
+  body.ellipse(20, bottomY - 3.2, 6.8, 3.6, fur);
+  body.ellipse(13.8, bottomY - 2, 4.4, 3.2, fur);
+  body.ellipse(26.2, bottomY - 2, 4.4, 3.2, fur);
+  flattenPip(body, bottomY);
+}
+
 function drawHindPaws(body, y, paw, pad) {
-  body.ellipse(8.5, y, 3.4, 2.1, paw);
-  body.ellipse(31.5, y, 3.4, 2.1, paw);
+  body.ellipse(10, y, 3.1, 1.8, paw);
+  body.ellipse(30, y, 3.1, 1.8, paw);
   body.points(
     [
-      [7, y],
-      [8, y - 1],
-      [10, y],
-      [30, y],
-      [32, y - 1],
-      [33, y]
+      [9, y - 1],
+      [11, y - 1],
+      [29, y - 1],
+      [31, y - 1]
     ],
     pad
   );
 }
 
 function drawFrontPaws(body, y, fur, paw) {
-  body.ellipse(8.2, y, 2.6, 2.4, fur);
-  body.ellipse(31.8, y, 2.6, 2.4, fur);
-  body.ellipse(8.2, y + 1.5, 2.2, 1.5, paw);
-  body.ellipse(31.8, y + 1.5, 2.2, 1.5, paw);
+  body.ellipse(9, y, 2.8, 2.6, fur);
+  body.ellipse(31, y, 2.8, 2.6, fur);
+  body.ellipse(9, y + 1.4, 2.4, 1.6, paw);
+  body.ellipse(31, y + 1.4, 2.4, 1.6, paw);
   body.points(
     [
-      [7, y + 1],
-      [9, y + 1],
-      [31, y + 1],
-      [33, y + 1]
+      [8, y],
+      [10, y],
+      [30, y],
+      [32, y]
     ],
     paw
   );
@@ -108,13 +115,13 @@ const CAT_ANCHORS = {
   eyeLX: 14,
   eyeRX: 23,
   neckY: 24,
-  bodyY: 26.8,
-  bodyRx: 8.4,
-  bodyRy: 4.2,
+  bodyY: 30,
+  bodyRx: 9,
+  bodyRy: 7,
   earLX: 13,
   earRX: 27,
-  handX: 29,
-  handY: 30,
+  handX: 28,
+  handY: 31,
   tailPivot: [29, 36]
 };
 
@@ -126,16 +133,16 @@ const OTTER_ANCHORS = {
   headR: 28,
   headCy: 17,
   eyeY: 16.5,
-  eyeLX: 14.5,
-  eyeRX: 23.5,
-  neckY: 27,
-  bodyY: 26.4,
-  bodyRx: 6.6,
-  bodyRy: 4.1,
+  eyeLX: 14,
+  eyeRX: 23,
+  neckY: 23,
+  bodyY: 29,
+  bodyRx: 7,
+  bodyRy: 9,
   earLX: 13,
   earRX: 27,
   handX: 23,
-  handY: 26,
+  handY: 25,
   tailPivot: [14, 37]
 };
 
@@ -202,22 +209,23 @@ function drawCat(look) {
   if (coat.stripes) tail.points([[31, 33], [32, 29], [31, 25]], coat.stripe, 2);
   if (coat.id === 'tuxedo') tail.points([[30, 24]], coat.light, 2);
 
-  body.ellipse(20, 26.6, 8.4, 4.2, coat.fur);
-  body.ellipse(20, 17.4, 10, 7.8, coat.fur);
+  body.ellipse(20, 29.5, 9, 6.6, coat.fur);
+  body.ellipse(20, 18, 10, 8, coat.fur);
   body.tri([11, 15], [13, 7], [18, 11], coat.fur);
   body.tri([29, 15], [27, 7], [22, 11], coat.fur);
   body.tri([13, 13], [14, 9], [16, 12], coat.ear);
   body.tri([27, 13], [26, 9], [24, 12], coat.ear);
-  body.ellipse(20, 20.5, 4, 2.3, coat.light);
-  clearCrotch(body);
-  drawFrontPaws(body, 30.5, coat.fur, coat.paw);
-  drawHindPaws(body, 36.2, coat.paw, coat.ear);
-  clearCrotch(body);
+  closeHips(body, coat.fur, 36);
+  body.ellipse(20, 21, 4, 2.5, coat.light);
+  body.ellipse(20, 29.8, 3.6, 3.2, coat.light);
+  drawFrontPaws(body, 32, coat.fur, coat.paw);
+  drawHindPaws(body, 37, coat.paw, coat.ear);
+  flattenPip(body, 36);
   paintCatPatches(body, coat);
   if (coat.stripes) {
     body.points([[17, 12], [17, 13], [20, 11], [20, 12], [20, 13], [23, 12], [23, 13]], coat.stripe);
     body.points([[11, 18], [12, 18], [11, 20], [12, 20], [28, 18], [29, 18], [28, 20], [29, 20]], coat.stripe);
-    body.points([[12, 27], [13, 27], [27, 27], [28, 27]], coat.stripe);
+    body.points([[12, 28], [13, 28], [27, 28], [28, 28], [12, 31], [13, 31], [27, 31], [28, 31]], coat.stripe);
   }
   if (coat.id === 'tuxedo') body.tri([18, 15], [20, 12], [22, 15], coat.light);
   body.set(20, 21, coat.ear);
@@ -264,20 +272,20 @@ function drawCatRear(look) {
   tail.points(tailPts, coat.fur, 2);
   if (coat.stripes) tail.points([[8, 32], [7, 27], [8, 22]], coat.stripe, 2);
 
-  body.ellipse(20, 26.6, 8.4, 4.2, coat.fur);
-  body.ellipse(20, 17.4, 10, 7.8, coat.fur);
+  body.ellipse(20, 30, 9, 6.6, coat.fur);
+  body.ellipse(20, 18, 10, 8, coat.fur);
   body.tri([11, 14], [13, 5], [18, 11], coat.fur);
   body.tri([29, 14], [27, 5], [22, 11], coat.fur);
   body.tri([13, 12], [14, 7], [16, 11], coat.ear);
   body.tri([27, 12], [26, 7], [24, 11], coat.ear);
-  clearCrotch(body);
-  drawFrontPaws(body, 30.5, coat.fur, coat.paw);
-  drawHindPaws(body, 36.2, coat.paw, coat.ear);
-  clearCrotch(body);
+  closeHips(body, coat.fur, 36);
+  drawFrontPaws(body, 32, coat.fur, coat.paw);
+  drawHindPaws(body, 37, coat.paw, coat.ear);
+  flattenPip(body, 36);
   paintCatPatches(body, coat);
   if (coat.stripes) {
     body.points([[17, 11], [17, 12], [20, 10], [20, 11], [23, 11], [23, 12]], coat.stripe);
-    body.points([[12, 27], [13, 27], [27, 27], [28, 27]], coat.stripe);
+    body.points([[12, 28], [13, 28], [27, 28], [28, 28]], coat.stripe);
   }
 
   return { coat, body, tail, eyes, anchors: CAT_ANCHORS, outline: coat.outline };
@@ -292,14 +300,14 @@ function drawOtterRear(look = {}) {
   tail.points([[14, 36], [11, 36], [8, 35], [5, 33], [3, 31], [2, 28], [3, 25]], c.fur, 2);
   tail.points([[2, 28], [3, 31]], c.dark, 2);
 
-  body.ellipse(20, 26.2, 6.6, 4.1, c.fur);
+  body.ellipse(20, 30, 7, 9, c.fur);
   body.ellipse(20, 17, 8.5, 7, c.fur);
   body.ellipse(12.5, 11, 1.8, 1.8, c.dark);
   body.ellipse(27.5, 11, 1.8, 1.8, c.dark);
-  clearCrotch(body);
-  drawFrontPaws(body, 26.5, c.fur, c.dark);
-  drawHindPaws(body, 36.2, c.dark, c.light);
-  clearCrotch(body);
+  closeHips(body, c.fur, 37);
+  drawFrontPaws(body, 27, c.fur, c.dark);
+  drawHindPaws(body, 37, c.dark, c.light);
+  flattenPip(body, 37);
 
   return { body, tail, eyes, anchors: OTTER_ANCHORS, outline: c.outline };
 }
@@ -314,20 +322,20 @@ function drawOtter(look = {}) {
   tail.points([[15, 36], [13, 36], [11, 36], [9, 35], [7, 34]], c.fur, 2);
   tail.points([[5, 33]], c.dark, 2);
 
-  body.ellipse(20, 26.2, 6.6, 4.1, c.fur);
+  body.ellipse(20, 29, 7, 9, c.fur);
   body.ellipse(20, 17, 8.5, 7, c.fur);
   body.ellipse(12.5, 11.5, 1.8, 1.8, c.dark);
   body.ellipse(27.5, 11.5, 1.8, 1.8, c.dark);
-  body.ellipse(20, 20, 4.4, 2.4, c.light);
-  body.ellipse(20, 23.4, 3.1, 1.8, c.light);
-  clearCrotch(body);
-  body.ellipse(11.5, 26.2, 2.5, 2.1, c.fur);
-  body.ellipse(28.5, 26.2, 2.5, 2.1, c.fur);
-  body.ellipse(11.5, 27.5, 2.2, 1.5, c.dark);
-  body.ellipse(28.5, 27.5, 2.2, 1.5, c.dark);
+  closeHips(body, c.fur, 37);
+  body.ellipse(20, 20, 4.5, 2.6, c.light);
+  body.ellipse(20, 26.5, 3, 3.6, c.light);
+  body.ellipse(12, 26, 2.6, 2.2, c.fur);
+  body.ellipse(28, 26, 2.6, 2.2, c.fur);
+  body.ellipse(12, 27.4, 2.4, 1.6, c.dark);
+  body.ellipse(28, 27.4, 2.4, 1.6, c.dark);
   body.points([[11, 25], [13, 25], [27, 25], [29, 25]], c.light);
-  drawHindPaws(body, 36.2, c.dark, c.light);
-  clearCrotch(body);
+  drawHindPaws(body, 37, c.dark, c.light);
+  flattenPip(body, 37);
   body.points([[20, 18], [20, 19]], MOUTH);
   body.points([[19, 21], [20, 22], [21, 21]], MOUTH);
   body.points([[15, 20], [25, 20]], c.dark);

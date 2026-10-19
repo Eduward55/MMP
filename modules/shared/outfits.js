@@ -26,7 +26,8 @@ const P = {
 const center = (A, w) => Math.round(A.cx - Math.floor(w / 2));
 
 function bodyShape(g, A, color) {
-  g.ellipse(A.cx, A.bodyY, A.bodyRx, A.bodyRy, color);
+  // Roupa no peito/barriga; o oval do bicho (quadril, coxas, patas) continua visível embaixo.
+  g.ellipse(A.cx, A.bodyY - 0.6, A.bodyRx * 0.96, Math.max(3.4, A.bodyRy - 1.6), color);
 }
 
 export const SLOTS = [
@@ -109,18 +110,19 @@ export const OUTFITS = [
     name: 'Cachecol',
     slot: 'neck',
     front(g, A) {
+      const neck = Math.max(A.neckY, Math.round(A.headCy) + 5);
       const half = A.bodyRx - 2;
       for (let x = A.cx - half; x <= A.cx + half; x++) {
         const c = Math.floor((x - A.cx + half) / 2) % 2 === 0 ? P.pink : P.white;
-        g.set(x, A.neckY, c);
-        g.set(x, A.neckY + 1, c);
+        g.set(x, neck, c);
+        g.set(x, neck + 1, c);
       }
       for (let y = 1; y <= 5; y++) {
         const c = y % 2 === 0 ? P.white : P.pink;
-        g.rect(A.cx + 2, A.neckY + 1 + y, 2, 1, c);
+        g.rect(A.cx + 2, neck + 1 + y, 2, 1, c);
       }
-      g.set(A.cx + 2, A.neckY + 7, P.pinkDark);
-      g.set(A.cx + 3, A.neckY + 7, P.pinkDark);
+      g.set(A.cx + 2, neck + 7, P.pinkDark);
+      g.set(A.cx + 3, neck + 7, P.pinkDark);
     }
   },
   {
