@@ -1,6 +1,21 @@
 /* My Music Place — paletas. Padrão: noite (bordas zinco, acento azul).
    data-theme: night | ocean | day | grape | cream */
 
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('../fonts/PressStart2P-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'VT323';
+  src: url('../fonts/VT323-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root,
 html[data-theme='night'] {
   --bg: #0f0f12;
@@ -19,6 +34,7 @@ html[data-theme='night'] {
   --danger: #f87171;
   --radius: 12px;
   --font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-pixel: 'Press Start 2P', ui-monospace, 'Cascadia Mono', monospace;
   --shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
   --elevate: 0 12px 28px rgba(0, 0, 0, 0.34);
   color-scheme: dark;

@@ -8,13 +8,13 @@ const SLOT_LABEL = Object.fromEntries(SLOTS.map((s) => [s.id, s.label]));
 
 // Recortes do viewBox para as miniaturas destacarem a área do acessório.
 const CROP = {
-  head: '5 0 30 30',
-  ear: '7 3 26 26',
-  face: '8 7 24 24',
-  neck: '7 13 26 26',
-  body: '2 4 36 36',
-  back: '2 4 36 36',
-  hand: '6 8 32 32'
+  head: '8 0 32 26',
+  ear: '8 2 32 24',
+  face: '10 8 28 22',
+  neck: '10 18 28 22',
+  body: '6 10 36 34',
+  back: '6 10 36 34',
+  hand: '22 22 24 20'
 };
 
 export default {
@@ -297,7 +297,8 @@ export default {
         el(
           'section',
           { class: 'panel mycat__stage' },
-          el('div', { class: 'panel__head' }, el('h2', {}, 'Camarim'), dirtyFlag),
+          el('div', { class: 'panel__head' }, el('h2', { class: 'font-pixel' }, 'Camarim'), dirtyFlag),
+          el('p', { class: 'stage__hint font-pixel' }, 'Clique no bichinho — a roupa reage, não sai'),
           preview,
           el('h3', { class: 'subhead' }, 'Vestindo agora'),
           wearing

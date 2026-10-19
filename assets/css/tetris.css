@@ -17,7 +17,7 @@
   background:
     radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 55%),
     var(--bg);
-  border: 1px solid var(--border);
+  border: 2px solid color-mix(in srgb, var(--accent) 28%, var(--hairline));
   image-rendering: pixelated;
   box-shadow: 0 12px 40px color-mix(in srgb, var(--accent) 18%, transparent);
 }

@@ -257,7 +257,7 @@ function createWindow() {
   });
 
   mainWindow.webContents.on('console-message', (_e, level, message, line, source) => {
-    if (level >= 2 || process.env.MMP_SCREENSHOT_DIR) {
+    if (level >= 2 || process.env.MMP_SCREENSHOT_DIR || process.env.MMP_SELFTEST) {
       console.log(`[renderer:${level}] ${message} (${source}:${line})`);
     }
   });
@@ -272,11 +272,29 @@ function createWindow() {
 }
 
 async function runSelftest(win) {
-  await new Promise((r) => win.webContents.once('did-finish-load', r));
-  await wait(1200);
+  const withTimeout = (p, ms, msg) =>
+    Promise.race([p, new Promise((_, reject) => setTimeout(() => reject(new Error(msg)), ms))]);
   try {
+    if (win.webContents.isLoadingMainFrame()) {
+      await Promise.race([
+        new Promise((r) => win.webContents.once('did-finish-load', r)),
+        wait(20000)
+      ]);
+    }
+    try {
+      await win.webContents.insertCSS(
+        '*,*::before,*::after{animation-play-state:paused!important;transition:none!important}'
+      );
+    } catch {}
+    await wait(300);
+    console.log('SST ping', await withTimeout(win.webContents.executeJavaScript('1+1'), 12000, 'SST ping timeout'));
     const code = await fs.readFile(path.join(ROOT, 'scripts', 'selftest-renderer.js'), 'utf8');
-    const results = JSON.parse(await win.webContents.executeJavaScript(code));
+    const raw = await withTimeout(
+      win.webContents.executeJavaScript(code),
+      480000,
+      'Selftest travou no renderer (8 min).'
+    );
+    const results = JSON.parse(raw);
     let failed = 0;
     for (const r of results) {
       if (!r.pass) failed++;

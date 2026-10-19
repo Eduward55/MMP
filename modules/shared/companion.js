@@ -3,40 +3,123 @@ import { creatureSVG } from './creatures.js';
 import { getProfile, onProfile, kv } from './store.js';
 import { el, esc } from './ui.js';
 
-const CAT_MOODS = ['heart', 'wink', 'bounce', 'meow'];
-const OTTER_MOODS = ['splash', 'wiggle', 'bounce', 'peek', 'clap'];
-const ALL_REACTS = [...new Set([...CAT_MOODS, ...OTTER_MOODS, 'sparkle', 'bob', 'sway', 'bow', 'conduct', 'sing', 'float', 'party', 'bloom', 'jingle', 'zap', 'flutter'])];
-const OUTFIT_REACT = {
-  coroa: 'sparkle',
-  fone: 'bob',
-  cachecol: 'sway',
-  lacinho: 'bow',
-  batuta: 'conduct',
-  microfone: 'sing',
-  astronauta: 'float',
-  capacete: 'float',
-  'chapeu-festa': 'party',
-  'chapeu-bruxa': 'wiggle',
-  flor: 'bloom',
-  estrelinha: 'sparkle',
-  'oculos-coracao': 'heart',
-  oculos: 'wink',
-  coleira: 'jingle',
-  gravata: 'bob',
-  maid: 'bow',
-  sueter: 'bounce',
-  capa: 'sway',
-  boina: 'wiggle',
-  harpa: 'jingle',
-  raio: 'zap',
-  bolha: 'float',
-  cristal: 'sparkle',
-  antena: 'wiggle',
-  asas: 'flutter',
-  visor: 'wink',
-  aureola: 'sparkle'
+const CAT_PRIORITY = [
+  'astronauta',
+  'capacete',
+  'chapeu-bruxa',
+  'coroa',
+  'fone',
+  'microfone',
+  'capa',
+  'batuta',
+  'maid',
+  'chapeu-festa',
+  'oculos-coracao',
+  'estrelinha',
+  'sueter',
+  'boina',
+  'cachecol',
+  'gravata',
+  'coleira',
+  'oculos',
+  'lacinho',
+  'flor'
+];
+const OTTER_PRIORITY = [
+  'astronauta',
+  'capacete',
+  'maid',
+  'capa',
+  'chapeu-bruxa',
+  'coroa',
+  'fone',
+  'chapeu-festa',
+  'sueter',
+  'cachecol',
+  'batuta',
+  'microfone',
+  'oculos-coracao',
+  'oculos',
+  'estrelinha',
+  'lacinho',
+  'flor',
+  'gravata',
+  'coleira'
+];
+const CAT_REACT = {
+  astronauta: 'astronaut',
+  capacete: 'astronaut',
+  maid: 'maid',
+  lacinho: 'maid',
+  sueter: 'sweater',
+  cachecol: 'sweater',
+  capa: 'maestro',
+  batuta: 'maestro',
+  gravata: 'proud',
+  'chapeu-bruxa': 'bruxa',
+  coroa: 'coroa',
+  fone: 'fone',
+  'chapeu-festa': 'festa',
+  boina: 'boina',
+  oculos: 'boina',
+  microfone: 'microfone',
+  'oculos-coracao': 'coracao',
+  flor: 'coracao',
+  estrelinha: 'estrela',
+  coleira: 'pounce'
 };
-let lastReact = '';
+const OTTER_REACT = {
+  astronauta: 'zero-g',
+  capacete: 'zero-g',
+  maid: 'curtsy',
+  lacinho: 'curtsy',
+  gravata: 'curtsy',
+  sueter: 'shiver',
+  cachecol: 'shiver',
+  capa: 'conductor',
+  batuta: 'conductor',
+  boina: 'conductor',
+  oculos: 'conductor',
+  'chapeu-bruxa': 'levitate',
+  coroa: 'royal',
+  fone: 'popstar',
+  microfone: 'popstar',
+  'chapeu-festa': 'party',
+  'oculos-coracao': 'heartbeat',
+  estrelinha: 'spin',
+  flor: 'splash',
+  coleira: 'splash'
+};
+const REACT_META = {
+  astronaut: { glyph: '🚀', speech: 'Gravidade zero!', ms: 1400 },
+  maid: { glyph: '🎀', speech: 'Reverência!', ms: 1100 },
+  sweater: { glyph: '🧶', speech: 'Quentinho!', ms: 900 },
+  maestro: { glyph: '🎼', speech: 'Allegro vivace!', ms: 1300 },
+  proud: { glyph: '✨', speech: 'Bem elegante!', ms: 1000 },
+  bruxa: { glyph: '🧙', speech: 'Abracadabra!', ms: 1300 },
+  coroa: { glyph: '👑', speech: 'Saudação real!', ms: 1100 },
+  fone: { glyph: '🎧', speech: 'Solta a batida!', ms: 1100 },
+  festa: { glyph: '🎉', speech: 'Uhuuu!', ms: 1100 },
+  boina: { glyph: '🎨', speech: 'C’est magnifique!', ms: 1100 },
+  microfone: { glyph: '🎙️', speech: 'Show ao vivo!', ms: 1200 },
+  coracao: { glyph: '💖', speech: 'Apaixonado!', ms: 1000 },
+  estrela: { glyph: '⭐', speech: 'Brilho estelar!', ms: 1000 },
+  pounce: { glyph: '🐾', speech: 'Miau!', ms: 900 },
+  splash: { glyph: '💧', speech: 'Splash!', ms: 850 },
+  'zero-g': { glyph: '🌌', speech: 'Órbita lunar!', ms: 1300 },
+  curtsy: { glyph: '✨', speech: 'Lontra elegante!', ms: 900 },
+  shiver: { glyph: '☕', speech: 'Brrr, quentinho!', ms: 800 },
+  conductor: { glyph: '🎻', speech: 'Allegro!', ms: 1100 },
+  levitate: { glyph: '🔮', speech: 'Flutuando!', ms: 1200 },
+  royal: { glyph: '👑', speech: 'Rei das lontras!', ms: 1000 },
+  popstar: { glyph: '🎤', speech: 'Solo popstar!', ms: 1000 },
+  party: { glyph: '🎈', speech: 'Pula pula!', ms: 900 },
+  heartbeat: { glyph: '💕', speech: 'Coração disparado!', ms: 900 },
+  spin: { glyph: '⭐', speech: 'Giro estelar!', ms: 850 }
+};
+const ALL_REACTS = [...new Set([...Object.values(CAT_REACT), ...Object.values(OTTER_REACT), 'heart', 'wink', 'bounce', 'meow', 'sparkle', 'bob', 'sway', 'bow', 'conduct', 'sing', 'float', 'bloom', 'jingle', 'zap', 'flutter', 'peek', 'clap', 'wiggle'])];
+const REACT_SKIP = '.bc-cat, .bc-token, .outfit, .bc-ghost';
+let clicksBound = false;
 
 function outfitKinds(svg) {
   return [...svg.querySelectorAll('[class*="acc--"]')]
@@ -45,52 +128,88 @@ function outfitKinds(svg) {
     .map((c) => c.slice(5));
 }
 
-function clearReact(svg) {
-  ALL_REACTS.forEach((k) => svg.classList.remove(`is-react-${k}`));
+function pickReaction(svg) {
+  const otter = svg.classList.contains('creature--otter');
+  const kinds = outfitKinds(svg);
+  const order = otter ? OTTER_PRIORITY : CAT_PRIORITY;
+  const map = otter ? OTTER_REACT : CAT_REACT;
+  const id = order.find((k) => kinds.includes(k));
+  return (id && map[id]) || (otter ? 'splash' : 'pounce');
 }
 
-/** Clique no bichinho: carinha fofa + animação da roupinha, diferente para gato e lontra. */
+function clearReact(svg) {
+  ALL_REACTS.forEach((k) => {
+    svg.classList.remove(`is-react-${k}`);
+    svg.classList.remove(`animate-react-${k}`);
+  });
+  const root = svg.querySelector('.creature-root');
+  if (root) {
+    [...root.classList].filter((c) => c.startsWith('animate-react-')).forEach((c) => root.classList.remove(c));
+  }
+  svg.classList.remove('is-reacting');
+}
+
+/** Clique no bichinho: reação da roupa equipada. Não desequipa. */
 export function reactCreature(fig, svg) {
-  if (!svg) return;
-  const otter = svg.classList.contains('creature--otter');
-  const moods = otter ? OTTER_MOODS : CAT_MOODS;
-  const kinds = outfitKinds(svg);
-  const fromOutfit = kinds.map((id) => OUTFIT_REACT[id]).filter(Boolean);
-  const face = moods.filter((k) => k !== 'spin' && k !== 'stretch');
-  const pool = [...new Set(fromOutfit.length ? fromOutfit : face)].filter((k) => k !== lastReact);
-  const pick = pool.length ? pool : face;
-  const kind = pick[Math.floor(Math.random() * pick.length)];
-  lastReact = kind;
+  if (!svg || svg.classList.contains('is-reacting')) return;
+  const kind = pickReaction(svg);
+  const meta = REACT_META[kind] || REACT_META.pounce;
   const host = fig || svg.parentElement;
+  const root = svg.querySelector('.creature-root') || svg;
   clearReact(svg);
   void svg.offsetWidth;
-  svg.classList.add(`is-react-${kind}`);
+  svg.classList.add('is-reacting');
+  if (kind === 'coracao' || kind === 'heartbeat') svg.classList.add('is-react-heart');
+  root.classList.add(`animate-react-${kind}`);
   if (host) {
     host.classList.add('is-reacting');
-    const glyph = kind === 'sing' || kind === 'meow' ? '♪' : kind === 'splash' ? '💧' : kind === 'clap' ? '✧' : '♥';
-    const heart = el('span', { class: 'react-heart', 'aria-hidden': 'true' }, glyph);
-    host.append(heart);
-    setTimeout(() => heart.remove(), 900);
-    setTimeout(() => host.classList.remove('is-reacting'), 900);
+    host.querySelectorAll('.react-heart, .react-speech').forEach((n) => n.remove());
+    const heart = el('span', { class: 'react-heart', 'aria-hidden': 'true' }, meta.glyph);
+    const speech = el('span', { class: 'react-speech', 'aria-hidden': 'true' }, meta.speech);
+    host.append(heart, speech);
+    setTimeout(() => {
+      heart.remove();
+      speech.remove();
+      host.classList.remove('is-reacting');
+    }, meta.ms);
   }
-  setTimeout(() => svg.classList.remove(`is-react-${kind}`), 900);
+  const done = (e) => {
+    if (e && e.target !== root && e.target !== svg) return;
+    root.classList.remove(`animate-react-${kind}`);
+    svg.classList.remove('is-reacting', 'is-react-heart');
+    root.removeEventListener('animationend', done);
+  };
+  root.addEventListener('animationend', done);
+  setTimeout(() => done(), meta.ms + 80);
+}
+
+function bindCreatureClicks() {
+  if (clicksBound) return;
+  clicksBound = true;
+  document.addEventListener('click', (e) => {
+    const svg = e.target.closest && e.target.closest('svg.creature');
+    if (!svg || svg.closest(REACT_SKIP)) return;
+    const fig =
+      svg.closest(
+        'figure, .duo__member, .cantar__cat, .cantar__otter-art, .cantar__otter, .air-maestro, .tz-mascot, .cr-fan, .cr-car__pilot, .cn-stage__cat, .cn-stage__otter, .tm-stage__cat, .tm-stage__otter, .ct-ship__cat, .ct-ship__otter, .mycat__preview'
+      ) || svg.parentElement;
+    reactCreature(fig, svg);
+  });
 }
 
 function bindReact(root) {
+  bindCreatureClicks();
   root.querySelectorAll('.duo__member').forEach((fig) => {
     const svg = fig.querySelector('.creature');
     if (!svg || svg.dataset.reactBound) return;
     svg.dataset.reactBound = '1';
     svg.setAttribute('tabindex', '0');
     svg.style.cursor = 'pointer';
-    const go = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      reactCreature(fig, svg);
-    };
-    svg.addEventListener('click', go);
     svg.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') go(e);
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        reactCreature(fig, svg);
+      }
     });
   });
 }
@@ -287,6 +406,7 @@ function bindDockDrag(node) {
 }
 
 export function mountDock(root) {
+  bindCreatureClicks();
   const duo = createDuo({ size: 84, names: false });
   const bubble = el('div', { class: 'dock__bubble' });
   const toggle = el('button', { class: 'dock__toggle', 'aria-label': 'Esconder companheiros', title: 'Esconder/mostrar' }, '–');

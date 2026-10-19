@@ -112,9 +112,9 @@
   overflow: hidden;
   background:
     radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 55%),
-    var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+    linear-gradient(to bottom, color-mix(in srgb, var(--surface) 75%, #1c1416), var(--bg));
+  border: 2px solid color-mix(in srgb, var(--accent) 28%, var(--hairline));
+  border-radius: 16px;
 }
 .bc-stage.is-placing .bc-cat {
   outline: 1px dashed var(--accent-hover);
@@ -172,9 +172,11 @@
 .bc-cat__name {
   position: relative;
   z-index: 1;
-  font-family: var(--font);
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
   color: var(--text);
   text-align: center;
 }

@@ -29,7 +29,7 @@ const COAT_NAMES = {
   ink: 'Tinta'
 };
 const V1_MAP = { kick: 'bumbo', snare: 'caixa', hat: 'chimbal', meow: 'melodia-miau' };
-const MOUTH = '<g class="bc-mouth" opacity="0"><rect x="19" y="22" width="3" height="2" fill="#3a1d2e"/><rect x="20" y="23" width="1" height="1" fill="#ff7fb0"/></g>';
+const MOUTH = '<g class="bc-mouth" opacity="0"><rect x="22" y="21" width="4" height="2" fill="#3a1d2e"/><rect x="23" y="22" width="2" height="1" fill="#ff7fb0"/></g>';
 
 function clampPct(n, fallback) {
   const v = Number(n);

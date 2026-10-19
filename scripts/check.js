@@ -29,8 +29,10 @@ if (!Array.isArray(wordsJson.words) || wordsJson.words.length < 5000) {
 }
 
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mmp-check-'));
-const args = ['.'];
-if (process.platform === 'linux') args.push('--no-sandbox', '--disable-gpu');
+const profileDir = path.join(dataDir, 'electron-profile');
+fs.mkdirSync(profileDir, { recursive: true });
+const args = ['.', `--user-data-dir=${profileDir}`];
+if (process.platform === 'linux') args.push('--no-sandbox', '--disable-gpu', '--force-prefers-reduced-motion');
 
 const child = spawn(electron, args, {
   cwd: path.join(__dirname, '..'),
@@ -47,7 +49,16 @@ const pipe = (stream, out) =>
   );
 pipe(child.stdout, process.stdout);
 pipe(child.stderr, process.stderr);
+const watchdog = setTimeout(() => {
+  console.error('Selftest travou (timeout 8 min).');
+  try {
+    child.kill('SIGKILL');
+  } catch {}
+  fs.rmSync(dataDir, { recursive: true, force: true });
+  process.exit(1);
+}, 480000);
 child.on('exit', (code) => {
+  clearTimeout(watchdog);
   fs.rmSync(dataDir, { recursive: true, force: true });
   process.exit(code ?? 1);
 });

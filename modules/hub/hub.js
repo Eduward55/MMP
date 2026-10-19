@@ -54,10 +54,18 @@ export default {
             el('h1', { class: 'logo' }, el('span', { class: 'logo__my' }, 'My Music'), el('span', { class: 'logo__place' }, 'Place')),
             el('span', { class: 'logo__tag' }, 'MMP'),
             greeting,
-            el('p', { class: 'hub__how' }, 'Clique nos bichinhos para ver a carinha. O manual fica no botão Dicas, em cima, em cada módulo.'),
+            el('p', { class: 'hub__how' }, 'Clique nos bichinhos para ver a reação da roupinha. O manual fica no botão Dicas, em cima, em cada módulo.'),
             el('div', { class: 'hub__theme-wrap' }, createThemePicker())
           ),
-          el('div', { class: 'stage' }, notes, el('div', { class: 'stage__spot', 'aria-hidden': 'true' }), duo.el, el('div', { class: 'stage__podium', 'aria-hidden': 'true' }))
+          el(
+            'div',
+            { class: 'stage' },
+            notes,
+            el('div', { class: 'stage__spot', 'aria-hidden': 'true' }),
+            el('p', { class: 'stage__hint font-pixel' }, '[ clique para reagir ]'),
+            duo.el,
+            el('div', { class: 'stage__podium', 'aria-hidden': 'true' })
+          )
         ),
         cards,
         footer

@@ -14,8 +14,9 @@
 .cantar .chip.is-on {
   background: color-mix(in srgb, var(--accent) 16%, var(--bg));
 }
-.cantar__fx-now {
-  margin: 0;
+.cantar__fx-now,
+.cantar__field-hint {
+  margin: 4px 0 0;
   font-size: 0.82rem;
   line-height: 1.35;
   color: var(--text-muted);
@@ -41,9 +42,17 @@
   transition: width 0.05s linear;
 }
 .cantar__cat {
+  position: relative;
   display: grid;
   place-items: center;
-  min-height: 260px;
+  min-height: 280px;
+  margin-bottom: 8px;
+  background:
+    radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 55%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--surface) 70%, #1c1416), var(--bg));
+  border: 2px solid color-mix(in srgb, var(--accent) 28%, var(--hairline));
+  border-radius: 18px;
+  overflow: visible;
 }
 .cantar__cat svg.creature.is-sing-open {
   animation: hop 0.28s ease;
@@ -56,6 +65,13 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   width: 100%;
+  align-items: start;
+}
+.cantar__otter-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
 }
 .cantar__otter {
   display: flex;
@@ -71,8 +87,15 @@
 .cantar__otter.is-looping {
   border-color: var(--accent);
 }
-.cantar__otter.is-recording {
+.cantar__otter.is-recording,
+.cantar__otter-wrap.is-recording .cantar__otter-deck {
   border-color: var(--danger);
+}
+.cantar__otter.is-recording {
+  animation: cantar-rec-pulse 1s ease-in-out infinite;
+}
+.cantar__otter.is-solo {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 .cantar__otter.is-looping svg.creature {
   animation: hop 0.7s ease-in-out infinite;
@@ -82,9 +105,45 @@
   animation: hop 0.32s ease-in-out infinite;
 }
 .cantar__otter-name {
-  font-size: 0.78rem;
-  font-weight: 650;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
   color: var(--accent);
+}
+.cantar__otter-countdown {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--danger);
+  text-align: center;
+}
+.cantar__otter-countdown.is-idle {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.cantar__otter-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px dashed var(--hairline);
+  border-radius: 10px;
+}
+.cantar__otter-wrap.is-recording .cantar__otter-deck {
+  border-style: solid;
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+}
+.cantar__otter-wrap.is-playing .cantar__otter-deck {
+  border-style: solid;
+  border-color: var(--accent);
+}
+.cantar__otter-deck-hint {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  color: var(--text-muted);
+  text-align: center;
 }
 .cantar__otter-interval {
   display: flex;
@@ -108,11 +167,6 @@
   gap: 4px;
   justify-content: center;
 }
-.cantar__otter-countdown {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--danger);
-}
 .cantar__otter-ask-row {
   display: flex;
   align-items: center;
@@ -126,8 +180,34 @@
   width: 4.6rem;
   text-align: center;
 }
+.cantar__otter-transport {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.cantar__otter-rec {
+  grid-column: 1 / -1;
+}
+.cantar__pitch-sel {
+  min-width: 10rem;
+}
+.cantar__otter-transport .btn.is-on,
+.cantar__otter-transport .btn[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  border-color: var(--accent);
+}
+@keyframes cantar-rec-pulse {
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 32%, transparent);
+  }
+}
 @media (max-width: 900px) {
   .cantar {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 720px) {
+  .cantar__otters {
     grid-template-columns: 1fr;
   }
 }

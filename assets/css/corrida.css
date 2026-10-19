@@ -26,9 +26,9 @@
   align-items: center;
   gap: 4px;
   padding: 8px;
-  background: var(--bg);
-  border: 1px solid var(--hairline);
-  border-radius: 10px;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--surface) 70%, #1c1416), var(--bg));
+  border: 2px solid color-mix(in srgb, var(--accent) 28%, var(--hairline));
+  border-radius: 12px;
 }
 .cr-fan__name {
   font-size: 0.78rem;
