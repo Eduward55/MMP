@@ -9,6 +9,7 @@
   "scripts": {
     "start": "electron .",
     "start:local-data": "electron . --local-data",
+    "playtest": "electron . --no-sandbox --disable-gpu --user-data-dir=./data/electron-playtest",
     "preview": "node scripts/preview-server.mjs",
     "vendor": "node scripts/setup-vendor.js",
     "screenshots": "node scripts/screenshots.js",

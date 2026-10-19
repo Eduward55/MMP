@@ -115,10 +115,48 @@ export function formatBytes(n) {
   return `${(n / 1024 / 1024).toFixed(1)} MB`;
 }
 
+let toneLoader = null;
+
+/** Carrega Tone.js depois do Hub. Não bloqueia o splash: o script antigo no <head> criava AudioContext e travava o Chrome. */
+export function loadTone() {
+  if (window.Tone) return Promise.resolve(window.Tone);
+  if (toneLoader) return toneLoader;
+  toneLoader = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = new URL('../../vendor/tone/Tone.js', import.meta.url).href;
+    s.async = true;
+    const fail = (msg) => {
+      toneLoader = null;
+      reject(new Error(msg));
+    };
+    const timer = setTimeout(() => fail('Tone.js demorou demais (AudioContext?). O Hub segue sem som.'), 8000);
+    s.onload = () => {
+      clearTimeout(timer);
+      if (window.Tone) resolve(window.Tone);
+      else fail('Tone.js não carregou (vendor/tone/Tone.js).');
+    };
+    s.onerror = () => {
+      clearTimeout(timer);
+      fail('Tone.js não carregou (vendor/tone/Tone.js).');
+    };
+    document.head.append(s);
+  });
+  return toneLoader;
+}
+
 export async function startAudio() {
-  if (!window.Tone) throw new Error('Tone.js não carregou (vendor/tone/Tone.js).');
-  if (window.Tone.context.state !== 'running') await window.Tone.start();
-  return window.Tone;
+  const Tone = await loadTone();
+  try {
+    if (Tone.context && Tone.context.state !== 'running') {
+      await Promise.race([
+        Tone.start(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('AudioContext não iniciou.')), 4000))
+      ]);
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+  return Tone;
 }
 
 export function stamp() {

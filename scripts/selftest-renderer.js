@@ -13,7 +13,10 @@
   try {
     const initial = await window.mmp.gallery.list();
     ok('galeria semeada no primeiro uso', initial.length === 2, `${initial.length} itens`);
-    ok('Tone.js carregado de /vendor', window.Tone && window.Tone.version, window.Tone && window.Tone.version);
+    const toneFile = await fetch('vendor/tone/Tone.js')
+      .then((r) => r.ok)
+      .catch(() => false);
+    ok('Tone.js servido de /vendor (lazy, depois do Hub)', toneFile, String(toneFile));
 
     await go('hub');
     ok(

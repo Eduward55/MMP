@@ -12,8 +12,6 @@ export default {
   icon: 'mycat',
   hideDock: true,
   async mount(root, { modules }) {
-    const duo = createDuo({ size: 210, catClass: 'is-idle', otterClass: 'is-dancing' });
-
     const greeting = el('p', { class: 'hub__greeting' });
     const renderGreeting = (p) => {
       greeting.innerHTML = `<strong>${esc(p.cat.name)}</strong> e <strong>${esc(p.otter.name)}</strong> afinaram tudo. Escolha um palco!`;
@@ -28,11 +26,17 @@ export default {
 
     const cards = el('nav', { class: 'cards', 'aria-label': 'Módulos' });
     modules.forEach((m, idx) => {
+      let iconHtml = '';
+      try {
+        iconHtml = icon(m.icon, 56);
+      } catch (err) {
+        console.error(err);
+      }
       cards.append(
         el(
           'a',
           { class: 'card', href: `#/${m.id}`, style: `--delay:${idx * 60}ms` },
-          el('span', { class: 'card__icon', html: icon(m.icon, 56) }),
+          el('span', { class: 'card__icon', html: iconHtml }),
           el('span', { class: 'card__body' }, el('span', { class: 'card__title' }, m.title), el('span', { class: 'card__desc' }, m.desc)),
           m.id === 'gallery' ? el('span', { class: 'card__badge', 'data-gallery-count': '' }) : null
         )
@@ -40,6 +44,22 @@ export default {
     });
 
     const footer = el('footer', { class: 'hub__footer' }, el('span', {}, '100% offline · Tone.js e MediaPipe locais em /vendor'));
+    const podium = el('div', { class: 'stage__podium', 'aria-hidden': 'true' });
+    const stage = el(
+      'div',
+      { class: 'stage' },
+      notes,
+      el('div', { class: 'stage__spot', 'aria-hidden': 'true' }),
+      el('p', { class: 'stage__hint font-pixel' }, '[ clique para reagir ]'),
+      podium
+    );
+    let themePicker;
+    try {
+      themePicker = createThemePicker();
+    } catch (err) {
+      console.error(err);
+      themePicker = el('div');
+    }
 
     root.append(
       el(
@@ -55,22 +75,32 @@ export default {
             el('span', { class: 'logo__tag' }, 'MMP'),
             greeting,
             el('p', { class: 'hub__how' }, 'Clique nos bichinhos para ver a reação da roupinha. O manual fica no botão Dicas, em cima, em cada módulo.'),
-            el('div', { class: 'hub__theme-wrap' }, createThemePicker())
+            el('div', { class: 'hub__theme-wrap' }, themePicker)
           ),
-          el(
-            'div',
-            { class: 'stage' },
-            notes,
-            el('div', { class: 'stage__spot', 'aria-hidden': 'true' }),
-            el('p', { class: 'stage__hint font-pixel' }, '[ clique para reagir ]'),
-            duo.el,
-            el('div', { class: 'stage__podium', 'aria-hidden': 'true' })
-          )
+          stage
         ),
         cards,
         footer
       )
     );
+
+    await new Promise((resolve) => {
+      const t = setTimeout(resolve, 32);
+      if (typeof requestAnimationFrame === 'function') {
+        requestAnimationFrame(() => {
+          clearTimeout(t);
+          resolve();
+        });
+      }
+    });
+
+    let duo = { el: el('div', { class: 'duo' }), destroy() {} };
+    try {
+      duo = createDuo({ size: 210, catClass: 'is-idle', otterClass: 'is-dancing' });
+    } catch (err) {
+      console.error(err);
+    }
+    stage.insertBefore(duo.el, podium);
 
     gallery
       .list()

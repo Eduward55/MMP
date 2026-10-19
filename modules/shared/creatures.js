@@ -145,15 +145,22 @@ function bonusLayers(kind, outfit, rear) {
  * kind: 'cat' | 'otter'; look: { coat, eyes, outfit }
  */
 export function creatureSVG(kind, look = {}, { size = 160, label = '', extraClass = '', viewBox = `0 0 ${SIZE} ${SIZE}`, pose = 'front' } = {}) {
-  const rear = pose === 'rear';
-  const outfit = look.outfit || {};
-  const bonus = bonusLayers(kind, outfit, rear);
-  const inner =
-    kind === 'otter'
-      ? otterInnerSVG(otterPalette(look), { rear, outfit, bonus })
-      : catInnerSVG(catPalette(look), { rear, outfit, bonus });
-  const classes = ['creature', `creature--${kind}`, rear ? 'creature--rear' : '', extraClass].filter(Boolean).join(' ');
-  return `<svg xmlns="http://www.w3.org/2000/svg" class="${classes}" viewBox="${viewBox}" width="${size}" height="${size}" shape-rendering="crispEdges" role="img" aria-label="${escapeAttr(label)}">${inner}</svg>`;
+  const classes = ['creature', `creature--${kind}`, extraClass].filter(Boolean).join(' ');
+  try {
+    const rear = pose === 'rear';
+    const outfit = look.outfit || {};
+    const bonus = bonusLayers(kind, outfit, rear);
+    const inner =
+      kind === 'otter'
+        ? otterInnerSVG(otterPalette(look), { rear, outfit, bonus })
+        : catInnerSVG(catPalette(look), { rear, outfit, bonus });
+    const cls = ['creature', `creature--${kind}`, rear ? 'creature--rear' : '', extraClass].filter(Boolean).join(' ');
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="${cls}" viewBox="${viewBox}" width="${size}" height="${size}" shape-rendering="crispEdges" role="img" aria-label="${escapeAttr(label)}">${inner}</svg>`;
+  } catch (err) {
+    console.error(err);
+    const fill = kind === 'otter' ? '#a06047' : '#b48a60';
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="${classes}" viewBox="0 0 ${SIZE} ${SIZE}" width="${size}" height="${size}" shape-rendering="crispEdges" role="img" aria-label="${escapeAttr(label)}"><rect x="16" y="14" width="16" height="22" fill="${fill}"/></svg>`;
+  }
 }
 
 export function catSVG(coat, eye, equippedAccs, opts = {}) {

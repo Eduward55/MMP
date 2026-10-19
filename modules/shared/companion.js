@@ -230,13 +230,25 @@ export function createDuo({ size = 120, names = true, catOverride, otterOverride
     current = p;
     const catLook = { ...p.cat, outfit: { ...p.cat.outfit, ...(catOverride || {}) } };
     const otterLook = { ...p.otter, outfit: { ...p.otter.outfit, ...(otterOverride || {}) } };
+    let catMarkup = '';
+    let otterMarkup = '';
+    try {
+      catMarkup = creatureSVG('cat', catLook, { size, label: `Gato ${p.cat.name}`, extraClass: catClass });
+    } catch (err) {
+      console.error(err);
+    }
+    try {
+      otterMarkup = creatureSVG('otter', otterLook, { size: Math.round(size * 0.8), label: `Lontra ${p.otter.name}`, extraClass: otterClass });
+    } catch (err) {
+      console.error(err);
+    }
     root.innerHTML = `
       <figure class="duo__member duo__member--cat">
-        ${creatureSVG('cat', catLook, { size, label: `Gato ${p.cat.name}`, extraClass: catClass })}
+        ${catMarkup}
         ${names ? `<figcaption class="nameplate">${esc(p.cat.name)}</figcaption>` : ''}
       </figure>
       <figure class="duo__member duo__member--otter">
-        ${creatureSVG('otter', otterLook, { size: Math.round(size * 0.8), label: `Lontra ${p.otter.name}`, extraClass: otterClass })}
+        ${otterMarkup}
         ${names ? `<figcaption class="nameplate nameplate--otter">${esc(p.otter.name)}</figcaption>` : ''}
       </figure>`;
     bindReact(root);
@@ -293,25 +305,34 @@ function liveOverlayShouldHide() {
   );
 }
 
+let dockSyncing = false;
+
 function syncDockVisibility() {
-  const hide = !moduleVisible || liveOverlayShouldHide();
-  const root = dockRootEl();
-  htmlToggle(document.documentElement, 'is-dock-hidden', hide);
-  if (root) {
-    root.hidden = hide;
-    if (hide) {
-      root.style.setProperty('display', 'none', 'important');
-      root.setAttribute('aria-hidden', 'true');
-    } else {
-      root.style.removeProperty('display');
-      root.removeAttribute('aria-hidden');
+  if (dockSyncing) return;
+  dockSyncing = true;
+  try {
+    const hide = !moduleVisible || liveOverlayShouldHide();
+    const root = dockRootEl();
+    htmlToggle(document.documentElement, 'is-dock-hidden', hide);
+    if (root) {
+      if (root.hidden !== hide) root.hidden = hide;
+      if (hide) {
+        root.style.setProperty('display', 'none', 'important');
+        if (root.getAttribute('aria-hidden') !== 'true') root.setAttribute('aria-hidden', 'true');
+      } else {
+        root.style.removeProperty('display');
+        if (root.hasAttribute('aria-hidden')) root.removeAttribute('aria-hidden');
+      }
     }
+    if (dock && dock.hidden !== hide) dock.hidden = hide;
+  } finally {
+    dockSyncing = false;
   }
-  if (dock) dock.hidden = hide;
 }
 
 function htmlToggle(node, cls, on) {
   if (!node) return;
+  if (node.classList.contains(cls) === Boolean(on)) return;
   node.classList.toggle(cls, on);
 }
 
@@ -407,7 +428,13 @@ function bindDockDrag(node) {
 
 export function mountDock(root) {
   bindCreatureClicks();
-  const duo = createDuo({ size: 84, names: false });
+  let duo;
+  try {
+    duo = createDuo({ size: 84, names: false });
+  } catch (err) {
+    console.error(err);
+    duo = { el: el('div', { class: 'duo' }), destroy() {} };
+  }
   const bubble = el('div', { class: 'dock__bubble' });
   const toggle = el('button', { class: 'dock__toggle', 'aria-label': 'Esconder companheiros', title: 'Esconder/mostrar' }, '–');
   const edit = el('a', { class: 'dock__edit', href: '#/mycat', title: 'Editar no Meu Gato' }, 'Editar');
@@ -431,7 +458,7 @@ export function mountDock(root) {
   });
   bindDockDrag(node);
   bindDockChrome();
-  root.append(node);
+  if (root) root.append(node);
   syncDockVisibility();
   return node;
 }
@@ -447,17 +474,17 @@ function bindDockChrome() {
   document.addEventListener('webkitfullscreenchange', onChrome);
   window.addEventListener('resize', onChrome);
   new MutationObserver((mutations) => {
+    if (dockSyncing) return;
     for (const m of mutations) {
       const el = m.target;
       if (!(el instanceof Element)) continue;
+      if (el.id === 'dock-root' || (dock && el === dock)) continue;
       if (
         el === document.documentElement ||
         el === document.body ||
-        el.id === 'dock-root' ||
         el.classList.contains('btn--rec') ||
         el.classList.contains('airx') ||
-        el.classList.contains('airx__arena') ||
-        el.classList.contains('dock')
+        el.classList.contains('airx__arena')
       ) {
         onChrome();
         return;
