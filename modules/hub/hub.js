@@ -54,8 +54,8 @@ export default {
             el('h1', { class: 'logo' }, el('span', { class: 'logo__my' }, 'My Music'), el('span', { class: 'logo__place' }, 'Place')),
             el('span', { class: 'logo__tag' }, 'MMP'),
             greeting,
-            el('p', { class: 'hub__how' }, 'Clique nos bichinhos para ver a carinha. Tema, dicas e os módulos ficam aqui embaixo.'),
-            createThemePicker()
+            el('p', { class: 'hub__how' }, 'Clique nos bichinhos para ver a carinha. O manual fica no botão Dicas, em cima, em cada módulo.'),
+            el('div', { class: 'hub__theme-wrap' }, createThemePicker())
           ),
           el('div', { class: 'stage' }, notes, el('div', { class: 'stage__spot', 'aria-hidden': 'true' }), duo.el, el('div', { class: 'stage__podium', 'aria-hidden': 'true' }))
         ),

@@ -117,6 +117,48 @@ const MAPS = {
     '.r.....v...r',
     '............'
   ],
+  cantar: [
+    '............',
+    '....nnnn....',
+    '...nwwwwwn..',
+    '..nwkkkkwn..',
+    '..nwwwwkwn..',
+    '...nnnnnn...',
+    '.....nn.....',
+    '....oooo....',
+    '...oowwoo...',
+    '...oooooo...',
+    '..mm....mm..',
+    '............'
+  ],
+  tetris: [
+    '..pppppp....',
+    '..pppppp....',
+    '....pp......',
+    'oooo..yyyy..',
+    'oooo..yyyy..',
+    'gggggg..vv..',
+    'gggggg..vv..',
+    '....rrrrrr..',
+    '....rrrrrr..',
+    '..oooooooo..',
+    '..oowwoo....',
+    '............'
+  ],
+  corrida: [
+    '............',
+    '....oooo....',
+    '...oooooo...',
+    '..oowwwoo...',
+    '..oooooooo..',
+    '..nnoooonn..',
+    'nn......nn..',
+    '..yyyyyyyy..',
+    '.ywwywwyy...',
+    '..yyyyyy....',
+    '.r......v...',
+    '............'
+  ],
   mycat: [
     '.o........o.',
     '.oo......oo.',

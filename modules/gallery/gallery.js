@@ -19,7 +19,7 @@ const TYPE_INFO = {
 };
 const hasEvents = (item) => item.type === 'project' || item.type === 'beat' || Boolean(item.eventsFile);
 
-const MODULE_NAMES = { beatcats: 'Beat Cats', studio: 'Studio', airpads: 'Air Pads', cattyping: 'Cat Typing', mmp: 'MMP' };
+const MODULE_NAMES = { beatcats: 'Beat Cats', studio: 'Studio', airpads: 'Air Pads', cattyping: 'Cat Typing', cantar: 'Cantar', tetris: 'Tetris', corrida: 'Corrida', mmp: 'MMP' };
 
 export default {
   id: 'gallery',

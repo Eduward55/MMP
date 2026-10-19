@@ -9,9 +9,9 @@ import { el, esc, startAudio, stamp, toast } from '../shared/ui.js';
 import { GROUPS, GROUP_BY_ID, LOOP_STEPS, SOUNDS, SOUND_BY_ID, makeCaptured, otterSplash } from './sounds.js';
 import { createStageRecorder } from './stage-recorder.js';
 
-const CAT_COUNT = 6;
+const CAT_COUNT = 8;
 const ROUND_STEPS = 32;
-const COAT_NAMES = { tabby: 'Listrado', black: 'Breu', tuxedo: 'Frajola', white: 'Neve', orange: 'Laranjinha', gray: 'Fumaça' };
+const COAT_NAMES = { tabby: 'Listrado', black: 'Breu', tuxedo: 'Frajola', white: 'Neve', orange: 'Laranjinha', gray: 'Fumaça', cream: 'Creme', chocolate: 'Chocolate' };
 const V1_MAP = { kick: 'bumbo', snare: 'caixa', hat: 'chimbal', meow: 'melodia-miau' };
 const MOUTH = '<g class="bc-mouth" opacity="0"><rect x="19" y="22" width="3" height="2" fill="#3a1d2e"/><rect x="20" y="23" width="1" height="1" fill="#ff7fb0"/></g>';
 
@@ -23,7 +23,7 @@ function band(profile) {
   ].slice(0, CAT_COUNT);
 }
 
-// Converte um beat salvo (v2 ou o formato antigo de sequenciador) para a lista de sons dos 6 gatos.
+// Converte um beat salvo (v2 ou o formato antigo de sequenciador) para a lista de sons dos 8 gatos.
 export function beatFromJson(json) {
   const cats = new Array(CAT_COUNT).fill(null);
   if (json && Array.isArray(json.cats)) {
@@ -95,7 +95,7 @@ export default {
       el('span', { class: 'bc-otter__name' }, profile.otter.name),
       el('span', { class: 'bc-otter__hint' }, 'Splash!')
     );
-    const stage = el('div', { class: 'bc-stage' }, el('div', { class: 'bc-cats' }, ...catEls), otter);
+    const stage = el('div', { class: 'bc-stage' }, el('div', { class: 'bc-line' }, el('div', { class: 'bc-cats' }, ...catEls), otter));
 
     const palette = el('div', { class: 'bc-palette' });
     const tokens = new Map();
@@ -138,7 +138,7 @@ export default {
       const g = s && GROUP_BY_ID[s.group];
       c.className = `bc-cat ${current ? 'is-active' : 'is-empty'} ${s ? `bc-cat--${s.group}` : ''} ${pending.has(i) ? (target ? 'is-pending' : 'is-leaving') : ''}`;
       c.style.setProperty('--c', g ? g.color : '#2a2a32');
-      const svg = creatureSVG('cat', catLook(i, shown), { size: 120, label: members[i].name }).replace('</svg>', `${MOUTH}</svg>`);
+      const svg = creatureSVG('cat', catLook(i, shown), { size: 88, label: members[i].name }).replace('</svg>', `${MOUTH}</svg>`);
       c.innerHTML = `
         <div class="bc-cat__spot" aria-hidden="true"></div>
         <div class="bc-cat__art">${svg}</div>
@@ -533,7 +533,7 @@ export default {
         catEls.forEach((_, i) => remove(i));
         select(null);
       }
-    }, 'Silenciar todos');
+    }, 'Limpar todos os beats');
     const studioBtn = el('button', {
       class: 'btn btn--ghost',
       title: 'Leva as notas que os gatos tocaram para editar no Studio',

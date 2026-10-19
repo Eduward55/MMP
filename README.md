@@ -1,6 +1,6 @@
 # My Music Place (MMP)
 
-App desktop musical, fofo e **100% offline**, feito com **Electron + HTML/JS/CSS puro** (sem frameworks de UI, sem bundler). Tema padrão **Noite** (fundo `#0f0f12`, bordas zinco, acento azul). Dá para trocar para Oceano, Dia, Uva ou Creme no Hub ou no botão **Tema**. Os gatos em pixel art continuam; as cores ficam em `assets/css/theme.css`. A gata **Pirrinha** e a lontra **Manhoso** aparecem em todos os módulos.
+App desktop musical, fofo e **100% offline**, feito com **Electron + HTML/JS/CSS puro** (sem frameworks de UI, sem bundler). Tema padrão **Noite** (fundo `#0f0f12`, bordas zinco, acento azul). O ícone de paleta no Hub e na barra de cima abre as paletas (Noite, Oceano, Dia, Uva, Creme, Floresta, Pôr do sol, Doce, Menta, Rosa). As cores ficam em `assets/css/theme.css`. A gata **Pirrinha** e a lontra **Manhoso** aparecem em todos os módulos.
 
 ## Como rodar
 
@@ -60,17 +60,20 @@ O repositório precisa ser **privado** no GitHub (a Action usa `GITHUB_TOKEN` co
 
 ## O que tem
 
-- **Hub** — Pirrinha e Manhoso no palco (clique para a carinha fofa), seletor de tema e os cards dos módulos (bordas discretas, ícones coloridos).
-- **Meu Gato** — nomes padrão **Pirrinha** (gato) e **Manhoso** (lontra). 6 pelagens, cor dos olhos e **20 roupinhas/acessórios**. As mudanças **salvam sozinhas**. Clique no bichinho para ver a reação da roupa. Um item por lugar (cabeça, orelha, rosto, pescoço, corpo, costas, patinha).
+- **Hub** — Pirrinha e Manhoso no palco (clique para a carinha fofa). O tema fica num **ícone pequeno** que expande as paletas. Os cards dos módulos ficam embaixo.
+- **Meu Gato** — nomes padrão **Pirrinha** (gato) e **Manhoso** (lontra). Pelagem e olhos **separados** para cada um (8 pelagens no gato, 6 na lontra) e **20 roupinhas**. As mudanças **salvam sozinhas**. Clique no bichinho para ver a reação da roupa. Um item por lugar (cabeça, orelha, rosto, pescoço, corpo, costas, patinha).
 - **Galeria** — lista áudios, vídeos, beats e projetos do Studio, com filtro, busca, ordenação e ações de **abrir, renomear, exportar e apagar**. Itens que têm notas (gravações dos módulos, beats, projetos) ganham o botão **No Studio**.
-- **Beat Cats** — beatbox em grupo com 6 gatos em pixel art (o seu gato + as outras 5 pelagens do Meu Gato), vazios no início. Arraste (mouse ou toque) um dos 24 acessórios sonoros sintetizados com Tone.js (6 bateria, 5 baixo, 5 acordes, 4 melodia, 4 efeitos) para um gato: ele entra no loop sincronizado no BPM, canta e dança. Arrastar para fora ou tocar no gato silencia. Modo contínuo (entra na hora) ou por rodada (entra na próxima rodada de 2 compassos). A lontra faz um *splash* especial (tecla O). Grava só áudio ou áudio + animação (vídeo webm) direto na Galeria; Salvar guarda gatos/camadas/BPM/modo e o beat reabre da Galeria.
+- **Beat Cats** — beatbox em grupo com **8 gatos** em pixel art + a lontra na mesma linha, vazios no início. Arraste (mouse ou toque) um dos **28** acessórios sonoros sintetizados com Tone.js (6 bateria, 5 baixo, 5 acordes, 6 melodia, 6 efeitos) para um gato: ele entra no loop sincronizado no BPM, canta e dança. **Limpar todos os beats** silencia a linha. Arrastar para fora ou tocar no gato silencia um. Modo contínuo ou por rodada. A lontra faz um *splash* especial (tecla O). Grava só áudio ou áudio + animação (vídeo webm) direto na Galeria.
 - **Studio** — edita as notas tocadas nos módulos: **piano roll** e **step sequencer**. Projeto novo nasce como **Projeto 1** (sem data no nome). Dicas na barra de cima. **Exportar WAV** / **WebM**; **Salvar** guarda na Galeria.
-- **Air Pads** — duas mãos, dois círculos (esquerda/direita alinhadas com a câmera selfie). Cada círculo é **fatiado** com as notas da escala (na bateria: chimbal, caixa, bumbo). Sem câmera: mouse, teclas **A** e **L**, ou **Simular dedos**.
+- **Air Pads** — duas mãos, dois círculos (esquerda/direita alinhadas com a câmera selfie). Cada círculo é uma **pizza** de fatias (notas da escala; na bateria: chimbal, caixa, bumbo). Os instrumentos ficam **em cima**. A dica da câmera pede para se afastar se a imagem estiver grande. Sem câmera: mouse, teclas **A** e **L**, ou **Simular dedos**.
 - **Termo** — palavras de 5 letras mais cotidianas. Clique numa casa, **espaço** pula para a próxima, Backspace apaga a casa atual. Não precisa digitar a palavra inteira em ordem.
 - **Conexões** — jogo de 16 palavras em **4 grupos de 4**, no espírito do Connections. O tabuleiro é gerado na hora a partir de **400+ categorias** reais (`data/conexoes/categories.json`: psicologia, arte, história, música e gerais, 8 a 12 palavras cada). O gerador escolhe 4 categorias **sem palavras ambíguas** (uma palavra não pode pertencer a duas das quatro) e pega 4 palavras de cada; isso dá **centenas de milhões** de combinações. Você seleciona 4 e manda **Enviar**: acertou, o grupo revela a categoria e a cor (amarelo/verde/azul/roxo, do mais direto ao mais obscuro); **4 erros e perde**. Tem **embaralhar**, **dica** (ilumina duas palavras do grupo mais fácil que resta), **histórico** e **recorde local** (vitórias, sequência, menos erros). O gato e a lontra do Meu Gato reagem a acerto, erro, vitória e derrota. **Salvar** guarda a partida em andamento.
-- **Cat Typing** — Pirrinha e Manhoso de **costas numa navezinha** (orelhas e rabo). Cada letra atira um laser nos asteroides. Palavras de **3 a 7 letras**, misturadas. **Tab** ou **Esc** pausa (a letra **P** escreve P). Lista com 5.000+ palavras reais.
+- **Cat Typing** — Pirrinha e Manhoso de **costas numa nave** (orelhas, rabo, canopi e motores). Cada letra atira um laser. Se o asteroide chega embaixo, a nave treme e uma vida some. Palavras de **3 a 7 letras**. **Tab** ou **Esc** pausa. Lista com 5.000+ palavras reais.
+- **Cantar** — microfone com autotune e modificadores de voz, mix com arpejo ou um beat da Galeria (Sync no BPM). O gato abre a boca no volume da voz; dá para gravar frases das lontrinhas repetindo no tempo.
+- **Tetris** — peças caindo no palco do gato. Setas ou WASD.
+- **Corrida** — desvie de cones e pedras com WASD ou setas, gato e lontra no carrinho.
 
-Todo módulo tem a mesma barra: **◀ Hub**, **Dicas**, **Salvar** (`Ctrl+S`), **Galeria** e **Tema**.
+Todo módulo tem a mesma barra: **◀ Hub**, **Dicas** (o manual), **Salvar** (`Ctrl+S`), **Galeria** e o **ícone de tema**. Os bichinhos no canto da tela podem ser **arrastados**.
 
 ### Tema visual
 

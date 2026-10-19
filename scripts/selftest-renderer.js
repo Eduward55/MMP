@@ -21,9 +21,9 @@
       $('.hub__greeting') && $('.hub__greeting').textContent.includes('Pirrinha') && $('.hub__greeting').textContent.includes('Manhoso'),
       $('.hub__greeting') && $('.hub__greeting').textContent
     );
-    ok('Hub: seletor de tema', $$('.theme-swatch').length >= 5, String($$('.theme-swatch').length));
+    ok('Hub: seletor de tema compacto', $('.theme-fab') && $$('.theme-swatch').length >= 8, String($$('.theme-swatch').length));
 
-    for (const r of ['airpads', 'beatcats', 'studio', 'gallery', 'termo', 'conexoes', 'cattyping', 'mycat']) {
+    for (const r of ['airpads', 'beatcats', 'studio', 'cantar', 'gallery', 'termo', 'conexoes', 'cattyping', 'tetris', 'corrida', 'mycat']) {
       await go(r);
       const bar = $('.topbar');
       const hasAll = bar && bar.querySelector('.topbar__back') && bar.querySelector('.topbar__save') && bar.querySelector('a[href="#/gallery"]') && bar.querySelector('.topbar__hint');
@@ -40,7 +40,7 @@
 
     await window.mmp.gallery.rename(beat.id, 'Ronron Funk');
     const read = await window.mmp.gallery.read(beat.id);
-    ok('renomear + ler beat', read.item.name === 'Ronron Funk' && read.json.version === 2 && read.json.cats.length === 6, read.item.name);
+    ok('renomear + ler beat', read.item.name === 'Ronron Funk' && read.json.version === 2 && read.json.cats.length === 8, read.item.name);
 
     await go(`beatcats?open=${beat.id}`);
     ok('abrir beat da Galeria no Beat Cats', $('.beatcats input.input').value === 'Ronron Funk');
@@ -55,11 +55,24 @@
     $$('.chip').find((c) => c.textContent.includes('Frajola')).click();
     $$('.outfit').find((c) => c.textContent.includes('Coroa')).click();
     $$('.segmented__btn')[1].click();
+    const otterCoat = $$('.chip').find((c) => c.textContent.includes('Mel'));
+    if (otterCoat) otterCoat.click();
+    $$('.eye-dot')[1].click();
     $$('.outfit').find((c) => c.textContent.includes('Astronauta')).click();
     $('.topbar__save').click();
     await sleep(700);
     const prof = await window.mmp.store.read('profile');
-    ok('Meu Gato salva perfil em JSON', prof.cat.name === 'Bolinha' && prof.cat.coat === 'tuxedo' && prof.cat.outfit.head === 'coroa' && prof.otter.outfit.body === 'astronauta', JSON.stringify(prof));
+    ok(
+      'Meu Gato salva perfil em JSON',
+      prof.cat.name === 'Bolinha' &&
+        prof.cat.coat === 'tuxedo' &&
+        prof.cat.outfit.head === 'coroa' &&
+        prof.otter.outfit.body === 'astronauta' &&
+        prof.otter.coat === 'honey' &&
+        prof.otter.eyes,
+      JSON.stringify(prof)
+    );
+    ok('Meu Gato: olhos da lontra não copiam os do gato', prof.otter.eyes.toLowerCase() !== prof.cat.eyes.toLowerCase(), `${prof.cat.eyes} vs ${prof.otter.eyes}`);
 
     await go('hub');
     ok('Hub reflete o gato salvo', $('.hub__greeting').textContent.includes('Bolinha') && $('.acc--coroa') && !$('.acc--batuta'));
@@ -86,7 +99,12 @@
     ap.tap(1, 0, 0.8);
     await sleep(150);
     s = ap.state();
-    ok('Air Pads: círculo da direita toca bateria (zona do bumbo)', s.hits[1] === 1 && s.labels[1] === 'Bumbo', s.labels[1]);
+    ap.release();
+    await sleep(80);
+    ap.tap(1, -0.75, -0.4);
+    await sleep(150);
+    s = ap.state();
+    ok('Air Pads: círculo da direita toca bateria (zona do bumbo)', s.hits[1] >= 1 && s.labels[1] === 'Bumbo', s.labels[1]);
     ok('Air Pads: maestro aponta para o círculo tocado', $('.air-maestro').classList.contains('is-right'));
     ap.release();
     await sleep(120);
@@ -138,10 +156,11 @@
     const bc = window.__mmpBeatCats;
     const snd = bc.sounds();
     const count = (g) => snd.filter((x) => x.group === g).length;
-    ok('Beat Cats: 24 sons (6 bateria, 5 baixo, 5 acordes, 4 melodia, 4 efeitos)', snd.length === 24 && count('drums') === 6 && count('bass') === 5 && count('chords') === 5 && count('melody') === 4 && count('fx') === 4 && new Set(snd.map((x) => x.outfit)).size === 24, snd.length);
-    ok('Beat Cats: 6 gatos vazios no início', $$('.bc-cat').length === 6 && $$('.bc-cat.is-empty').length === 6 && bc.state().cats.every((c) => c === null));
+    ok('Beat Cats: 28 sons (6 bateria, 5 baixo, 5 acordes, 6 melodia, 6 efeitos)', snd.length === 28 && count('drums') === 6 && count('bass') === 5 && count('chords') === 5 && count('melody') === 6 && count('fx') === 6 && new Set(snd.map((x) => x.outfit)).size === 28, snd.length);
+    ok('Beat Cats: 8 gatos vazios no início + lontra na linha', $$('.bc-cat').length === 8 && $$('.bc-cat.is-empty').length === 8 && bc.state().cats.every((c) => c === null) && $('.bc-line .bc-otter'), $$('.bc-cat').length);
+    ok('Beat Cats: botão para limpar todos os beats', $$('button').some((b) => /Limpar todos os beats/.test(b.textContent)));
     const looks = $$('.bc-cat svg.creature--cat').map((x) => x.innerHTML.replace(/aria-label="[^"]*"/, ''));
-    ok('Beat Cats: 6 gatos com pelagens diferentes do Meu Gato', looks.length === 6 && new Set(looks).size === 6);
+    ok('Beat Cats: 8 gatos com pelagens diferentes do Meu Gato', looks.length === 8 && new Set(looks).size === 8);
     await bc.ready();
     const drag = async (soundId, catIdx, pointerType, fromCat = false) => {
       const src = fromCat ? $$('.bc-cat')[fromCat.index] : $(`.bc-token[data-sound="${soundId}"]`);
@@ -231,7 +250,7 @@
     await sleep(600);
     const saved = (await window.mmp.gallery.list()).find((i) => i.name === 'Gatos de Rodada');
     const savedJson = saved && (await window.mmp.gallery.read(saved.id)).json;
-    ok('Beat Cats: Salvar guarda gatos, BPM e modo', savedJson && savedJson.bpm === 160 && savedJson.mode === 'round' && savedJson.cats.join() === ['bumbo', 'chimbal', null, null, 'arpejo', 'melodia-8bit'].join(), JSON.stringify(savedJson));
+    ok('Beat Cats: Salvar guarda gatos, BPM e modo', savedJson && savedJson.bpm === 160 && savedJson.mode === 'round' && savedJson.cats.join() === ['bumbo', 'chimbal', null, null, 'arpejo', 'melodia-8bit', null, null].join(), JSON.stringify(savedJson));
     await go(`beatcats?open=${saved.id}`);
     st = window.__mmpBeatCats.state();
     ok('Beat Cats: beat reabre da Galeria igualzinho', st.bpm === 160 && st.mode === 'round' && st.cats[0] === 'bumbo' && st.cats[5] === 'melodia-8bit' && $$('.bc-cat.is-active').length === 4 && $('.beatcats input.input').value === 'Gatos de Rodada', JSON.stringify(st));
@@ -345,7 +364,12 @@
     CT.spawn({ word: 'fim', y: 0.95, vy: 2 });
     CT.tick(1);
     cts = CT.state();
-    ok('Cat Typing: asteroide que chega embaixo tira vida', cts.lives === livesBefore - 1 && cts.lives >= 0, `${livesBefore} → ${cts.lives}`);
+    ok(
+      'Cat Typing: asteroide que chega embaixo tira vida e a nave treme',
+      cts.lives === livesBefore - 1 && cts.lives >= 0 && $('.ct-ship').classList.contains('is-hit') && $$('.ct-lives i.is-lost').length >= 1,
+      `${livesBefore} → ${cts.lives}`
+    );
+    ok('Cat Typing: dica não fala que P escreve P', !$('.ct-hint').textContent.includes('escreve P'), $('.ct-hint').textContent);
     CT.clear();
     CT.spawn({ word: 'lua', y: 0.3, vy: 0 });
     for (const ch of 'lua') CT.type(ch);
@@ -363,6 +387,30 @@
     for (let i = 0; i < 50 && !window.__mmpCatTyping; i++) await sleep(100);
     cts = window.__mmpCatTyping && window.__mmpCatTyping.state();
     ok('Cat Typing: partida em andamento continua ao voltar', cts && !cts.over && cts.destroyed >= 1 && cts.score > 0, cts && JSON.stringify(cts));
+
+    await go('cantar');
+    const CG = window.__mmpCantar;
+    ok('Cantar: palco com gato no microfone e 3 lontrinhas', $$('.cantar__cat svg.creature--cat').length === 1 && $$('.cantar__otter').length === 3 && $$('.cantar__otter svg.creature--otter').length === 3);
+    ok('Cantar: modificadores de voz', CG && ['natural', 'autotune', 'agudo', 'grave', 'robo', 'eco'].every((id) => $$(`.cantar .chip`).some((c) => c.textContent.toLowerCase().includes(id === 'robo' ? 'robô' : id === 'autotune' ? 'autotune' : id === 'agudo' ? 'agudo' : id === 'grave' ? 'grave' : id === 'eco' ? 'eco' : 'natural'))), CG && JSON.stringify(CG.state()));
+    CG.setFx('agudo');
+    CG.setRms(0.2);
+    ok('Cantar: gato abre a boca com volume', $('.cantar__cat svg.creature.is-sing-open') && CG.state().fx === 'agudo');
+
+    await go('tetris');
+    const TZ = window.__mmpTetris;
+    ok('Tetris: tabuleiro e bichinhos', TZ && $('.tz-canvas') && $$('.tz-mascot svg.creature--cat').length && $$('.tz-mascot svg.creature--otter').length);
+    TZ.move(-1, 0);
+    TZ.rotate();
+    ok('Tetris: peça responde ao movimento', TZ.state().piece && TZ.state().piece.id, JSON.stringify(TZ.state().piece));
+
+    await go('corrida');
+    const CR = window.__mmpCorrida;
+    ok('Corrida: pista com gato e lontra no carrinho', CR && $('.cr-canvas') && $('.cr-car__pilot svg.creature--cat') && $('.cr-car__co svg.creature--otter'));
+    const x0 = CR.state().x;
+    CR.input('arrowleft', true);
+    CR.tick(0.4);
+    CR.input('arrowleft', false);
+    ok('Corrida: seta esquerda desvia', CR.state().x < x0, `${x0} → ${CR.state().x}`);
 
     /* ---------- Studio ---------- */
     await go('studio?demo=1');

@@ -6,7 +6,7 @@ const api = ensureMmp();
 const DEFAULT_PROFILE = {
   version: 1,
   cat: { name: 'Pirrinha', coat: 'tabby', eyes: '#4ade80', outfit: { ear: 'lacinho' } },
-  otter: { name: 'Manhoso', outfit: { neck: 'cachecol' } }
+  otter: { name: 'Manhoso', coat: 'chocolate', eyes: '#93c5fd', outfit: { neck: 'cachecol' } }
 };
 
 function migrateDefaultNames(cat, otter) {
@@ -24,6 +24,9 @@ function normalizeProfile(p) {
   const cat = { ...base.cat, ...(p.cat || {}), outfit: { ...((p.cat && p.cat.outfit) || {}) } };
   const otter = { ...base.otter, ...(p.otter || {}), outfit: { ...((p.otter && p.otter.outfit) || {}) } };
   migrateDefaultNames(cat, otter);
+  if (!cat.eyes) cat.eyes = base.cat.eyes;
+  if (!otter.eyes) otter.eyes = base.otter.eyes;
+  if (!otter.coat) otter.coat = base.otter.coat;
   return { version: 1, cat, otter };
 }
 

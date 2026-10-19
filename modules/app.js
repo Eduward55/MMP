@@ -12,11 +12,14 @@ import gallery from './gallery/gallery.js';
 import airpads from './airpads/airpads.js';
 import beatcats from './beatcats/beatcats.js';
 import studio from './studio/studio.js';
+import cantar from './cantar/cantar.js';
 import termo from './termo/termo.js';
 import conexoes from './conexoes/conexoes.js';
 import cattyping from './cattyping/cattyping.js';
+import tetris from './tetris/tetris.js';
+import corrida from './corrida/corrida.js';
 
-export const MODULES = [airpads, beatcats, studio, gallery, termo, conexoes, cattyping, mycat];
+export const MODULES = [airpads, beatcats, studio, cantar, gallery, termo, conexoes, cattyping, tetris, corrida, mycat];
 const ROUTES = Object.fromEntries([hub, ...MODULES].map((m) => [m.id, m]));
 
 const app = document.getElementById('app');

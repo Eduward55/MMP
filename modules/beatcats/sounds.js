@@ -376,6 +376,71 @@ export const SOUNDS = [
     }
   },
   {
+    id: 'melodia-harpa', name: 'Harpa Doce', group: 'melody', outfit: 'harpa',
+    make(Tone, out) {
+      const rev = new Tone.Freeverb(0.6, 2400).connect(out);
+      rev.wet.value = 0.28;
+      const h = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' }, envelope: { attack: 0.002, decay: 0.35, sustain: 0, release: 0.3 }, volume: -14 }).connect(rev);
+      const u = T(Tone);
+      const ph = phrase([[0, 'A4', 2], [2, 'C5', 2], [4, 'E5', 2], [6, 'A5', 3], [16, 'F4', 2], [18, 'A4', 2], [20, 'C5', 2], [22, 'F5', 3], [32, 'C5', 2], [34, 'E5', 2], [36, 'G5', 2], [38, 'C6', 3], [48, 'G4', 2], [50, 'B4', 2], [52, 'D5', 2], [54, 'G5', 4]]);
+      return { tick: (s, t) => { const n = ph.get(s); if (!n) return false; h.triggerAttackRelease(n.note, u.s16 * n.len, t); return true; }, dispose: disposer(rev, h) };
+    }
+  },
+  {
+    id: 'melodia-slide', name: 'Slide Cristal', group: 'melody', outfit: 'cristal',
+    make(Tone, out) {
+      const m = new Tone.MonoSynth({ oscillator: { type: 'sine' }, envelope: { attack: 0.02, decay: 0.18, sustain: 0.4, release: 0.2 }, filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.2, baseFrequency: 500, octaves: 2 }, volume: -12 }).connect(out);
+      const u = T(Tone);
+      const ph = phrase([[0, 'E5', 6], [8, 'A5', 6], [16, 'C5', 6], [24, 'G5', 6], [32, 'D5', 6], [40, 'B5', 6], [48, 'F5', 6], [56, 'E5', 7]]);
+      return {
+        tick: (s, t) => {
+          const n = ph.get(s);
+          if (!n) return false;
+          const f = u.hz(n.note);
+          m.triggerAttackRelease(f, u.s16 * n.len, t);
+          m.frequency.setValueAtTime(f * 0.7, t);
+          m.frequency.exponentialRampToValueAtTime(f, t + 0.12);
+          return true;
+        },
+        dispose: disposer(m)
+      };
+    }
+  },
+  {
+    id: 'fx-eco-miau', name: 'Eco Miau', group: 'fx', outfit: 'bolha',
+    make(Tone, out) {
+      const d = new Tone.FeedbackDelay('8n', 0.45).connect(out);
+      const m = new Tone.MonoSynth({ oscillator: { type: 'sawtooth' }, envelope: { attack: 0.02, decay: 0.12, sustain: 0.2, release: 0.2 }, volume: -16 }).connect(d);
+      return {
+        tick: (s, t) => {
+          if (![0, 16, 32, 48].includes(s)) return false;
+          m.triggerAttackRelease(720, 0.22, t);
+          m.frequency.setValueAtTime(720, t);
+          m.frequency.exponentialRampToValueAtTime(1100, t + 0.07);
+          m.frequency.exponentialRampToValueAtTime(480, t + 0.22);
+          return true;
+        },
+        dispose: disposer(d, m)
+      };
+    }
+  },
+  {
+    id: 'fx-trovao', name: 'Trovão Fofo', group: 'fx', outfit: 'raio',
+    make(Tone, out) {
+      const n = new Tone.NoiseSynth({ noise: { type: 'brown' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0 }, volume: -8 }).connect(out);
+      const b = new Tone.MembraneSynth({ pitchDecay: 0.08, octaves: 4, envelope: { attack: 0.001, decay: 0.5, sustain: 0 }, volume: -10 }).connect(out);
+      return {
+        tick: (s, t) => {
+          if (![12, 44].includes(s)) return false;
+          n.triggerAttackRelease(0.4, t);
+          b.triggerAttackRelease('C1', '4n', t);
+          return true;
+        },
+        dispose: disposer(n, b)
+      };
+    }
+  },
+  {
     id: 'fx-brilho', name: 'Brilho Mágico', group: 'fx', outfit: 'aureola',
     make(Tone, out) {
       const d = new Tone.FeedbackDelay('16n', 0.4).connect(out);
@@ -417,7 +482,7 @@ export function otterSplash(Tone, master, filter, time) {
 }
 
 /* ---------- Eventos (nota, tempo, instrumento) para o Studio ---------- */
-const SOUND_INST = { 'pad-neon': 'pad', stab: 'chip', arpejo: 'keys', orgao: 'keys', 'coral-miau': 'meow', 'melodia-flauta': 'theremin', 'melodia-8bit': 'chip', 'melodia-miau': 'meow', 'melodia-sinos': 'bells' };
+const SOUND_INST = { 'pad-neon': 'pad', stab: 'chip', arpejo: 'keys', orgao: 'keys', 'coral-miau': 'meow', 'melodia-flauta': 'theremin', 'melodia-8bit': 'chip', 'melodia-miau': 'meow', 'melodia-sinos': 'bells', 'melodia-harpa': 'bells', 'melodia-slide': 'theremin', 'fx-eco-miau': 'meow', 'fx-trovao': 'fx' };
 const DRUM_FOR = {
   bumbo: () => 36,
   caixa: (kind) => (kind === 'NoiseSynth' ? 38 : null),

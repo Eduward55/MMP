@@ -76,13 +76,8 @@ export function createTopbar({ title, iconName, onSave, hint }) {
   );
   attachPop(hintBtn, 'Como mexer', el('p', { class: 'topbar-pop__hint' }, hint || 'Explore os botões. Ctrl+S salva, Galeria guarda o que você criou.'));
 
-  const themeBtn = el(
-    'button',
-    { class: 'btn btn--ghost topbar__theme', type: 'button', title: 'Mudar o tema de cores' },
-    el('span', { class: 'btn__glyph', 'aria-hidden': 'true', html: icon('palette', 18) }),
-    el('span', { class: 'btn__text' }, 'Tema')
-  );
-  attachPop(themeBtn, 'Tema', createThemePicker());
+  const themePick = createThemePicker();
+  themePick.classList.add('topbar__theme');
 
   const bar = el(
     'header',
@@ -105,7 +100,7 @@ export function createTopbar({ title, iconName, onSave, hint }) {
         el('span', { class: 'btn__glyph', 'aria-hidden': 'true', html: icon('gallery', 18) }),
         el('span', { class: 'btn__text' }, 'Galeria')
       ),
-      themeBtn
+      themePick
     )
   );
 

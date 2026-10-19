@@ -26,14 +26,21 @@ export function scaleNotes(instrumentId, scaleId, root) {
 }
 
 
-// rx, ry ∈ [-1, 1] relativos ao centro do círculo. Topo = agudo / forte.
-export function pickNote(notes, ry) {
-  const t = 1 - (Math.max(-1, Math.min(1, ry)) + 1) / 2;
-  return notes[Math.round(t * (notes.length - 1))];
+// rx, ry ∈ [-1, 1] relativos ao centro do círculo. Fatias em pizza a partir do topo, sentido horário.
+export function sliceIndex(rx, ry, n) {
+  const count = Math.max(1, n);
+  let ang = Math.atan2(rx, -ry);
+  if (ang < 0) ang += Math.PI * 2;
+  return Math.min(count - 1, Math.floor((ang / (Math.PI * 2)) * count));
 }
 
-export function drumZone(ry) {
-  return ry < -0.33 ? 0 : ry < 0.33 ? 1 : 2;
+export function pickNote(notes, ry, rx = 0) {
+  if (!notes.length) return 60;
+  return notes[sliceIndex(rx, ry, notes.length)];
+}
+
+export function drumZone(ry, rx = 0) {
+  return sliceIndex(rx, ry, 3);
 }
 
 export function createInstrument(Tone, id, out) {

@@ -87,7 +87,7 @@
       "entitlementsInherit": "build/entitlements.mac.plist",
       "extendInfo": {
         "NSCameraUsageDescription": "O My Music Place usa a câmera nos Air Pads (mãos) e no Studio (webcam no vídeo exportado).",
-        "NSMicrophoneUsageDescription": "O My Music Place pode usar o microfone se você gravar áudio junto com a câmera."
+        "NSMicrophoneUsageDescription": "O My Music Place usa o microfone no Cantar (voz, autotune e sobrevoz) e se você gravar áudio junto com a câmera."
       }
     },
     "dmg": {

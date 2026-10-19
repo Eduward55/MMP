@@ -1,9 +1,11 @@
 // Componente compartilhado "gato + lontra": usado no Hub, no Meu Gato e no dock de todos os módulos.
 import { creatureSVG } from './creatures.js';
-import { getProfile, onProfile } from './store.js';
+import { getProfile, onProfile, kv } from './store.js';
 import { el, esc } from './ui.js';
 
-const REACTS = ['heart', 'wink', 'bounce', 'spin'];
+const CAT_MOODS = ['heart', 'wink', 'bounce', 'spin', 'stretch', 'meow'];
+const OTTER_MOODS = ['splash', 'wiggle', 'bounce', 'peek', 'clap', 'spin'];
+const ALL_REACTS = [...new Set([...CAT_MOODS, ...OTTER_MOODS, 'sparkle', 'bob', 'sway', 'bow', 'conduct', 'sing', 'float', 'party', 'bloom', 'jingle'])];
 const OUTFIT_REACT = {
   coroa: 'sparkle',
   fone: 'bob',
@@ -34,19 +36,26 @@ function outfitKinds(svg) {
     .map((c) => c.slice(5));
 }
 
-/** Clique no bichinho: carinha fofa + animação da roupinha. */
+function clearReact(svg) {
+  ALL_REACTS.forEach((k) => svg.classList.remove(`is-react-${k}`));
+}
+
+/** Clique no bichinho: carinha fofa + animação da roupinha, diferente para gato e lontra. */
 export function reactCreature(fig, svg) {
   if (!svg) return;
+  const otter = svg.classList.contains('creature--otter');
+  const moods = otter ? OTTER_MOODS : CAT_MOODS;
   const kinds = outfitKinds(svg);
   const fromOutfit = kinds.map((id) => OUTFIT_REACT[id]).find(Boolean);
-  const kind = fromOutfit || REACTS[Math.floor(Math.random() * REACTS.length)];
+  const kind = fromOutfit || moods[Math.floor(Math.random() * moods.length)];
   const host = fig || svg.parentElement;
-  svg.classList.remove('is-react-heart', 'is-react-wink', 'is-react-bounce', 'is-react-spin', 'is-react-sparkle', 'is-react-bob', 'is-react-sway', 'is-react-bow', 'is-react-conduct', 'is-react-sing', 'is-react-float', 'is-react-party', 'is-react-wiggle', 'is-react-bloom', 'is-react-jingle');
+  clearReact(svg);
   void svg.offsetWidth;
   svg.classList.add(`is-react-${kind}`);
   if (host) {
     host.classList.add('is-reacting');
-    const heart = el('span', { class: 'react-heart', 'aria-hidden': 'true' }, kind === 'sing' ? '♪' : '♥');
+    const glyph = kind === 'sing' || kind === 'meow' ? '♪' : kind === 'splash' ? '💧' : kind === 'clap' ? '✧' : '♥';
+    const heart = el('span', { class: 'react-heart', 'aria-hidden': 'true' }, glyph);
     host.append(heart);
     setTimeout(() => heart.remove(), 900);
     setTimeout(() => host.classList.remove('is-reacting'), 900);
@@ -111,17 +120,62 @@ const TIPS = [
   (p) => `${p.otter.name}: tudo fica guardadinho na Galeria.`,
   (p) => `${p.cat.name}: miau! Clica na gente pra ver a careta.`,
   (p) => `${p.otter.name}: dá pra trocar minhas roupinhas no Meu Gato.`,
-  () => 'Funciona 100% offline, sem internet.'
+  (p) => `${p.cat.name}: arrasta a gente pelo canto da tela.`
 ];
 
 let dock = null;
+
+function applyDockPos(node, pos) {
+  if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
+  node.style.left = `${pos.x}px`;
+  node.style.top = `${pos.y}px`;
+  node.style.right = 'auto';
+  node.style.bottom = 'auto';
+}
+
+function bindDockDrag(node) {
+  const KEY = 'dock-pos';
+  kv.get(KEY)
+    .then((pos) => applyDockPos(node, pos))
+    .catch(() => {});
+  let drag = null;
+  node.addEventListener('pointerdown', (e) => {
+    if (e.button && e.button !== 0) return;
+    if (e.target.closest('.dock__toggle, .dock__edit, .creature')) return;
+    const r = node.getBoundingClientRect();
+    drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+    node.classList.add('is-dragging');
+    node.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  node.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const w = node.offsetWidth || 160;
+    const h = node.offsetHeight || 120;
+    const x = Math.max(8, Math.min(window.innerWidth - w - 8, e.clientX - drag.dx));
+    const y = Math.max(8, Math.min(window.innerHeight - h - 8, e.clientY - drag.dy));
+    applyDockPos(node, { x, y });
+  });
+  const end = (e) => {
+    if (!drag) return;
+    drag = null;
+    node.classList.remove('is-dragging');
+    const r = node.getBoundingClientRect();
+    kv.set(KEY, { x: r.left, y: r.top }).catch(() => {});
+    try {
+      node.releasePointerCapture(e.pointerId);
+    } catch {}
+  };
+  node.addEventListener('pointerup', end);
+  node.addEventListener('pointercancel', end);
+}
 
 export function mountDock(root) {
   const duo = createDuo({ size: 84, names: false });
   const bubble = el('div', { class: 'dock__bubble' });
   const toggle = el('button', { class: 'dock__toggle', 'aria-label': 'Esconder companheiros', title: 'Esconder/mostrar' }, '–');
   const edit = el('a', { class: 'dock__edit', href: '#/mycat', title: 'Editar no Meu Gato' }, 'Editar');
-  const wrap = el('div', { class: 'dock__duo' }, duo.el, edit);
+  const wrap = el('div', { class: 'dock__duo', title: 'Arraste para mover' }, duo.el, edit);
   const node = el('aside', { class: 'dock', 'aria-label': 'Seu gato e sua lontra' }, bubble, wrap, toggle);
   dock = node;
   let i = 0;
@@ -135,6 +189,7 @@ export function mountDock(root) {
     node.classList.toggle('is-collapsed');
     toggle.textContent = node.classList.contains('is-collapsed') ? '+' : '–';
   });
+  bindDockDrag(node);
   root.append(node);
   return node;
 }

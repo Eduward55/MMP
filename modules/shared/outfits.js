@@ -305,6 +305,44 @@ export const OUTFITS = [
 // Acessórios extras usados só pelos efeitos do Beat Cats (não entram nas 20 roupinhas do Meu Gato).
 export const BONUS_OUTFITS = [
   {
+    id: 'harpa',
+    name: 'Harpa',
+    slot: 'hand',
+    front(g, A) {
+      g.rect(A.handX - 1, A.handY - 8, 4, 9, P.gold);
+      g.set(A.handX, A.handY - 9, P.goldDark);
+      g.set(A.handX + 2, A.handY - 4, P.white);
+      g.set(A.handX + 1, A.handY - 6, P.cyan);
+    }
+  },
+  {
+    id: 'raio',
+    name: 'Raio',
+    slot: 'head',
+    front(g, A) {
+      g.map(['..y', '.yy', 'yyy', 'yy.', '.y.'], { y: P.gold }, A.cx + 4, A.headTop - 6);
+    }
+  },
+  {
+    id: 'bolha',
+    name: 'Bolha',
+    slot: 'hand',
+    outline: false,
+    front(g, A) {
+      g.ring(A.handX + 1, A.handY - 4, 3.2, 3.2, 1.1, P.cyan);
+      g.set(A.handX, A.handY - 5, P.white);
+    }
+  },
+  {
+    id: 'cristal',
+    name: 'Cristal',
+    slot: 'head',
+    front(g, A) {
+      g.tri([A.cx - 3, A.headTop], [A.cx, A.headTop - 6], [A.cx + 3, A.headTop], P.cyan);
+      g.set(A.cx, A.headTop - 3, P.white);
+    }
+  },
+  {
     id: 'antena',
     name: 'Antena alien',
     slot: 'head',

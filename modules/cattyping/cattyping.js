@@ -128,7 +128,7 @@ export default {
       el(
         'p',
         { class: 'ct-hint' },
-        `Temas: ${Object.values(THEME_LABEL).join(', ')}. Digite a palavra do asteroide (acentos não importam). Cada letra atira um laser. Tab ou Esc pausa — P escreve P.`
+        `Temas: ${Object.values(THEME_LABEL).join(', ')}. Digite a palavra do asteroide (acentos não importam). Cada letra atira um laser. Tab ou Esc pausa.`
       )
     );
     root.append(el('section', { class: 'ct' }, hud, stage));
@@ -155,11 +155,17 @@ export default {
     function renderShip(p = getProfile()) {
       ship.innerHTML = `
         <div class="ct-ship__hull" aria-hidden="true">
+          <span class="ct-ship__nose"></span>
+          <span class="ct-ship__canopy"></span>
           <span class="ct-ship__wing ct-ship__wing--l"></span>
           <span class="ct-ship__wing ct-ship__wing--r"></span>
+          <span class="ct-ship__fin ct-ship__fin--l"></span>
+          <span class="ct-ship__fin ct-ship__fin--r"></span>
           <span class="ct-ship__body"></span>
           <span class="ct-ship__gun ct-ship__gun--l"></span>
           <span class="ct-ship__gun ct-ship__gun--r"></span>
+          <span class="ct-ship__engine ct-ship__engine--l"></span>
+          <span class="ct-ship__engine ct-ship__engine--r"></span>
           <span class="ct-ship__glow"></span>
         </div>
         <div class="ct-ship__crew">
@@ -364,9 +370,19 @@ export default {
 
     function miss(rock) {
       explode(rock, 0);
+      const lost = run.lives - 1;
       run.lives--;
       run.typing = '';
       run.targetId = null;
+      ship.classList.remove('is-hit');
+      void ship.offsetWidth;
+      ship.classList.add('is-hit');
+      hudRefresh();
+      const hearts = [...livesEl.querySelectorAll('i')];
+      const dying = hearts[lost];
+      if (dying) {
+        dying.classList.add('is-lost', 'is-losing');
+      }
       ensureSound().then((s) => s && s.miss()).catch(() => {});
       if (run.lives <= 0) gameOver();
       persist();

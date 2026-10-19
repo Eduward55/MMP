@@ -105,6 +105,7 @@ export default {
     const recBtn = el('button', { class: 'btn btn--rec', 'aria-pressed': 'false' }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar: Não'));
     const timer = el('span', { class: 'pill' }, '00:00');
     const status = el('p', { class: 'muted airx__status' }, 'Sem câmera? Passe o mouse pelos círculos (vale como ponta do dedo) ou segure A e L.');
+    const distHint = el('p', { class: 'airx__dist hint' }, 'Quando a câmera pegar bem: dê um passo pra trás se a imagem estiver grande. Não encoste na lente.');
 
     const chipRows = [0, 1].map(() => el('div', { class: 'chips', role: 'radiogroup' }));
     const scaleSel = el('select', { class: 'input input--select', 'aria-label': 'Escala' }, ...SCALES.map((s) => el('option', { value: s.id }, s.name)));
@@ -124,7 +125,7 @@ export default {
       const notes = notesFor(i);
       const max = inst.continuous ? 6 : 8;
       const pick = notes.length <= max ? notes : Array.from({ length: max }, (_, k) => notes[Math.round((k * (notes.length - 1)) / (max - 1))]);
-      return pick.slice().reverse().map(midiName);
+      return pick.map(midiName);
     }
 
     function renderCircle(i) {
@@ -132,8 +133,19 @@ export default {
       const c = circles[i];
       c.style.setProperty('--c', inst.color);
       c.dataset.instrument = inst.id;
-      const slices = sliceLabels(i)
-        .map((lab) => `<span class="air-slice">${lab}</span>`)
+      const labels = sliceLabels(i);
+      const n = Math.max(1, labels.length);
+      const pie = labels
+        .map((_, k) => {
+          const a = (k / n) * 360;
+          const b = ((k + 1) / n) * 360;
+          const fill = k % 2 ? `color-mix(in srgb, ${inst.color} 22%, transparent)` : `color-mix(in srgb, ${inst.color} 10%, transparent)`;
+          return `${fill} ${a}deg ${b}deg`;
+        })
+        .join(',');
+      c.style.setProperty('--pie', `conic-gradient(from -90deg, ${pie})`);
+      const slices = labels
+        .map((lab, k) => `<span class="air-slice" style="--i:${k};--n:${n}">${lab}</span>`)
         .join('');
       const extra = inst.continuous ? '<span class="air-axis air-axis--x">grave ◀ X ▶ agudo</span>' : '';
       c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span>${extra}<span class="air-circle__name">${inst.name}</span><span class="air-circle__note">${lastLabel[i] || '—'}</span>`;
@@ -228,10 +240,11 @@ export default {
       let label;
       let value;
       if (id === 'drums') {
-        value = drumZone(rel.ry);
+        value = drumZone(rel.ry, rel.rx);
         label = DRUM_ZONES[value];
       } else {
-        value = pickNote(notesFor(i), rel.ry);
+        const notes = notesFor(i);
+        value = pickNote(notes, rel.ry, rel.rx);
         label = midiName(value);
       }
       lastTrig[i] = performance.now();
@@ -332,6 +345,17 @@ export default {
         }
       }
       const tips = collectTips(now, geoms);
+      if (stream && camHands.length) {
+        const pts = camHands.flatMap((h) => h.points || [{ x: h.x, y: h.y }]);
+        const xs = pts.map((p) => p.x);
+        const ys = pts.map((p) => p.y);
+        const span = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+        const rel = span / Math.min(arena.clientWidth || 1, arena.clientHeight || 1);
+        if (rel > 0.72) distHint.textContent = 'Afaste-se um pouco da câmera. Não encoste na lente.';
+        else if (rel < 0.12) distHint.textContent = 'Chegue um pouco mais perto para a câmera pegar as mãos.';
+        else distHint.textContent = 'Boa distância. Não encoste na câmera.';
+        distHint.classList.toggle('is-warn', rel > 0.72 || rel < 0.12);
+      }
       [0, 1].forEach((i) => {
         const g = geoms[i];
         const tip = tips.find((t) => (t.hand === i || t.hand === null) && Math.hypot(t.x - g.cx, t.y - g.cy) <= g.r);
@@ -578,7 +602,6 @@ export default {
       el(
         'div',
         { class: 'airx' },
-        el('section', { class: 'panel airx__stage' }, el('div', { class: 'toolbar' }, camBtn, demoBtn, recBtn, timer, studioBtn, status), arena),
         el(
           'section',
           { class: 'panel airx__controls' },
@@ -596,8 +619,9 @@ export default {
             el('label', { class: 'airx__setting' }, el('span', { class: 'field__label' }, 'BPM'), bpmLabel, bpmInput),
             metroBtn
           ),
-          el('p', { class: 'hint' }, 'Entrou no círculo, tocou. Segurando dentro, repete no ritmo do BPM. Altura no círculo = nota (bateria: chimbal, caixa, bumbo). Theremin: X = nota, Y = volume. Gravar: Sim manda o áudio (com as notas) para a Galeria; Editar no Studio leva tudo que você tocou; Salvar guarda instrumentos, escala e BPM.')
-        )
+          distHint
+        ),
+        el('section', { class: 'panel airx__stage' }, el('div', { class: 'toolbar' }, camBtn, demoBtn, recBtn, timer, studioBtn, status), arena)
       )
     );
     renderAll();

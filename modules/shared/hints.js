@@ -33,10 +33,23 @@ export const HINTS = {
   cattyping: `Cat Typing — como mexer
 • Digite a palavra do asteroide (acentos não importam).
 • Cada letra atira um laserzinho da nave.
-• Tab ou Esc pausa — a letra P escreve P, não pausa.
+• Tab ou Esc pausa.
 • Palavras vêm com 3 a 7 letras, misturadas.`,
+  cantar: `Cantar — como mexer
+• Ligue o microfone e cante. O gato abre a boca no volume da voz.
+• Autotune cola a nota; Agudo, Grave, Robô e Eco mudam a voz.
+• Escolha uma base (arpejo ou um beat da Galeria) e ligue o Sync.
+• Grave uma frase em cada lontrinha: ela repete no BPM.`,
+  tetris: `Tetris — como mexer
+• Setas ou WASD: A/D andam, W gira, S acelera.
+• Espaço solta a peça. Esc pausa.
+• Complete linhas para pontuar.`,
+  corrida: `Corrida — como mexer
+• A/D ou setas desviam o carrinho.
+• W ou ↑ aumenta o ritmo da pista.
+• Esc pausa. Desvie de cones e pedras.`,
   mycat: `Meu Gato — como mexer
-• Mude o nome, a pelagem, os olhos e as roupinhas.
+• Escolha o gato ou a lontra em cima: pelagem e olhos são de cada um.
 • Um item por lugar: clique de novo para tirar.
 • Tudo salva sozinho; o botão Salvar também confirma.
 • Clique no bichinho para ver a carinha fofa.`

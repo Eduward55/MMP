@@ -13,7 +13,7 @@ import { createVideoRecorder, projectSeconds, renderWav } from './render.js';
 
 const MAX_BARS = 32;
 const STEP = 0.25;
-const SOURCE_NAMES = { airpads: 'Air Pads', beatcats: 'Beat Cats', cattyping: 'Cat Typing', studio: 'Studio' };
+const SOURCE_NAMES = { airpads: 'Air Pads', beatcats: 'Beat Cats', cattyping: 'Cat Typing', cantar: 'Cantar', studio: 'Studio' };
 const KEY_ROW = ['a', 'w', 's', 'e', 'd', 'f', 't', 'g', 'y', 'h', 'u', 'j', 'k', 'o', 'l', 'p'];
 const DRUM_KEYS = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'];
 const snap = (b) => Math.round(b / STEP) * STEP;

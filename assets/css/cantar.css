@@ -1,0 +1,53 @@
+.cantar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.cantar__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cantar__cat {
+  display: grid;
+  place-items: center;
+  min-height: 260px;
+}
+.cantar__cat svg.creature.is-sing-open {
+  animation: hop 0.28s ease;
+}
+.cantar__cat svg.creature.is-sing-open .layer-body {
+  transform-origin: 20px 30px;
+  animation: meow-mouth 0.28s ease;
+}
+.cantar__otters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+.cantar__otter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+}
+.cantar__otter.is-on {
+  border-color: var(--accent);
+}
+.cantar__otter-name {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--accent);
+}
+@media (max-width: 900px) {
+  .cantar {
+    grid-template-columns: 1fr;
+  }
+}

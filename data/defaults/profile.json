@@ -8,6 +8,8 @@
   },
   "otter": {
     "name": "Manhoso",
+    "coat": "chocolate",
+    "eyes": "#93c5fd",
     "outfit": { "neck": "cachecol" }
   }
 }

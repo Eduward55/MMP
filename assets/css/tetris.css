@@ -1,0 +1,60 @@
+.tz {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 18px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+.tz-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.tz-canvas {
+  width: min(100%, 320px);
+  height: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  image-rendering: pixelated;
+}
+.tz-overlay {
+  position: absolute;
+  inset: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  text-align: center;
+}
+.tz-overlay[hidden] {
+  display: none;
+}
+.tz-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.tz-mascot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+}
+.tz-mini {
+  display: grid;
+  grid-template-columns: repeat(var(--w), 14px);
+  gap: 2px;
+}
+.tz-mini i {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+@media (max-width: 800px) {
+  .tz {
+    grid-template-columns: 1fr;
+  }
+}
