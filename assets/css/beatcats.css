@@ -292,8 +292,9 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  padding: 6px 4px 6px;
-  flex: 0 0 88px;
+  padding: 6px 8px;
+  flex: 0 0 108px;
+  min-width: 108px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -307,7 +308,7 @@
   outline: none;
 }
 .bc-otter__art {
-  width: 64px;
+  width: 80px;
   max-width: 100%;
   transform-origin: 50% 100%;
 }
@@ -560,7 +561,7 @@ body.is-dragging * {
     width: 100px;
   }
   .bc-otter__art {
-    width: 64px;
+    width: 80px;
   }
   .bc-main .toolbar {
     flex-wrap: wrap;
