@@ -324,7 +324,7 @@
     const bc = window.__mmpBeatCats;
     const snd = bc.sounds();
     const count = (g) => snd.filter((x) => x.group === g).length;
-    ok('Beat Cats: 28 sons (6 bateria, 5 baixo, 5 acordes, 6 melodia, 6 efeitos)', snd.length === 28 && count('drums') === 6 && count('bass') === 5 && count('chords') === 5 && count('melody') === 6 && count('fx') === 6 && new Set(snd.map((x) => x.outfit)).size === 28, snd.length);
+    ok('Beat Cats: 40 sons (9 bateria, 7 baixo, 7 acordes, 9 melodia, 8 efeitos)', snd.length === 40 && count('drums') === 9 && count('bass') === 7 && count('chords') === 7 && count('melody') === 9 && count('fx') === 8 && new Set(snd.map((x) => x.outfit)).size === 40, snd.length);
     ok('Beat Cats: 8 gatos vazios no início + lontra na linha', $$('.bc-cat').length === 8 && $$('.bc-cat.is-empty').length === 8 && bc.state().cats.every((c) => c === null) && $('.bc-line .bc-otter'), $$('.bc-cat').length);
     ok('Beat Cats: botão para limpar todos os beats', $$('button').some((b) => /Limpar todos os beats/.test(b.textContent)));
     const looks = $$('.bc-cat svg.creature--cat').map((x) => x.innerHTML.replace(/aria-label="[^"]*"/, ''));
