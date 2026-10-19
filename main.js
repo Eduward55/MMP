@@ -221,6 +221,22 @@ async function seedFirstRun() {
 
 let mainWindow;
 
+function iconPath() {
+  const ico = path.join(ROOT, 'build', process.platform === 'win32' ? 'icon.ico' : 'icon.png');
+  return fsSync.existsSync(ico) ? ico : undefined;
+}
+
+function allowCamera(ses) {
+  const camera = new Set(['media', 'camera', 'microphone', 'audioCapture', 'videoCapture']);
+  ses.setPermissionRequestHandler((_wc, permission, callback) => {
+    callback(camera.has(permission));
+  });
+  ses.setPermissionCheckHandler((_wc, permission) => camera.has(permission));
+  if (typeof ses.setDevicePermissionHandler === 'function') {
+    ses.setDevicePermissionHandler((details) => details.deviceType === 'video' || details.deviceType === 'audio');
+  }
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: Number(process.env.MMP_WIDTH) || 1280,
@@ -229,6 +245,7 @@ function createWindow() {
     minHeight: 560,
     backgroundColor: '#0d0716',
     title: 'My Music Place',
+    icon: iconPath(),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(ROOT, 'preload.js'),
@@ -379,10 +396,12 @@ function registerProtocol() {
 }
 
 app.whenReady().then(async () => {
+  if (app.setName) app.setName('My Music Place');
   await ensureDirs();
   await seedFirstRun();
   registerProtocol();
   registerIpc();
+  allowCamera(session.defaultSession);
   blockNetwork(session.defaultSession);
   createWindow();
   app.on('activate', () => {

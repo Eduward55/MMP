@@ -24,8 +24,33 @@ Outros comandos:
 | `npm run conexoes:check` | Valida `data/conexoes/categories.json` (400+ categorias, 8–12 palavras, gerador sem sobreposição) e conta as combinações válidas |
 | `npm run cattyping:words` | Regenera `data/cattyping/words.json` (5.000+ palavras reais de 3–10 letras) a partir do Hunspell pt-BR e da lista de frequência |
 | `npm run vendor` | Recria `/vendor` a partir de `node_modules` (e baixa o modelo do MediaPipe se faltar) |
+| `npm run icon` | Gera `build/icon.png` e `build/icon.ico` (gato pixel) |
+| `npm run dist:win` | Instalador Windows `.exe` (NSIS) via electron-builder |
+| `npm run dist:mac` | Disco macOS `.dmg` via electron-builder (precisa rodar no macOS) |
 
 Em Linux sem tela (CI/servidor), use o `xvfb`: `xvfb-run -a npm run check`.
+
+## Pacote desktop (.exe e .dmg)
+
+O app se chama **My Music Place**, usa o **ícone do gato** em `build/icon.png` e pede **permissão de câmera** (Air Pads e webcam do Studio). No macOS isso vai no `Info.plist` (`NSCameraUsageDescription`) e nos entitlements; no Windows o Chromium pergunta na hora, e o processo principal autoriza `camera` / `media`.
+
+```bash
+npm run dist:win   # MyMusicPlace-0.1.0-win-x64-Setup.exe
+npm run dist:mac   # MyMusicPlace-0.1.0-mac-universal.dmg  (só no macOS)
+```
+
+Os artefatos saem em `dist/`. O instalador Windows cria atalho “My Music Place”; o DMG monta com o mesmo nome.
+
+### Release no GitHub (repo privado)
+
+A Action `.github/workflows/release.yml` empacota Windows e macOS e anexa o `.exe` e o `.dmg` num Release quando você publica uma tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+O repositório precisa ser **privado** no GitHub (a Action usa `GITHUB_TOKEN` com `contents: write`). Sem certificado Apple o DMG sai sem notarização; o .exe NSIS também é sem assinatura de código.
 
 ## O que tem
 
@@ -95,7 +120,9 @@ modules/
 assets/              CSS e fontes pixel (Press Start 2P e VT323, licença OFL)
 data/                padrões versionados (defaults/), exemplos (demo/), palavras do Termo (termo/), categorias do Conexões (conexoes/) e palavras do Cat Typing (cattyping/)
 vendor/              Tone.js e MediaPipe locais (ver vendor/README.md)
-scripts/             autoteste, screenshots, setup do vendor, geradores do Termo, do Conexões e do Cat Typing
+scripts/             autoteste, screenshots, setup do vendor, geradores do Termo, do Conexões, do Cat Typing e do ícone
+build/               ícone do gato (png/ico) e entitlements da câmera no macOS
+.github/workflows/   Action de release (tag v* → .exe + .dmg)
 ```
 
 ## Offline de verdade

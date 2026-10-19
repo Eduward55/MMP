@@ -3,6 +3,7 @@
   "productName": "My Music Place",
   "version": "0.1.0",
   "description": "My Music Place (MMP) — app desktop musical, fofo e 100% offline, com gato maestro e lontra companheira.",
+  "author": "Eduardo Mosena",
   "main": "main.js",
   "private": true,
   "scripts": {
@@ -11,6 +12,10 @@
     "vendor": "node scripts/setup-vendor.js",
     "screenshots": "node scripts/screenshots.js",
     "check": "node scripts/check.js",
+    "icon": "node scripts/build-icon.mjs",
+    "dist": "npm run icon && electron-builder --publish never",
+    "dist:win": "npm run icon && electron-builder --win nsis --publish never",
+    "dist:mac": "npm run icon && electron-builder --mac dmg --publish never",
     "termo:words": "node scripts/build-termo-words.mjs",
     "conexoes:check": "node scripts/build-conexoes.mjs",
     "cattyping:words": "node scripts/build-cattyping-words.mjs"
@@ -23,13 +28,97 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@mediapipe/tasks-vision": "0.10.14",
     "dictionary-pt": "^4.0.0",
     "dictionary-pt-pt": "^2.0.0",
     "electron": "^33.4.11",
-    "nspell": "^2.1.5"
-  },
-  "dependencies": {
-    "@mediapipe/tasks-vision": "0.10.14",
+    "electron-builder": "^25.1.8",
+    "nspell": "^2.1.5",
     "tone": "14.8.49"
+  },
+  "build": {
+    "appId": "place.mymusic.mmp",
+    "productName": "My Music Place",
+    "copyright": "Copyright © 2026 Eduardo Mosena",
+    "asar": true,
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "modules/**/*",
+      "assets/**/*",
+      "data/**/*",
+      "!data/user/**",
+      "vendor/**/*",
+      "scripts/demo-audio.js",
+      "build/icon.png",
+      "package.json",
+      "!**/node_modules/**"
+    ],
+    "extraMetadata": {
+      "name": "my-music-place"
+    },
+    "artifactName": "MyMusicPlace-${version}-${os}-${arch}.${ext}",
+    "icon": "build/icon.png",
+    "publish": {
+      "provider": "github",
+      "private": true,
+      "releaseType": "release"
+    },
+    "mac": {
+      "category": "public.app-category.music",
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "NSCameraUsageDescription": "O My Music Place usa a câmera nos Air Pads (mãos) e no Studio (webcam no vídeo exportado).",
+        "NSMicrophoneUsageDescription": "O My Music Place pode usar o microfone se você gravar áudio junto com a câmera."
+      }
+    },
+    "dmg": {
+      "title": "My Music Place",
+      "icon": "build/icon.png",
+      "artifactName": "MyMusicPlace-${version}-mac-${arch}.${ext}"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "My Music Place",
+      "uninstallDisplayName": "My Music Place",
+      "displayLanguageSelector": false,
+      "installerLanguages": [
+        "pt_BR"
+      ],
+      "language": "1046",
+      "artifactName": "MyMusicPlace-${version}-win-${arch}-Setup.${ext}"
+    }
   }
 }
