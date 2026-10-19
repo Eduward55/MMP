@@ -10,14 +10,24 @@ export function projectSeconds(project) {
 }
 
 // Toca todos os eventos num contexto offline e devolve um Blob WAV.
+function trackGain(t) {
+  if (!t || t.mute) return 0;
+  const n = Number(t.vol);
+  return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 1;
+}
+
 export async function renderWav(Tone, project) {
   const spb = 60 / project.bpm;
-  const audible = new Set(project.tracks.filter((t) => !t.mute).map((t) => t.id));
   const seconds = projectSeconds(project) + TAIL;
   const buffer = await Tone.Offline(() => {
     const out = new Tone.Gain(0.9).toDestination();
     const voices = new Map();
-    project.tracks.forEach((t) => audible.has(t.id) && voices.set(t.id, createVoice(Tone, t.inst, out)));
+    project.tracks.forEach((t) => {
+      const vol = trackGain(t);
+      if (vol <= 0) return;
+      const g = new Tone.Gain(vol).connect(out);
+      voices.set(t.id, createVoice(Tone, t.inst, g));
+    });
     project.events.forEach((e) => {
       const v = voices.get(e.track);
       if (v && e.time < project.length) v.play(e.note, e.dur * spb, e.time * spb + 0.02, e.vel);
