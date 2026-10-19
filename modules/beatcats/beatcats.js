@@ -4,13 +4,16 @@ import { COATS, EYE_COLORS, accessorySVG, creatureSVG } from '../shared/creature
 import { dockSay } from '../shared/companion.js';
 import { createEventLog, eventsSummary, openInStudio } from '../shared/events.js';
 import { OUTFIT_BY_ID } from '../shared/outfits.js';
-import { gallery, getProfile } from '../shared/store.js';
+import { gallery, getProfile, kv } from '../shared/store.js';
 import { el, esc, startAudio, stamp, toast } from '../shared/ui.js';
 import { GROUPS, GROUP_BY_ID, LOOP_STEPS, SOUNDS, SOUND_BY_ID, makeCaptured, otterSplash } from './sounds.js';
 import { createStageRecorder } from './stage-recorder.js';
 
 const CAT_COUNT = 8;
 const ROUND_STEPS = 32;
+const STORE_KEY = 'beatcats';
+const MASTER_DEFAULT = 85;
+const LAYER_DEFAULT = 100;
 const COAT_NAMES = {
   tabby: 'Listrado',
   black: 'Breu',
@@ -28,6 +31,35 @@ const COAT_NAMES = {
 const V1_MAP = { kick: 'bumbo', snare: 'caixa', hat: 'chimbal', meow: 'melodia-miau' };
 const MOUTH = '<g class="bc-mouth" opacity="0"><rect x="19" y="22" width="3" height="2" fill="#3a1d2e"/><rect x="20" y="23" width="1" height="1" fill="#ff7fb0"/></g>';
 
+function clampPct(n, fallback) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return fallback;
+  return Math.max(0, Math.min(100, Math.round(v)));
+}
+
+function defaultMix() {
+  return { master: MASTER_DEFAULT, cats: new Array(CAT_COUNT).fill(LAYER_DEFAULT), otter: LAYER_DEFAULT, muted: false };
+}
+
+function mixFrom(src, fallback) {
+  const base = fallback
+    ? { master: fallback.master, cats: [...fallback.cats], otter: fallback.otter, muted: fallback.muted }
+    : defaultMix();
+  if (!src || typeof src !== 'object') return base;
+  const cats = [...base.cats];
+  if (Array.isArray(src.cats)) src.cats.forEach((v, i) => { if (i < CAT_COUNT) cats[i] = clampPct(v, cats[i]); });
+  return {
+    master: src.master != null ? clampPct(src.master, base.master) : base.master,
+    cats,
+    otter: src.otter != null ? clampPct(src.otter, base.otter) : base.otter,
+    muted: src.muted != null ? Boolean(src.muted) : base.muted
+  };
+}
+
+function mixPayload(mix) {
+  return { master: mix.master, cats: [...mix.cats], otter: mix.otter, muted: mix.muted };
+}
+
 function band(profile) {
   const others = COATS.filter((c) => c.id !== profile.cat.coat);
   return [
@@ -37,7 +69,7 @@ function band(profile) {
 }
 
 // Converte um beat salvo (v2 ou o formato antigo de sequenciador) para a lista de sons dos 8 gatos.
-export function beatFromJson(json) {
+export function beatFromJson(json, prevMix) {
   const cats = new Array(CAT_COUNT).fill(null);
   if (json && Array.isArray(json.cats)) {
     json.cats.slice(0, CAT_COUNT).forEach((id, i) => (cats[i] = SOUND_BY_ID[id] ? id : null));
@@ -51,7 +83,8 @@ export function beatFromJson(json) {
     cats: cats.map((id) => (id && !seen.has(id) ? (seen.add(id), id) : null)),
     bpm: Math.max(60, Math.min(160, Number(json && json.bpm) || 100)),
     mode: json && json.mode === 'round' ? 'round' : 'continuous',
-    recordMode: json && json.recordMode === 'video' ? 'video' : 'audio'
+    recordMode: json && json.recordMode === 'video' ? 'video' : 'audio',
+    mix: mixFrom(json && json.mix, prevMix)
   };
 }
 
@@ -65,7 +98,8 @@ export default {
   async mount(root, { params }) {
     const profile = getProfile();
     const members = band(profile);
-    let state = beatFromJson(null);
+    const savedMix = (await kv.get(STORE_KEY).catch(() => null)) || null;
+    let state = beatFromJson({ mix: savedMix });
     let openedId = null;
     let name = `Beat ${stamp()}`;
 
@@ -74,6 +108,8 @@ export default {
     let audioPromise = null;
     let master = null;
     let masterFilter = null;
+    let otterGain = null;
+    const catGains = new Array(CAT_COUNT).fill(null);
     let loop = null;
     let step = 0;
     let playing = false;
@@ -100,13 +136,65 @@ export default {
     const roundLabel = el('span', { class: 'bc-round__label' }, '');
     const roundBar = el('div', { class: 'bc-round', hidden: true }, roundFill, roundLabel);
 
+    const stopVol = (e) => e.stopPropagation();
+    function fader({ value, aria, title, oninput }) {
+      return el('input', {
+        class: 'range bc-vol__fader',
+        type: 'range',
+        min: '0',
+        max: '100',
+        step: '1',
+        value: String(value),
+        'aria-label': aria,
+        title: title || aria,
+        oninput: (e) => oninput(e.target.value),
+        onpointerdown: stopVol,
+        onclick: stopVol,
+        onkeydown: stopVol
+      });
+    }
+
+    const volLabel = el('span', { class: 'pill' }, `Som ${state.mix.master}%`);
+    const volInput = fader({
+      value: state.mix.master,
+      aria: 'Volume',
+      title: 'Volume do programa',
+      oninput: (v) => setMasterVol(v)
+    });
+    const muteBtn = el('button', {
+      class: 'btn btn--ghost btn--sm bc-mute',
+      type: 'button',
+      'aria-label': 'Mudo',
+      'aria-pressed': String(state.mix.muted),
+      title: 'Mudo do programa',
+      onclick: () => toggleMute()
+    }, 'Mudo');
+
     const catEls = members.map((m, i) => el('div', { class: 'bc-cat is-empty', 'data-cat': String(i), role: 'button', tabindex: '0', 'aria-label': `Gato ${m.name}` }));
+    const catVolInputs = members.map((m, i) =>
+      fader({
+        value: state.mix.cats[i],
+        aria: `Som de ${m.name}`,
+        oninput: (v) => setCatVol(i, v)
+      })
+    );
+    const catVolEls = catVolInputs.map((input) =>
+      el('div', { class: 'bc-vol bc-vol--cat', onpointerdown: stopVol, onclick: stopVol }, el('span', { class: 'bc-vol__lab' }, 'Som'), input)
+    );
+    const otterVolInput = fader({
+      value: state.mix.otter,
+      aria: `Som de ${profile.otter.name}`,
+      title: 'Som da lontra',
+      oninput: (v) => setOtterVol(v)
+    });
+    const otterVol = el('div', { class: 'bc-vol bc-vol--otter', onpointerdown: stopVol, onclick: stopVol }, el('span', { class: 'bc-vol__lab' }, 'Som'), otterVolInput);
     const otter = el(
-      'button',
-      { class: 'bc-otter', title: 'Efeito especial da lontra' },
+      'div',
+      { class: 'bc-otter', role: 'button', tabindex: '0', title: 'Efeito especial da lontra' },
       el('span', { class: 'bc-otter__art', html: creatureSVG('otter', profile.otter, { size: 80, label: profile.otter.name }) }),
       el('span', { class: 'bc-otter__name' }, profile.otter.name),
-      el('span', { class: 'bc-otter__hint' }, 'Splash!')
+      el('span', { class: 'bc-otter__hint' }, 'Splash!'),
+      otterVol
     );
     const stage = el('div', { class: 'bc-stage' }, el('div', { class: 'bc-line' }, el('div', { class: 'bc-cats' }, ...catEls), otter));
 
@@ -139,7 +227,8 @@ export default {
     function catLook(i, soundId) {
       const m = members[i];
       const s = soundId && SOUND_BY_ID[soundId];
-      return { coat: m.coat, eyes: m.eyes, outfit: s ? { [OUTFIT_BY_ID[s.outfit].slot]: s.outfit } : {} };
+      const piece = s && OUTFIT_BY_ID[s.outfit];
+      return { coat: m.coat, eyes: m.eyes, outfit: piece ? { [piece.slot]: s.outfit } : {} };
     }
 
     function renderCat(i) {
@@ -159,6 +248,7 @@ export default {
         <span class="bc-cat__tag">${s ? esc(s.name) : 'vazio'}</span>
         ${s ? '<span class="bc-cat__remove" aria-hidden="true">×</span>' : '<span class="bc-cat__drop">solte aqui</span>'}`;
       c.setAttribute('aria-label', `Gato ${members[i].name}: ${s ? s.name : 'vazio'}`);
+      c.append(catVolEls[i]);
     }
 
     function renderTokens() {
@@ -208,24 +298,98 @@ export default {
       roundBar.hidden = state.mode !== 'round';
     }
 
+    function renderMix() {
+      volInput.value = String(state.mix.master);
+      volInput.setAttribute('aria-valuenow', String(state.mix.master));
+      volLabel.textContent = state.mix.muted ? 'Mudo' : `Som ${state.mix.master}%`;
+      muteBtn.classList.toggle('is-on', state.mix.muted);
+      muteBtn.setAttribute('aria-pressed', String(state.mix.muted));
+      catVolInputs.forEach((input, i) => {
+        input.value = String(state.mix.cats[i]);
+        input.title = `Som ${state.mix.cats[i]}%`;
+        input.setAttribute('aria-valuenow', String(state.mix.cats[i]));
+      });
+      otterVolInput.value = String(state.mix.otter);
+      otterVolInput.title = `Som ${state.mix.otter}%`;
+      otterVolInput.setAttribute('aria-valuenow', String(state.mix.otter));
+    }
+
     function renderAll() {
       catEls.forEach((_, i) => renderCat(i));
       renderTokens();
       renderModes();
+      renderMix();
       bpmInput.value = String(state.bpm);
       bpmLabel.textContent = `${state.bpm} BPM`;
     }
 
     /* ---------- Áudio ---------- */
+    function liveMaster() {
+      return state.mix.muted ? 0 : state.mix.master / 100;
+    }
+
+    function setGain(node, value) {
+      if (!node || !node.gain) return;
+      node.gain.value = value;
+    }
+
+    function applyMaster() {
+      setGain(master, liveMaster());
+    }
+
+    function applyCat(i) {
+      setGain(catGains[i], state.mix.cats[i] / 100);
+    }
+
+    function applyOtter() {
+      setGain(otterGain, state.mix.otter / 100);
+    }
+
+    function persistMix() {
+      kv.set(STORE_KEY, { version: 1, ...mixPayload(state.mix) }).catch(() => {});
+    }
+
+    function setMasterVol(n) {
+      state.mix.master = clampPct(n, state.mix.master);
+      if (state.mix.master > 0) state.mix.muted = false;
+      applyMaster();
+      renderMix();
+      persistMix();
+    }
+
+    function setCatVol(i, n) {
+      state.mix.cats[i] = clampPct(n, state.mix.cats[i]);
+      applyCat(i);
+      renderMix();
+      persistMix();
+    }
+
+    function setOtterVol(n) {
+      state.mix.otter = clampPct(n, state.mix.otter);
+      applyOtter();
+      renderMix();
+      persistMix();
+    }
+
+    function toggleMute() {
+      state.mix.muted = !state.mix.muted;
+      if (!state.mix.muted && state.mix.master <= 0) state.mix.master = MASTER_DEFAULT;
+      applyMaster();
+      renderMix();
+      persistMix();
+    }
+
     function ensureAudio() {
       if (!audioPromise) {
         audioPromise = (async () => {
           Tone = await startAudio();
           if (!alive) return;
           masterFilter = new Tone.Filter(18000, 'lowpass').toDestination();
-          master = new Tone.Gain(0.85).connect(masterFilter);
+          master = new Tone.Gain(liveMaster()).connect(masterFilter);
+          otterGain = new Tone.Gain(state.mix.otter / 100).connect(master);
+          for (let i = 0; i < CAT_COUNT; i++) catGains[i] = new Tone.Gain(state.mix.cats[i] / 100).connect(master);
           Tone.Transport.bpm.value = state.bpm;
-          state.cats.forEach((id, i) => id && (voices[i] = makeCaptured(Tone, id, master, log)));
+          state.cats.forEach((id, i) => id && (voices[i] = makeCaptured(Tone, id, catGains[i], log)));
           loop = new Tone.Loop(onStep, '16n').start(0);
         })();
         audioPromise.catch((err) => {
@@ -247,7 +411,7 @@ export default {
       }
       if (otterPending && (state.mode === 'continuous' || s % 16 === 0)) {
         otterPending = false;
-        otterSplash(Tone, master, masterFilter, time);
+        otterSplash(Tone, otterGain || master, masterFilter, time);
         log.note({ note: 84, inst: 'fx', track: 'lontra', trackName: `${profile.otter.name} · splash`, time, dur: 60 / state.bpm, vel: 0.9 });
         Tone.Draw.schedule(splashVisual, time);
       }
@@ -270,7 +434,7 @@ export default {
         voices[i] = null;
       }
       state.cats[i] = id || null;
-      if (id && Tone && master) voices[i] = makeCaptured(Tone, id, master, log);
+      if (id && Tone && catGains[i]) voices[i] = makeCaptured(Tone, id, catGains[i], log);
     }
 
     /* ---------- Visual sincronizado ---------- */
@@ -456,14 +620,17 @@ export default {
 
     catEls.forEach((c, i) => {
       c.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.bc-vol')) return;
         const id = pending.has(i) ? pending.get(i) : state.cats[i];
         if (id) startDrag(e, id, i);
       });
-      c.addEventListener('click', () => {
+      c.addEventListener('click', (e) => {
+        if (e.target.closest('.bc-vol')) return;
         const id = pending.has(i) ? pending.get(i) : state.cats[i];
         if (!id && selected) assign(i, selected);
       });
       c.addEventListener('keydown', (e) => {
+        if (e.target.closest('.bc-vol')) return;
         if (e.key !== 'Enter' && e.key !== ' ') return;
         e.preventDefault();
         const id = pending.has(i) ? pending.get(i) : state.cats[i];
@@ -471,7 +638,16 @@ export default {
         else if (id) remove(i);
       });
     });
-    otter.addEventListener('click', otterFx);
+    otter.addEventListener('click', (e) => {
+      if (e.target.closest('.bc-vol')) return;
+      otterFx();
+    });
+    otter.addEventListener('keydown', (e) => {
+      if (e.target.closest('.bc-vol')) return;
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      otterFx();
+    });
     const onKey = (e) => {
       if (e.key === 'Escape') select(null);
       if (e.key.toLowerCase() === 'o' && !e.target.matches('input, select, textarea') && !e.ctrlKey && !e.metaKey) otterFx();
@@ -570,6 +746,7 @@ export default {
             { class: 'toolbar' },
             playBtn,
             el('label', { class: 'toolbar__bpm' }, bpmLabel, bpmInput),
+            el('div', { class: 'toolbar__bpm bc-vol bc-vol--master' }, volLabel, volInput, muteBtn),
             el('div', { class: 'bc-opt' }, el('span', { class: 'field__label' }, 'Modo'), modeTabs),
             el('div', { class: 'bc-opt' }, el('span', { class: 'field__label' }, 'Gravar'), recModeTabs),
             recBtn,
@@ -583,7 +760,7 @@ export default {
           'section',
           { class: 'panel bc-side' },
           el('div', { class: 'panel__head' }, el('h2', {}, 'Acessórios sonoros'), el('span', { class: 'pill' }, `${SOUNDS.length} sons`)),
-          el('p', { class: 'hint' }, 'Arraste um acessório para um gato. Toque na lontra (ou O) para o splash.'),
+          el('p', { class: 'hint' }, 'Arraste um acessório para um gato. Toque na lontra (ou O) para o splash. Som de cada um no palco; Volume no transporte.'),
           palette
         )
       )
@@ -592,7 +769,7 @@ export default {
     if (params.open) {
       try {
         const { item, json } = await gallery.read(params.open);
-        state = beatFromJson(json);
+        state = beatFromJson(json, state.mix);
         openedId = item.id;
         name = item.name;
         nameInput.value = name;
@@ -603,7 +780,7 @@ export default {
     } else if (params.demo) {
       try {
         const res = await fetch(new URL('../../data/demo/miau-groove.json', import.meta.url));
-        state = beatFromJson(await res.json());
+        state = beatFromJson(await res.json(), state.mix);
         status.textContent = 'Beat de exemplo';
       } catch (err) {
         toast(`Não abriu o exemplo: ${err.message}`, 'error');
@@ -611,14 +788,34 @@ export default {
     }
     log.set({ bpm: state.bpm });
     renderAll();
+    persistMix();
     if (params.play && state.cats.some(Boolean)) start().catch(() => {});
 
     window.__mmpBeatCats = {
-      state: () => ({ cats: [...state.cats], pending: Object.fromEntries(pending), playing, step, mode: state.mode, bpm: state.bpm, voices: voices.map(Boolean), recording: rec ? rec.type : null }),
+      state: () => ({
+        cats: [...state.cats],
+        pending: Object.fromEntries(pending),
+        playing,
+        step,
+        mode: state.mode,
+        bpm: state.bpm,
+        voices: voices.map(Boolean),
+        recording: rec ? rec.type : null,
+        mix: mixPayload(state.mix),
+        gains: {
+          master: master ? master.gain.value : liveMaster(),
+          cats: catGains.map((g, i) => (g ? g.gain.value : state.mix.cats[i] / 100)),
+          otter: otterGain ? otterGain.gain.value : state.mix.otter / 100
+        }
+      }),
       sounds: () => SOUNDS.map((s) => ({ id: s.id, group: s.group, outfit: s.outfit })),
       assign,
       remove,
       setMode,
+      setMasterVol,
+      setCatVol,
+      setOtterVol,
+      toggleMute,
       otter: otterFx,
       events: () => log.recent(),
       ready: () => ensureAudio()
@@ -626,9 +823,18 @@ export default {
 
     return {
       async save() {
-        const data = { version: 2, kind: 'beatcats', bpm: state.bpm, mode: state.mode, recordMode: state.recordMode, cats: state.cats.map((id, i) => (pending.has(i) ? pending.get(i) : id) || null) };
+        const data = {
+          version: 2,
+          kind: 'beatcats',
+          bpm: state.bpm,
+          mode: state.mode,
+          recordMode: state.recordMode,
+          cats: state.cats.map((id, i) => (pending.has(i) ? pending.get(i) : id) || null),
+          mix: mixPayload(state.mix)
+        };
         const title = nameInput.value.trim() || name;
         const meta = { bpm: state.bpm, layers: data.cats.filter(Boolean).length, mode: state.mode };
+        persistMix();
         if (openedId) {
           await gallery.updateJson(openedId, data, title);
           return `Beat “${title}” atualizado na Galeria.`;
@@ -650,9 +856,8 @@ export default {
         }
         if (loop) loop.dispose();
         voices.forEach((v) => v && v.dispose());
-        setTimeout(() => [master, masterFilter].forEach((n) => n && n.dispose()), 600);
+        setTimeout(() => [master, masterFilter, otterGain, ...catGains].forEach((n) => n && n.dispose()), 600);
       }
     };
   }
 };
-
