@@ -442,12 +442,46 @@
     };
     await window.__mmpBeatCats.ready();
     const aud = await recOnce('Só áudio');
-    ok('Beat Cats: gravar só áudio vai para a Galeria', aud.during === 'audio' && aud.item && aud.item.type === 'audio' && aud.item.module === 'beatcats' && aud.item.size > 0, aud.item && `${aud.item.name} · ${aud.item.mime} · ${aud.item.size} B`);
+    ok(
+      'Beat Cats: gravar só áudio vai para a Galeria',
+      aud.during === 'audio' &&
+        aud.item &&
+        aud.item.type === 'audio' &&
+        aud.item.module === 'beatcats' &&
+        aud.item.size > 0 &&
+        /^audio\/webm/.test(aud.item.mime) &&
+        !/video/.test(aud.item.mime),
+      aud.item && `${aud.item.name} · ${aud.item.mime} · ${aud.item.size} B`
+    );
     const bcEv = aud.item && aud.item.eventsFile ? (await window.mmp.gallery.readEvents(aud.item.id)).json : null;
     const kicks = bcEv ? bcEv.events.filter((e) => e.track === 'bumbo') : [];
     ok('Beat Cats: gravação salva os eventos de cada gato (bumbo = nota 36 na bateria, no tempo)', bcEv && kicks.length >= 2 && kicks.every((e) => e.note === 36 && e.inst === 'drums') && kicks.every((e) => Math.abs(e.time * 4 - Math.round(e.time * 4)) < 0.2) && bcEv.tracks.some((t) => t.id === 'melodia-8bit' && t.inst === 'chip'), bcEv && `${bcEv.events.length} eventos · bumbo em ${kicks.map((e) => e.time).join(', ')}`);
     const vid = await recOnce('Áudio + animação');
-    ok('Beat Cats: gravar áudio + animação vai para a Galeria como vídeo', vid.during === 'video' && vid.item && vid.item.type === 'video' && /webm/.test(vid.item.mime) && vid.item.size > 1000, vid.item && `${vid.item.name} · ${vid.item.mime} · ${vid.item.size} B`);
+    const sniff = async (item) => {
+      if (!item) return '';
+      const file = await window.mmp.gallery.read(item.id);
+      const raw = file && file.data;
+      const u8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw && (raw.buffer || raw) || []);
+      return new TextDecoder('latin1').decode(u8.subarray(0, Math.min(u8.length, 65536)));
+    };
+    const audBytes = await sniff(aud.item);
+    const vidBytes = await sniff(vid.item);
+    ok(
+      'Beat Cats: gravar áudio + animação vai para a Galeria como vídeo',
+      vid.during === 'video' &&
+        vid.item &&
+        vid.item.type === 'video' &&
+        /video\/webm/.test(vid.item.mime) &&
+        /vp9/i.test(vid.item.mime) &&
+        /opus/i.test(vid.item.mime) &&
+        vid.item.size > 1000 &&
+        vid.item.mime !== (aud.item && aud.item.mime) &&
+        /V_VP9/.test(vidBytes) &&
+        /A_OPUS/.test(vidBytes) &&
+        !/V_VP/.test(audBytes) &&
+        /A_OPUS/.test(audBytes),
+      vid.item && `${vid.item.name} · ${vid.item.mime} · ${vid.item.size} B`
+    );
     [...$$('.beatcats .btn')].find((b) => b.textContent === 'Editar no Studio').click();
     await sleep(900);
     let sst = window.__mmpStudio && window.__mmpStudio.state();

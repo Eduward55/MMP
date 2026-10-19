@@ -1,4 +1,5 @@
-// Grava "áudio + animação": redesenha o palco num canvas a cada quadro e junta com o áudio do Tone.
+// Grava "áudio + animação": canvas.captureStream do palco + áudio do Tone (vp9+opus).
+import { pickRecorderMime, VIDEO_RECORDER_MIMES } from '../shared/audio.js';
 import { themeTokens, hexToRgba } from '../shared/theme.js';
 
 const imageCache = new Map();
@@ -86,41 +87,89 @@ function paint(ctx, stage, scale) {
 
 export function createStageRecorder(Tone, master, stage) {
   const rect = stage.getBoundingClientRect();
-  const scale = Math.min(1.5, 1280 / Math.max(1, rect.width));
+  const scale = Math.min(1.5, 1280 / Math.max(1, rect.width || 960));
   const canvas = document.createElement('canvas');
-  canvas.width = Math.round(rect.width * scale);
-  canvas.height = Math.round(rect.height * scale);
-  const ctx = canvas.getContext('2d');
+  canvas.width = Math.max(2, Math.round(((rect.width || 960) * scale) / 2) * 2);
+  canvas.height = Math.max(2, Math.round(((rect.height || 360) * scale) / 2) * 2);
+  canvas.setAttribute('aria-hidden', 'true');
+  Object.assign(canvas.style, {
+    position: 'fixed',
+    left: '-10000px',
+    top: '0',
+    width: `${canvas.width}px`,
+    height: `${canvas.height}px`,
+    opacity: '0.01',
+    pointerEvents: 'none'
+  });
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d', { alpha: false });
   const dest = Tone.context.createMediaStreamDestination();
   master.connect(dest);
   paint(ctx, stage, scale);
-  const stream = new MediaStream([...canvas.captureStream(30).getVideoTracks(), ...dest.stream.getAudioTracks()]);
-  const mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find((m) => MediaRecorder.isTypeSupported(m)) || '';
-  const mr = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+  const cap = canvas.captureStream(30);
+  const videoTracks = cap.getVideoTracks();
+  const audioTracks = dest.stream.getAudioTracks();
+  if (!videoTracks.length) {
+    canvas.remove();
+    try {
+      master.disconnect(dest);
+    } catch {}
+    throw new Error('Não deu para capturar o palco (vídeo).');
+  }
+  videoTracks.forEach((t) => {
+    t.enabled = true;
+    if (typeof t.requestFrame === 'function') t.requestFrame();
+  });
+  const stream = new MediaStream([...videoTracks, ...audioTracks]);
+  const mime = pickRecorderMime(VIDEO_RECORDER_MIMES);
+  if (!mime) {
+    canvas.remove();
+    stream.getTracks().forEach((t) => t.stop());
+    try {
+      master.disconnect(dest);
+    } catch {}
+    throw new Error('Este aparelho não grava vídeo webm.');
+  }
+  const mr = new MediaRecorder(stream, {
+    mimeType: mime,
+    videoBitsPerSecond: 1200000,
+    audioBitsPerSecond: 128000
+  });
   const chunks = [];
   mr.ondataavailable = (e) => e.data.size && chunks.push(e.data);
   let raf = 0;
-  const loop = () => {
+  let tick = 0;
+  const frame = () => {
     paint(ctx, stage, scale);
+    videoTracks.forEach((t) => t.requestFrame && t.requestFrame());
+  };
+  const loop = () => {
+    frame();
     raf = requestAnimationFrame(loop);
   };
   const started = performance.now();
   return {
     start() {
+      frame();
       mr.start(250);
       loop();
+      tick = setInterval(frame, 33);
     },
     stop() {
       return new Promise((resolve) => {
         mr.onstop = () => {
           cancelAnimationFrame(raf);
+          clearInterval(tick);
           stream.getTracks().forEach((t) => t.stop());
+          cap.getTracks().forEach((t) => t.stop());
           try {
             master.disconnect(dest);
           } catch {}
-          resolve({ blob: new Blob(chunks, { type: mr.mimeType || 'video/webm' }), seconds: (performance.now() - started) / 1000 });
+          canvas.remove();
+          resolve({ blob: new Blob(chunks, { type: mime || mr.mimeType || 'video/webm' }), seconds: (performance.now() - started) / 1000 });
         };
-        mr.stop();
+        if (mr.state === 'recording') mr.stop();
+        else mr.onstop();
       });
     }
   };

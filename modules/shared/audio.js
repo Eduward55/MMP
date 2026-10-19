@@ -39,29 +39,75 @@ export function createKit(Tone) {
   };
 }
 
-// Grava tudo que sai pelo Tone.Destination (webm/opus).
-export async function createOutputRecorder() {
+export const AUDIO_RECORDER_MIMES = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+export const VIDEO_RECORDER_MIMES = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+
+export function pickRecorderMime(list) {
+  if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') return '';
+  return list.find((m) => MediaRecorder.isTypeSupported(m)) || '';
+}
+
+// Só áudio: MediaRecorder em trilha de áudio (opus). Tone.Recorder não define mimeType e o Chromium
+// acaba gravando video/webm — o mesmo container do modo "áudio + animação".
+export async function createOutputRecorder(tapNode) {
   const Tone = await startAudio();
-  const recorder = new Tone.Recorder();
-  Tone.getDestination().connect(recorder);
+  const src = tapNode || Tone.getDestination();
+  const dest = Tone.context.createMediaStreamDestination();
+  src.connect(dest);
+  const stream = new MediaStream(dest.stream.getAudioTracks());
+  const mime = pickRecorderMime(AUDIO_RECORDER_MIMES);
+  if (!mime) {
+    cleanup();
+    throw new Error('Este aparelho não grava áudio webm/opus.');
+  }
+  const mr = new MediaRecorder(stream, { mimeType: mime, audioBitsPerSecond: 128000 });
+  const chunks = [];
+  mr.ondataavailable = (e) => e.data.size && chunks.push(e.data);
   let startedAt = 0;
+
+  function cleanup() {
+    try {
+      src.disconnect(dest);
+    } catch {}
+    stream.getTracks().forEach((t) => t.stop());
+    dest.stream.getTracks().forEach((t) => t.stop());
+  }
+
+  function audioBlob() {
+    const reported = mr.mimeType || mime;
+    const type = reported.startsWith('audio/') ? reported : mime;
+    return new Blob(chunks, { type });
+  }
+
   return {
     get recording() {
-      return recorder.state === 'started';
+      return mr.state === 'recording';
     },
     start() {
       startedAt = performance.now();
-      recorder.start();
+      if (mr.state === 'inactive') mr.start(250);
     },
-    async stop() {
-      const blob = await recorder.stop();
-      return { blob, seconds: (performance.now() - startedAt) / 1000 };
+    stop() {
+      return new Promise((resolve, reject) => {
+        const finish = () => {
+          cleanup();
+          resolve({ blob: audioBlob(), seconds: (performance.now() - startedAt) / 1000 });
+        };
+        mr.onerror = () => {
+          cleanup();
+          reject(mr.error || new Error('Falhou a gravação de áudio.'));
+        };
+        if (mr.state === 'recording') {
+          mr.onstop = finish;
+          mr.stop();
+        } else finish();
+      });
     },
     dispose() {
       try {
-        Tone.getDestination().disconnect(recorder);
+        if (mr.state === 'recording') mr.stop();
       } catch {}
-      recorder.dispose();
+      cleanup();
     }
   };
 }

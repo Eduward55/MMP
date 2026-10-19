@@ -679,7 +679,7 @@ export default {
         } else {
           await ensureAudio();
           const type = state.recordMode === 'video' ? 'video' : 'audio';
-          const handle = type === 'video' ? createStageRecorder(Tone, masterFilter, stage) : await createOutputRecorder();
+          const handle = type === 'video' ? createStageRecorder(Tone, masterFilter, stage) : await createOutputRecorder(masterFilter);
           handle.start();
           log.startTake();
           rec = { type, handle };
