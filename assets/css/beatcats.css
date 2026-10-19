@@ -44,6 +44,49 @@
   max-height: none;
   overflow: visible;
 }
+.page--beatcats .bc-main .toolbar {
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.bc-vol--master {
+  gap: 8px;
+}
+.bc-vol--master .bc-vol__fader {
+  width: 108px;
+}
+.bc-mute.is-on {
+  background: color-mix(in srgb, var(--danger) 16%, var(--surface));
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.bc-vol {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  touch-action: manipulation;
+  cursor: default;
+}
+.bc-vol__lab {
+  flex: 0 0 auto;
+  font-family: var(--font);
+  font-size: 0.62rem;
+  font-weight: 650;
+  color: var(--text-muted);
+  line-height: 1;
+}
+.bc-vol__fader {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
 .bc-opt {
   display: flex;
   align-items: center;
@@ -94,7 +137,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 4px 3px 6px;
+  padding: 4px 3px 4px;
   min-height: 118px;
   background: var(--bg);
   border: 1px solid var(--hairline);
@@ -114,7 +157,7 @@
 .bc-cat__art {
   position: relative;
   z-index: 1;
-  width: 72px;
+  width: 64px;
   max-width: 100%;
   transform-origin: 50% 100%;
 }
@@ -293,8 +336,10 @@
   justify-content: flex-end;
   gap: 4px;
   padding: 6px 8px;
-  flex: 0 0 108px;
-  min-width: 108px;
+  flex: 0 0 120px;
+  min-width: 120px;
+  font: inherit;
+  text-align: center;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -544,8 +589,13 @@ body.is-dragging * {
   .bc-otter {
     flex: 1 1 100%;
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
     min-height: 90px;
+  }
+  .bc-otter .bc-vol--otter {
+    flex: 1 1 120px;
+    max-width: 180px;
   }
 }
 @media (max-width: 720px) {
