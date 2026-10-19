@@ -148,6 +148,14 @@
           (Number.isNaN(vidZ) || barZ > vidZ),
         bar && `${bar.hidden} ${getComputedStyle(bar).display} z=${barZ}/${vidZ} ${back && back.textContent}`
       );
+      const camOffIdle = $('.airx__fs-cam');
+      ok(
+        'Air Pads: Desligar some na tela cheia sem câmera',
+        camOffIdle &&
+          (camOffIdle.hidden || getComputedStyle(camOffIdle).display === 'none') &&
+          camOffIdle.getBoundingClientRect().height === 0,
+        camOffIdle && `${camOffIdle.hidden} ${getComputedStyle(camOffIdle).display} h=${Math.round(camOffIdle.getBoundingClientRect().height)}`
+      );
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true }));
       await sleep(200);
       const camBtn = $$('.airx__stage .toolbar button').find((b) => /Ativar câmera|Desligar câmera/.test(b.textContent));
@@ -180,8 +188,10 @@
           back2.getBoundingClientRect().height > 0 &&
           camOff &&
           !camOff.hidden &&
-          /Desligar câmera/.test(camOff.textContent),
-        back2 && `${back2.textContent} camOff=${camOff && camOff.hidden} ${camOff && camOff.textContent}`
+          /Desligar câmera/.test(camOff.textContent) &&
+          getComputedStyle(camOff).display !== 'none' &&
+          camOff.getBoundingClientRect().height > 0,
+        back2 && `${back2.textContent} camOff=${camOff && camOff.hidden} ${camOff && getComputedStyle(camOff).display} ${camOff && camOff.textContent}`
       );
       $('.airx__fs-exit').click();
       await sleep(120);

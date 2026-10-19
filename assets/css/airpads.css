@@ -321,6 +321,15 @@
 .airx__arena:fullscreen .airx__fsbar {
   display: flex !important;
 }
+.airx__fsbar [hidden],
+.airx__fs-cam {
+  display: none !important;
+}
+.airx__arena.has-camera.is-fs .airx__fs-cam,
+.airx__arena.has-camera:fullscreen .airx__fs-cam,
+.airx.is-arena-fs .airx__arena.has-camera .airx__fs-cam {
+  display: inline-flex !important;
+}
 .airx__fsbar .btn {
   pointer-events: auto;
   position: relative;
