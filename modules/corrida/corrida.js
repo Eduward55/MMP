@@ -1,4 +1,5 @@
 // Corrida de obstáculos 2D: WASD / setas, o gato de frente no carrinho.
+import { kartSVG } from './car.js';
 import { creatureSVG } from '../shared/creatures.js';
 import { getProfile, kv } from '../shared/store.js';
 import { themeTokens, hexToRgba } from '../shared/theme.js';
@@ -87,17 +88,13 @@ export default {
       car.style.setProperty('--car', s.body);
       car.style.setProperty('--trim', s.trim);
       car.innerHTML = `
-        <span class="cr-car__spoiler"></span>
-        <span class="cr-car__body"></span>
-        <span class="cr-car__hood"></span>
-        <span class="cr-car__glass"></span>
-        <span class="cr-car__light cr-car__light--l"></span>
-        <span class="cr-car__light cr-car__light--r"></span>
-        <span class="cr-car__wheel cr-car__wheel--fl"></span>
-        <span class="cr-car__wheel cr-car__wheel--fr"></span>
-        <span class="cr-car__wheel cr-car__wheel--bl"></span>
-        <span class="cr-car__wheel cr-car__wheel--br"></span>
-        <figure class="cr-car__pilot">${creatureSVG('cat', profile.cat, { size: 58, label: profile.cat.name })}</figure>`;
+        <span class="cr-car__shadow"></span>
+        <span class="cr-car__beam cr-car__beam--l"></span>
+        <span class="cr-car__beam cr-car__beam--r"></span>
+        <span class="cr-car__art">${kartSVG(s)}</span>
+        <figure class="cr-car__pilot">${creatureSVG('cat', profile.cat, { size: 56, label: profile.cat.name, viewBox: '7 5 26 23' })}</figure>
+        <span class="cr-car__flame cr-car__flame--l"></span>
+        <span class="cr-car__flame cr-car__flame--r"></span>`;
       fan.innerHTML = `
         <span class="cr-fan__art">${creatureSVG('otter', profile.otter, { size: 72, extraClass: 'is-dancing', label: profile.otter.name })}</span>
         <span class="cr-fan__name">${profile.otter.name} torce!</span>`;
@@ -216,6 +213,8 @@ export default {
       }
       const left = `${(x * 100).toFixed(2)}%`;
       if (car.style.left !== left) car.style.left = left;
+      const steer = over || paused ? '0deg' : `${vx * 8}deg`;
+      if (car.style.getPropertyValue('--steer') !== steer) car.style.setProperty('--steer', steer);
       car.classList.toggle('is-hit', hitFlash > 0);
       car.classList.toggle('is-boost', keys.has('w') || keys.has('arrowup'));
     }
@@ -359,6 +358,15 @@ export default {
         ctx.fillRect(left - 14, ty, 10, 18);
         ctx.fillRect(left + rw + 4, ty + 10, 10, 18);
       }
+
+      const carPx = x * w;
+      const carPy = h * 0.9;
+      const pool = ctx.createRadialGradient(carPx, carPy - 70, 8, carPx, carPy - 20, 110);
+      pool.addColorStop(0, 'rgba(254, 240, 138, 0.2)');
+      pool.addColorStop(0.45, 'rgba(253, 224, 71, 0.08)');
+      pool.addColorStop(1, 'rgba(253, 224, 71, 0)');
+      ctx.fillStyle = pool;
+      ctx.fillRect(carPx - 90, carPy - 160, 180, 170);
 
       spark.forEach((s) => {
         ctx.fillStyle = hexToRgba('#fb923c', Math.max(0, s.life * 2));
