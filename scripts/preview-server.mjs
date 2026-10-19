@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.MMP_PREVIEW_PORT || 47261);
-const HOST = process.env.MMP_PREVIEW_HOST || '127.0.0.1';
+const HOST = process.env.MMP_PREVIEW_HOST || '0.0.0.0';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
