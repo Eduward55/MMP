@@ -321,7 +321,7 @@ const DICT = {
     'cr.meters': 'Metros',
     'cr.speed': 'Velocidade',
     'cr.best': 'Recorde',
-    'cr.hint': 'W/↑ acelera e o carro sobe a pista. S/↓ volta um pouco. A/D ou ← → desviam. Esc pausa.',
+    'cr.hint': 'W/↑ sobe a faixa. Espaço = boost. A/D desviam. Esc pausa.',
     'cr.cheer': '{name} torce!',
     'cr.laranja': 'Laranja',
     'cr.azul': 'Azul',
@@ -329,7 +329,6 @@ const DICT = {
     'cr.ouro': 'Ouro',
 
     'mycat.dressing': 'Camarim',
-    'mycat.clickHint': 'Clique no bichinho — a roupa reage, não sai',
     'mycat.wearing': 'Vestindo agora',
     'mycat.catName': 'Nome do gato',
     'mycat.otterName': 'Nome da lontra',
@@ -683,7 +682,7 @@ const DICT = {
     'cr.meters': 'Meters',
     'cr.speed': 'Speed',
     'cr.best': 'Best',
-    'cr.hint': 'W/↑ accelerates and the car moves up the track. S/↓ eases back. A/D or ← → dodge. Esc pauses.',
+    'cr.hint': 'W/↑ climbs the lane. Space = boost. A/D dodge. Esc pauses.',
     'cr.cheer': '{name} cheers!',
     'cr.laranja': 'Orange',
     'cr.azul': 'Blue',
@@ -691,7 +690,6 @@ const DICT = {
     'cr.ouro': 'Gold',
 
     'mycat.dressing': 'Dressing room',
-    'mycat.clickHint': 'Click the critter — the outfit reacts, it does not come off',
     'mycat.wearing': 'Wearing now',
     'mycat.catName': 'Cat name',
     'mycat.otterName': 'Otter name',

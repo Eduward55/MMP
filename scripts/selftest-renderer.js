@@ -91,6 +91,13 @@
     ok('beat de exemplo abre com 5 gatos ativos', $$('.bc-cat.is-active').length === 5, $$('.bc-cat.is-active').length);
 
     await go('mycat');
+    ok(
+      'Meu Gato: camarim sem faixa de clique',
+      !$('.mycat__stage .stage__hint') &&
+        !/clique no bichinho|roupa reage|n[aã]o sai/i.test(($('.mycat') && $('.mycat').textContent) || ''),
+      $('.mycat') && $('.mycat').textContent.replace(/\s+/g, ' ').slice(0, 180)
+    );
+    ok('Meu Gato: bichinhos no quadro', $('.mycat__clip') && $$('.mycat__preview svg.creature').length >= 2);
     const nameInput = $('input[aria-label="Nome do gato"]');
     nameInput.value = 'Bolinha';
     nameInput.dispatchEvent(new Event('input'));
@@ -721,6 +728,15 @@
     CR.tick(0.45);
     CR.input('arrowup', false);
     ok('Corrida: acelerar sobe a pista', CR.state().y < y0 && CR.state().speed > 180, `${y0} → ${CR.state().y} · ${CR.state().speed}`);
+    CR.newGame();
+    const sp0 = CR.state().speed;
+    CR.input(' ', true);
+    CR.tick(0.45);
+    CR.input(' ', false);
+    ok('Corrida: espaço dá boost', CR.state().speed > sp0 + 50, `${sp0} → ${CR.state().speed}`);
+    const carBox = $('.cr-car') && $('.cr-car').getBoundingClientRect();
+    ok('Corrida: carrinho menor na pista', carBox && carBox.height <= 130 && carBox.width <= 95, carBox && `${Math.round(carBox.width)}×${Math.round(carBox.height)}`);
+    ok('Corrida: sem a palavra saco na tela', !/saco/i.test(($('.cr') && $('.cr').textContent) || ''));
     CR.spawnSack();
     ok('Corrida: fardo grande na pista', CR.state().kinds.includes('sack') && CR.state().obstacles >= 1, JSON.stringify(CR.state().kinds));
 

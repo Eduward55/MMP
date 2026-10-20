@@ -301,7 +301,6 @@ export default {
           'section',
           { class: 'panel mycat__stage' },
           el('div', { class: 'panel__head' }, el('h2', { class: 'font-pixel' }, t('mycat.dressing')), dirtyFlag),
-          el('p', { class: 'stage__hint font-pixel' }, t('mycat.clickHint')),
           preview,
           el('h3', { class: 'subhead' }, t('mycat.wearing')),
           wearing

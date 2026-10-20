@@ -1511,12 +1511,6 @@ body:has(.airx .btn--rec.is-active) #dock-root,
   white-space: nowrap;
   pointer-events: none;
 }
-.mycat__stage .stage__hint {
-  position: static;
-  display: inline-flex;
-  transform: none;
-  margin: 0 0 10px;
-}
 .stage .duo {
   position: relative;
   z-index: 2;

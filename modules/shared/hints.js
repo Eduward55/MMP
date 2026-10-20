@@ -55,8 +55,9 @@ const PT = {
 • Som liga/desliga a musiquinha; o slider abaixa o volume.`,
   corrida: `Corrida — como mexer
 • A/D ou setas desviam o carrinho.
-• W ou ↑ acelera: a pista corre para trás e o carro sobe a faixa.
-• S ou ↓ volta um pouco para baixo. Esc pausa. Desvie de cones, pedras e fardos.`,
+• W ou ↑ sobe a faixa; a pista corre para trás.
+• Espaço = boost (aceleração extra). S ou ↓ volta um pouco. Esc pausa.
+• Desvie de cones, pedras e fardos.`,
   mycat: `Meu Gato — como mexer
 • Escolha o gato ou a lontra em cima: pelagem e olhos são de cada um.
 • Digite o nome nos campos Nome do gato / Nome da lontra.
@@ -119,8 +120,9 @@ const EN = {
 • Sound toggles the tune; the slider lowers the volume.`,
   corrida: `Race — how to play
 • A/D or arrows steer the kart.
-• W or ↑ accelerates: the road scrolls back and the car climbs the lane.
-• S or ↓ eases down. Esc pauses. Dodge cones, rocks and bundles.`,
+• W or ↑ climbs the lane; the road scrolls back.
+• Space = boost. S or ↓ eases down. Esc pauses.
+• Dodge cones, rocks and bundles.`,
   mycat: `My Cat — how to play
 • Pick the cat or the otter at the top: coat and eyes belong to each one.
 • Type names in the Cat name / Otter name fields.

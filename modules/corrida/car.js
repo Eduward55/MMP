@@ -81,12 +81,13 @@ export function kartSVG(skin) {
   g.rect(cx - 11, 12, 3, 2, body);
   g.rect(cx + 8, 12, 3, 2, body);
 
-  // Para-brisa: só a faixa da frente. O gato fica no cockpit aberto.
-  g.rect(cx - 7, 16, 14, 4, glassLo);
-  g.rect(cx - 6, 16, 12, 3, glass);
-  g.rect(cx - 6, 16, 5, 2, glassHi);
-  g.rect(cx - 7, 16, 14, 1, trim);
-  g.rect(cx - 7, 19, 14, 1, trim);
+  // Vidrinhos laterais — sem faixa atravessando o carro.
+  g.rect(cx - 8, 17, 3, 4, glassLo);
+  g.rect(cx + 5, 17, 3, 4, glassLo);
+  g.rect(cx - 8, 17, 2, 3, glass);
+  g.rect(cx + 6, 17, 2, 3, glass);
+  g.set(cx - 8, 17, glassHi);
+  g.set(cx + 7, 17, glassHi);
 
   // Espelhos.
   g.rect(cx - 14, 17, 3, 3, chrome);
@@ -94,26 +95,26 @@ export function kartSVG(skin) {
   g.rect(cx - 14, 17, 2, 2, glass);
   g.rect(cx + 12, 17, 2, 2, glass);
 
-  // Side pods.
+  // Side pods com sombra na vertical, não em faixas.
   g.rect(cx - 11, 18, 6, 15, body);
   g.rect(cx + 5, 18, 6, 15, body);
-  g.rect(cx - 11, 18, 6, 4, hi);
-  g.rect(cx + 5, 18, 6, 4, hi);
-  g.rect(cx - 11, 29, 6, 4, lo);
-  g.rect(cx + 5, 29, 6, 4, lo);
+  g.rect(cx - 11, 18, 2, 15, hi);
+  g.rect(cx + 9, 18, 2, 15, hi);
+  g.rect(cx - 7, 18, 2, 15, lo);
+  g.rect(cx + 5, 18, 2, 15, lo);
 
-  // Cockpit aberto + santo Antônio.
+  // Cockpit aberto + santo Antônio (postes, sem travessa larga).
   g.rect(cx - 6, 20, 12, 13, '#141218');
   g.rect(cx - 5, 21, 10, 11, '#221c28');
   g.rect(cx - 6, 20, 1, 12, trim);
   g.rect(cx + 5, 20, 1, 12, trim);
-  g.rect(cx - 6, 20, 12, 1, trim);
-  g.rect(cx - 4, 28, 8, 4, trim);
-  g.rect(cx - 3, 29, 6, 2, trimHi);
+  g.rect(cx - 4, 30, 2, 3, trim);
+  g.rect(cx + 2, 30, 2, 3, trim);
 
   // Convés traseiro.
   g.rect(cx - 9, 32, 18, 8, body);
-  g.rect(cx - 8, 32, 16, 2, lo);
+  g.rect(cx - 9, 32, 2, 8, lo);
+  g.rect(cx + 7, 32, 2, 8, lo);
   g.rect(cx - 1, 32, 2, 8, stripe);
   g.rect(cx - 12, 34, 4, 6, lo);
   g.rect(cx + 8, 34, 4, 6, lo);
