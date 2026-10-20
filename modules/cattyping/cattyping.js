@@ -7,6 +7,10 @@ import { t } from '../shared/i18n.js';
 
 const LIVES = 3;
 const MAX_ROCKS = 6;
+const MAX_LASERS = 24;
+const MAX_BOOMS = 16;
+const MAX_METEORS = 12;
+const MAX_KEY_QUEUE = 24;
 const STORE_KEY = 'cattyping';
 const THEME_LABEL = { psicologia: 'Psicologia', arte: 'Arte', historia: 'História', gerais: 'Gerais' };
 const SHIPS = [
@@ -131,6 +135,8 @@ export default {
     let idSeq = 1;
     let lastShotAt = 0;
     let locked = false;
+    let keyQueue = [];
+    let drainingKeys = false;
     const shotMode = Boolean(params && params.shot);
 
     const canvas = el('canvas', { class: 'ct-canvas', 'aria-label': 'Campo de asteroides' });
@@ -404,26 +410,32 @@ export default {
     }
 
     function spawn(opts = {}) {
-      if (!opts.word && rocks.length >= MAX_ROCKS) return null;
-      const w = opts.word
-        ? { word: norm(opts.word), display: opts.display || opts.word, theme: opts.theme || 'gerais', len: norm(opts.word).length }
-        : nextWord();
-      if (!w) return null;
-      const rock = {
-        id: opts.id || idSeq++,
-        word: w.word,
-        display: (w.display || w.word).toUpperCase(),
-        theme: w.theme || 'gerais',
-        x: opts.x ?? 0.12 + Math.random() * 0.76,
-        y: opts.y ?? -0.08,
-        vy: opts.vy ?? 0.035 + run.level * 0.008 + Math.random() * 0.01,
-        rad: 0.05 + Math.min(0.04, w.word.length * 0.004),
-        rot: Math.random() * Math.PI,
-        seed: Math.floor(Math.random() * 99),
-        boss: false
-      };
-      rocks.push(rock);
-      return rock;
+      try {
+        if (!opts.word && rocks.length >= MAX_ROCKS) return null;
+        if (rocks.length >= MAX_ROCKS + 4) return null;
+        const w = opts.word
+          ? { word: norm(opts.word), display: opts.display || opts.word, theme: opts.theme || 'gerais', len: norm(opts.word).length }
+          : nextWord();
+        if (!w) return null;
+        const rock = {
+          id: opts.id || idSeq++,
+          word: w.word,
+          display: (w.display || w.word).toUpperCase(),
+          theme: w.theme || 'gerais',
+          x: opts.x ?? 0.12 + Math.random() * 0.76,
+          y: opts.y ?? -0.08,
+          vy: opts.vy ?? 0.035 + run.level * 0.008 + Math.random() * 0.01,
+          rad: 0.05 + Math.min(0.04, w.word.length * 0.004),
+          rot: Math.random() * Math.PI,
+          seed: Math.floor(Math.random() * 99),
+          boss: false
+        };
+        rocks.push(rock);
+        return rock;
+      } catch (err) {
+        console.error(err);
+        return null;
+      }
     }
 
     function spawnBoss() {
@@ -451,30 +463,48 @@ export default {
     }
 
     function fireAt(rock, { finisher = false } = {}) {
-      const rect = canvas.getBoundingClientRect();
-      const guns = [...ship.querySelectorAll('.ct-ship__gun')];
-      const origin = guns[lasers.length % Math.max(1, guns.length)] || ship;
-      const cr = origin.getBoundingClientRect();
-      const x0 = (cr.left + cr.width / 2 - rect.left) / rect.width;
-      const y0 = (cr.top - rect.top) / rect.height;
-      lasers.push({
-        x0,
-        y0,
-        x1: rock.x,
-        y1: rock.y,
-        t: 0,
-        life: finisher ? 0.22 : 0.14,
-        fat: finisher
-      });
-      lastShotAt = performance.now();
-      ship.classList.remove('is-shot');
-      void ship.offsetWidth;
-      ship.classList.add('is-shot');
-      ensureSound().then((s) => s && s.laser()).catch(() => {});
+      if (!rock || !alive) return;
+      try {
+        const rect = canvas.getBoundingClientRect();
+        const guns = [...ship.querySelectorAll('.ct-ship__gun')];
+        const origin = guns[lasers.length % Math.max(1, guns.length)] || ship;
+        const cr = origin.getBoundingClientRect();
+        const rw = rect.width || 1;
+        const rh = rect.height || 1;
+        const x0 = Number.isFinite(cr.left) ? (cr.left + cr.width / 2 - rect.left) / rw : 0.5;
+        const y0 = Number.isFinite(cr.top) ? (cr.top - rect.top) / rh : 0.86;
+        lasers.push({
+          x0,
+          y0,
+          x1: rock.x,
+          y1: rock.y,
+          t: 0,
+          life: finisher ? 0.22 : 0.14,
+          fat: finisher
+        });
+        if (lasers.length > MAX_LASERS) lasers.splice(0, lasers.length - MAX_LASERS);
+        lastShotAt = performance.now();
+        if (!ship.classList.contains('is-shot')) {
+          ship.classList.add('is-shot');
+          laterShotClear();
+        }
+        ensureSound().then((s) => s && s.laser()).catch(() => {});
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    let shotClearT = 0;
+    function laterShotClear() {
+      clearTimeout(shotClearT);
+      shotClearT = setTimeout(() => {
+        if (alive) ship.classList.remove('is-shot');
+      }, 120);
     }
 
     function explode(rock, pts) {
       booms.push({ x: rock.x, y: rock.y, t: 0, life: 0.45, pts });
+      if (booms.length > MAX_BOOMS) booms.splice(0, booms.length - MAX_BOOMS);
       rocks = rocks.filter((r) => r.id !== rock.id);
       if (run.targetId === rock.id) {
         run.targetId = null;
@@ -561,24 +591,50 @@ export default {
     }
 
     function typeChar(ch) {
-      if (run.over || run.paused) return false;
-      const letter = norm(ch);
-      if (!letter) return false;
-      const next = run.typing + letter;
-      const pool = rocks.filter((r) => r.word.startsWith(next));
-      const locked = run.targetId != null ? pool.find((r) => r.id === run.targetId) : null;
-      const target = locked || pool.sort((a, b) => b.y - a.y)[0];
-      if (!target) {
-        ensureSound().then((s) => s && s.miss()).catch(() => {});
+      if (!alive || run.over || run.paused) return false;
+      try {
+        const letter = norm(ch);
+        if (!letter) return false;
+        const next = run.typing + letter;
+        const pool = rocks.filter((r) => r.word && r.word.startsWith(next));
+        const lockedTarget = run.targetId != null ? pool.find((r) => r.id === run.targetId) : null;
+        const target = lockedTarget || pool.sort((a, b) => b.y - a.y)[0];
+        if (!target) {
+          ensureSound().then((s) => s && s.miss()).catch(() => {});
+          return false;
+        }
+        run.targetId = target.id;
+        run.typing = next;
+        fireAt(target);
+        ensureSound().then((s) => s && s.blip(['C5', 'E5', 'G5', 'C6'][next.length % 4])).catch(() => {});
+        if (next === target.word) destroy(target);
+        hudRefresh();
+        return true;
+      } catch (err) {
+        console.error(err);
         return false;
       }
-      run.targetId = target.id;
-      run.typing = next;
-      fireAt(target);
-      ensureSound().then((s) => s && s.blip(['C5', 'E5', 'G5', 'C6'][next.length % 4])).catch(() => {});
-      if (next === target.word) destroy(target);
-      hudRefresh();
-      return true;
+    }
+
+    function drainKeys() {
+      if (drainingKeys || !alive) return;
+      drainingKeys = true;
+      try {
+        let n = 0;
+        while (keyQueue.length && n < 12 && alive) {
+          typeChar(keyQueue.shift());
+          n++;
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        drainingKeys = false;
+      }
+      if (keyQueue.length && alive) {
+        requestAnimationFrame(() => {
+          if (alive) drainKeys();
+        });
+      }
     }
 
     function tick(dt, force = false) {
@@ -625,9 +681,10 @@ export default {
         m.y += m.vy * dt;
       });
       meteors = meteors.filter((m) => m.x < 1.2 && m.y < 1.2);
-      if (Math.random() < dt * 0.25) {
+      if (Math.random() < dt * 0.25 && meteors.length < MAX_METEORS) {
         meteors.push({ x: Math.random() * 0.7, y: -0.05, vx: 0.18 + Math.random() * 0.12, vy: 0.35 + Math.random() * 0.2, len: 0.08 + Math.random() * 0.06 });
       }
+      if (meteors.length > MAX_METEORS) meteors.length = MAX_METEORS;
     }
 
     const ctx = canvas.getContext('2d');
@@ -793,6 +850,7 @@ export default {
     }
 
     function draw() {
+      if (!ctx || !alive) return;
       const w = stage.clientWidth || 640;
       const h = stage.clientHeight || 520;
       ctx.clearRect(0, 0, w, h);
@@ -898,16 +956,29 @@ export default {
     }
 
     function loop(ts) {
-      if (!alive) return;
-      if (!lastT) lastT = ts;
-      const dt = Math.min(0.05, (ts - lastT) / 1000);
-      lastT = ts;
-      tick(dt);
-      draw();
-      raf = requestAnimationFrame(loop);
+      if (!alive) {
+        raf = 0;
+        return;
+      }
+      try {
+        if (!lastT) lastT = ts;
+        const dt = Math.min(0.05, (ts - lastT) / 1000);
+        lastT = ts;
+        tick(dt);
+        draw();
+      } catch (err) {
+        console.error(err);
+        lasers = lasers.slice(-MAX_LASERS);
+        booms = booms.slice(-MAX_BOOMS);
+        rocks = rocks.slice(0, MAX_ROCKS + 4);
+      }
+      if (alive) raf = requestAnimationFrame(loop);
+      else raf = 0;
     }
 
     const onKey = (e) => {
+      if (!alive) return;
+      if (e.repeat) return;
       if (e.target instanceof HTMLElement && e.target.matches('input, select, textarea')) return;
       if (e.key === 'Tab' || e.key === 'Escape') {
         e.preventDefault();
@@ -924,7 +995,8 @@ export default {
       }
       if (e.key.length === 1) {
         e.preventDefault();
-        typeChar(e.key);
+        if (keyQueue.length < MAX_KEY_QUEUE) keyQueue.push(e.key);
+        drainKeys();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -990,6 +1062,7 @@ export default {
             typing: run.typing,
             rocks: rocks.map((r) => ({ id: r.id, word: r.word, y: r.y, vy: r.vy, theme: r.theme })),
             lasers: lasers.length,
+            maxLasers: MAX_LASERS,
             destroyed: run.destroyed,
             best: Math.max(best, run.score),
             lastShotAt,
@@ -1029,11 +1102,20 @@ export default {
 
     function cleanup() {
       alive = false;
-      cancelAnimationFrame(raf);
+      keyQueue = [];
+      drainingKeys = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      clearTimeout(shotClearT);
       window.removeEventListener('keydown', onKey);
       ro.disconnect();
       offProfile && offProfile();
-      if (chip && chip.dispose) chip.dispose();
+      if (chip && chip.dispose) {
+        try {
+          chip.dispose();
+        } catch {}
+      }
+      chip = null;
       if (window.__mmpCatTyping) delete window.__mmpCatTyping;
     }
 

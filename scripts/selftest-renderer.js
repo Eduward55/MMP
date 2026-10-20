@@ -547,6 +547,21 @@
     volEl.dispatchEvent(new Event('input', { bubbles: true }));
     cts = CT.state();
     ok('Cat Typing: volume volta a ligar o som', cts.volume === 70 && cts.sound === true && cts.gain === 0.7, JSON.stringify({ volume: cts.volume, sound: cts.sound, gain: cts.gain }));
+    CT.lock(true);
+    CT.clear();
+    CT.spawn({ word: 'sol', display: 'SOL', y: 0.4, vy: 0 });
+    for (let i = 0; i < 120; i++) {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true, repeat: i > 0 }));
+    }
+    for (const k of 'xyzxyzxyzxyzxyzxyzxyzxyzxyzxyz') {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+    }
+    cts = CT.state();
+    ok(
+      'Cat Typing: mash de teclas não estoura o renderer',
+      cts && cts.lasers <= (cts.maxLasers || 24) && cts.lives >= 0 && !cts.over && typeof CT.type === 'function',
+      JSON.stringify({ lasers: cts && cts.lasers, max: cts && cts.maxLasers, lives: cts && cts.lives })
+    );
     CT.clear();
     CT.spawn({ word: 'lua', y: 0.3, vy: 0 });
     for (const ch of 'lua') CT.type(ch);
