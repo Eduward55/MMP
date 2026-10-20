@@ -244,11 +244,11 @@ export function createDuo({ size = 120, names = true, catOverride, otterOverride
     }
     root.innerHTML = `
       <figure class="duo__member duo__member--cat">
-        ${catMarkup}
+        <div class="creature-clip">${catMarkup}</div>
         ${names ? `<figcaption class="nameplate">${esc(p.cat.name)}</figcaption>` : ''}
       </figure>
       <figure class="duo__member duo__member--otter">
-        ${otterMarkup}
+        <div class="creature-clip">${otterMarkup}</div>
         ${names ? `<figcaption class="nameplate nameplate--otter">${esc(p.otter.name)}</figcaption>` : ''}
       </figure>`;
     bindReact(root);

@@ -78,7 +78,9 @@ export default {
 
     function refresh({ outfits = true } = {}) {
       preview.innerHTML = '';
-      preview.append(createDuo({ size: 230, profile: draft, live: false, catClass: 'is-idle', otterClass: 'is-idle' }).el);
+      const clip = el('div', { class: 'mycat__clip' });
+      clip.append(createDuo({ size: 230, profile: draft, live: false, catClass: 'is-idle', otterClass: 'is-idle' }).el);
+      preview.append(clip);
       dirtyFlag.hidden = !dirty();
       if (dirty()) dirtyFlag.textContent = 'Salvando…';
       renderWearing();

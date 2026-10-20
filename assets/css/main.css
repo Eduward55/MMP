@@ -684,6 +684,12 @@ svg.creature:focus-visible {
   align-items: center;
   gap: 6px;
 }
+.creature-clip {
+  display: grid;
+  place-items: end center;
+  line-height: 0;
+  max-width: 100%;
+}
 .nameplate {
   font-family: var(--font);
   font-size: 0.75rem;
@@ -1678,7 +1684,68 @@ a.card[href='#/cantar'] .card__icon svg.pixel-icon {
     linear-gradient(to bottom, #1c1416, #140e10);
   border: 2px solid color-mix(in srgb, #fb923c 40%, var(--hairline));
   border-radius: 18px;
-  overflow: visible;
+  overflow: hidden;
+}
+.mycat__clip {
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.mycat__preview .duo__member {
+  overflow: hidden;
+  max-width: 48%;
+  padding: 4px 2px 0;
+  box-sizing: border-box;
+}
+.mycat__preview .creature-clip {
+  overflow: hidden;
+  width: 100%;
+  display: grid;
+  place-items: end center;
+  line-height: 0;
+  border-radius: 16px;
+}
+.mycat__preview svg.creature {
+  overflow: hidden;
+  max-width: 100%;
+}
+.mycat__preview .creature-root {
+  transform-origin: 50% 88%;
+}
+.mycat__preview .animate-react-astronaut,
+.mycat__preview .animate-react-maid,
+.mycat__preview .animate-react-sweater,
+.mycat__preview .animate-react-maestro,
+.mycat__preview .animate-react-proud,
+.mycat__preview .animate-react-bruxa,
+.mycat__preview .animate-react-coroa,
+.mycat__preview .animate-react-fone,
+.mycat__preview .animate-react-festa,
+.mycat__preview .animate-react-boina,
+.mycat__preview .animate-react-microfone,
+.mycat__preview .animate-react-coracao,
+.mycat__preview .animate-react-estrela,
+.mycat__preview .animate-react-pounce,
+.mycat__preview .animate-react-splash,
+.mycat__preview .animate-react-zero-g,
+.mycat__preview .animate-react-curtsy,
+.mycat__preview .animate-react-shiver,
+.mycat__preview .animate-react-conductor,
+.mycat__preview .animate-react-levitate,
+.mycat__preview .animate-react-royal,
+.mycat__preview .animate-react-popstar,
+.mycat__preview .animate-react-party,
+.mycat__preview .animate-react-heartbeat,
+.mycat__preview .animate-react-spin {
+  animation-name: react-in-box;
+}
+@keyframes react-in-box {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  28% { transform: translate(0, -7px) scale(1.05) rotate(-4deg); }
+  55% { transform: translate(0, -5px) scale(1.04) rotate(4deg); }
+  100% { transform: translate(0, 0) scale(1) rotate(0deg); }
 }
 .wearing {
   list-style: none;
