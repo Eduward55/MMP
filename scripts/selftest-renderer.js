@@ -707,8 +707,13 @@
     CR.tick(0.4);
     CR.input('arrowleft', false);
     ok('Corrida: seta esquerda desvia', CR.state().x < x0, `${x0} → ${CR.state().x}`);
+    const y0 = CR.state().y;
+    CR.input('arrowup', true);
+    CR.tick(0.45);
+    CR.input('arrowup', false);
+    ok('Corrida: acelerar sobe a pista', CR.state().y < y0 && CR.state().speed > 180, `${y0} → ${CR.state().y} · ${CR.state().speed}`);
     CR.spawnSack();
-    ok('Corrida: saco grande na pista', CR.state().kinds.includes('sack') && CR.state().obstacles >= 1, JSON.stringify(CR.state().kinds));
+    ok('Corrida: fardo grande na pista', CR.state().kinds.includes('sack') && CR.state().obstacles >= 1, JSON.stringify(CR.state().kinds));
 
     /* ---------- Studio ---------- */
     await go('studio?demo=1');

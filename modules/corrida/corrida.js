@@ -29,6 +29,7 @@ export default {
     let chip = null;
     let musicOn = saved.sound !== false;
     let x = 0.5;
+    let y = 0.72;
     let vx = 0;
     let dist = 0;
     let speed = 180;
@@ -198,10 +199,14 @@ export default {
         soundBtn.textContent = musicOn ? t('common.soundOn') : t('common.soundOff');
       }
       const left = `${(x * 100).toFixed(2)}%`;
+      const top = `${(y * 100).toFixed(2)}%`;
       if (car.style.left !== left) car.style.left = left;
+      if (car.style.top !== top) car.style.top = top;
       const steer = over || paused ? '0deg' : `${vx * 8}deg`;
       if (car.style.getPropertyValue('--steer') !== steer) car.style.setProperty('--steer', steer);
+      const rushing = !over && !paused;
       car.classList.toggle('is-hit', hitFlash > 0);
+      car.classList.toggle('is-run', rushing);
       car.classList.toggle('is-boost', keys.has('w') || keys.has('arrowup'));
     }
 
@@ -226,6 +231,7 @@ export default {
 
     function newGame() {
       x = 0.5;
+      y = 0.72;
       vx = 0;
       dist = 0;
       speed = 180;
@@ -272,14 +278,22 @@ export default {
       const left = keys.has('a') || keys.has('arrowleft');
       const right = keys.has('d') || keys.has('arrowright');
       const up = keys.has('w') || keys.has('arrowup');
+      const down = keys.has('s') || keys.has('arrowdown');
       vx = (right ? 1 : 0) - (left ? 1 : 0);
       x = Math.max(0.22, Math.min(0.78, x + vx * dt * 0.85));
-      if (up) speed = Math.min(360, speed + dt * 48);
-      else speed = Math.max(160, speed - dt * 18);
+      if (up) {
+        speed = Math.min(380, speed + dt * 70);
+        y = Math.max(0.36, y - dt * 0.42);
+      } else if (down) {
+        speed = Math.max(150, speed - dt * 26);
+        y = Math.min(0.88, y + dt * 0.48);
+      } else {
+        speed = Math.max(170, speed - dt * 14);
+      }
       if (musicOn && !chip) ensureSound().catch(() => {});
-      if (chip) chip.setEngine((speed - 160) / 200);
+      if (chip) chip.setEngine((speed - 160) / 220);
       dist += (speed * dt) / 40;
-      roadY += (speed / 90) * dt;
+      roadY += (speed / 52) * dt;
       spawnIn -= dt;
       if (spawnIn <= 0) {
         spawn();
@@ -289,14 +303,14 @@ export default {
       obstacles.forEach((o) => (o.y += vy));
       obstacles = obstacles.filter((o) => o.y < 1.2);
       const px = x;
-      const py = 0.9;
+      const py = y;
       const hitW = 0.042;
       const hitH = 0.036;
       obstacles.forEach((o) => {
         if (Math.abs(o.x - px) < hitW + o.w * 0.42 && Math.abs(o.y - py) < hitH + 0.03) crash();
       });
       if (Math.random() < dt * 14) {
-        spark.push({ x: x + (Math.random() - 0.5) * 0.04, y: 0.93, vy: 0.2 + Math.random() * 0.15, life: 0.35 });
+        spark.push({ x: x + (Math.random() - 0.5) * 0.04, y: y + 0.08, vy: 0.2 + Math.random() * 0.15, life: 0.35 });
       }
       spark.forEach((s) => {
         s.y += s.vy * dt;
@@ -328,9 +342,9 @@ export default {
       ctx.fillRect(left, 0, 8, h);
       ctx.fillRect(left + rw - 8, 0, 8, h);
 
-      const dash = 28;
-      const gap = 22;
-      const off = (roadY * 80) % (dash + gap);
+      const dash = 34;
+      const gap = 26;
+      const off = (roadY * 140) % (dash + gap);
       ctx.strokeStyle = '#f4f4f5';
       ctx.lineWidth = 5;
       ctx.setLineDash([dash, gap]);
@@ -340,6 +354,22 @@ export default {
       ctx.lineTo(w * 0.5, h);
       ctx.stroke();
       ctx.setLineDash([]);
+      ctx.strokeStyle = 'rgba(244,244,245,0.28)';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([18, 22]);
+      ctx.lineDashOffset = -off * 0.7;
+      ctx.beginPath();
+      ctx.moveTo(left + rw * 0.28, 0);
+      ctx.lineTo(left + rw * 0.28, h);
+      ctx.moveTo(left + rw * 0.72, 0);
+      ctx.lineTo(left + rw * 0.72, h);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#3f3f46';
+      for (let i = 0; i < 10; i++) {
+        const ty = ((roadY * 160 + i * (h / 8)) % (h + 36)) - 18;
+        ctx.fillRect(left + 10, ty, rw - 20, 6);
+      }
 
       ctx.fillStyle = hexToRgba('#fbbf24', 0.35);
       for (let i = 0; i < 8; i++) {
@@ -349,7 +379,7 @@ export default {
       }
 
       const carPx = x * w;
-      const carPy = h * 0.9;
+      const carPy = y * h;
       const pool = ctx.createRadialGradient(carPx, carPy - 70, 8, carPx, carPy - 20, 110);
       pool.addColorStop(0, 'rgba(254, 240, 138, 0.2)');
       pool.addColorStop(0.45, 'rgba(253, 224, 71, 0.08)');
@@ -398,10 +428,6 @@ export default {
           ctx.stroke();
           ctx.fillStyle = '#7c4a12';
           ctx.fillRect(ox - 14, oy + 6, 28, 8);
-          ctx.fillStyle = '#fde68a';
-          ctx.font = 'bold 13px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('SACO', ox, oy + 16);
         } else {
           ctx.fillStyle = '#57534e';
           ctx.beginPath();
@@ -453,7 +479,7 @@ export default {
     raf = requestAnimationFrame(loop);
 
     window.__mmpCorrida = {
-      state: () => ({ x, dist, speed, over, paused, obstacles: obstacles.length, kinds: obstacles.map((o) => o.kind), car: carSkin }),
+      state: () => ({ x, y, dist, speed, over, paused, obstacles: obstacles.length, kinds: obstacles.map((o) => o.kind), car: carSkin }),
       input: (k, on = true) => {
         if (on) keys.add(k);
         else keys.delete(k);

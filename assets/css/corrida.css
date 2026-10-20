@@ -40,11 +40,12 @@
   --trim: #9a3412;
   --steer: 0deg;
   position: absolute;
-  bottom: 18px;
+  bottom: auto;
+  top: 72%;
   left: 50%;
   width: 108px;
   height: 162px;
-  transform: translateX(-50%) rotate(var(--steer));
+  transform: translate(-50%, -70%) rotate(var(--steer));
   transform-origin: 50% 62%;
   pointer-events: none;
   z-index: 3;
@@ -63,6 +64,25 @@
 }
 .cr-car.is-boost .cr-car__flame {
   opacity: 1;
+}
+.cr-car.is-run .cr-car__art {
+  animation: cr-run 0.14s linear infinite;
+}
+.cr-car.is-boost.is-run .cr-car__art {
+  animation-duration: 0.09s;
+}
+.cr-car.is-run .cr-car__flame {
+  opacity: 0.8;
+  height: 18px;
+}
+@keyframes cr-run {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 .cr-car__shadow {
   position: absolute;
