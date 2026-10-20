@@ -3,6 +3,7 @@ import { COATS, COAT_BY_ID, OTTER_COATS, OTTER_COAT_BY_ID, EYE_COLORS, creatureS
 import { OUTFITS, SLOTS } from '../shared/outfits.js';
 import { getProfile, saveProfile } from '../shared/store.js';
 import { el, esc, toast } from '../shared/ui.js';
+import { t } from '../shared/i18n.js';
 
 const SLOT_LABEL = Object.fromEntries(SLOTS.map((s) => [s.id, s.label]));
 
@@ -36,8 +37,8 @@ export default {
     const dirtyFlag = el('span', { class: 'pill pill--warn', hidden: true }, 'Alterações não salvas');
     const wearing = el('ul', { class: 'wearing' });
 
-    const catName = el('input', { class: 'input', type: 'text', maxlength: '24', value: draft.cat.name, 'aria-label': 'Nome do gato' });
-    const otterName = el('input', { class: 'input', type: 'text', maxlength: '24', value: draft.otter.name, 'aria-label': 'Nome da lontra' });
+    const catName = el('input', { class: 'input', type: 'text', maxlength: '24', value: draft.cat.name, 'aria-label': t('mycat.catName') });
+    const otterName = el('input', { class: 'input', type: 'text', maxlength: '24', value: draft.otter.name, 'aria-label': t('mycat.otterName') });
     const coats = el('div', { class: 'chips', role: 'radiogroup', 'aria-label': 'Pelagem' });
     const eyes = el('div', { class: 'chips chips--eyes', role: 'radiogroup', 'aria-label': 'Cor dos olhos' });
     const eyeCustom = el('input', { class: 'color-input', type: 'color', value: draft.cat.eyes, title: 'Escolher outra cor' });
@@ -95,7 +96,7 @@ export default {
           if (def) items.push(`<li><b>${esc(who === 'cat' ? draft.cat.name : draft.otter.name)}</b> ${esc(def.name)} <small>${esc(SLOT_LABEL[slot])}</small></li>`);
         }
       }
-      wearing.innerHTML = items.length ? items.join('') : '<li class="muted">Ninguém está vestindo nada… ainda!</li>';
+      wearing.innerHTML = items.length ? items.join('') : `<li class="muted">${esc(t('mycat.none'))}</li>`;
     }
 
     function palettes() {
@@ -109,7 +110,7 @@ export default {
     function renderCoats() {
       coats.innerHTML = '';
       coats.setAttribute('aria-label', target === 'otter' ? 'Pelagem da lontra' : 'Pelagem do gato');
-      coatLabel.textContent = target === 'otter' ? `Pelagem de ${draft.otter.name}` : `Pelagem de ${draft.cat.name}`;
+      coatLabel.textContent = t(target === 'otter' ? 'mycat.coatOtter' : 'mycat.coatCat', { name: draft[target].name });
       palettes().forEach((c) => {
         const on = draft[target].coat === c.id;
         const b = c.stripe || c.dark || c.light;
@@ -135,7 +136,7 @@ export default {
     function renderEyes() {
       eyes.innerHTML = '';
       eyes.setAttribute('aria-label', target === 'otter' ? 'Olhos da lontra' : 'Olhos do gato');
-      eyeLabel.textContent = target === 'otter' ? `Olhos de ${draft.otter.name}` : `Olhos de ${draft.cat.name}`;
+      eyeLabel.textContent = t(target === 'otter' ? 'mycat.eyeOtter' : 'mycat.eyeCat', { name: draft[target].name });
       const current = whoEyes();
       eyeCustom.value = draft[target].eyes || (target === 'otter' ? '#93c5fd' : '#4ade80');
       EYE_COLORS.forEach((c) => {
@@ -162,8 +163,8 @@ export default {
     function renderTabs() {
       targetTabs.innerHTML = '';
       [
-        ['cat', `Gato · ${draft.cat.name}`],
-        ['otter', `Lontra · ${draft.otter.name}`]
+        ['cat', t('mycat.catTab', { name: draft.cat.name })],
+        ['otter', t('mycat.otterTab', { name: draft.otter.name })]
       ].forEach(([id, label]) => {
         targetTabs.append(
           el(
@@ -188,7 +189,7 @@ export default {
 
     function renderSlotTabs() {
       slotTabs.innerHTML = '';
-      [['all', 'Tudo'], ...SLOTS.map((s) => [s.id, s.label])].forEach(([id, label]) => {
+      [['all', t('mycat.all')], ...SLOTS.map((s) => [s.id, t(`slot.${s.id}`, s.label)])].forEach(([id, label]) => {
         slotTabs.append(
           el(
             'button',
@@ -223,8 +224,8 @@ export default {
               'aria-pressed': String(on),
               title: `${o.name} (${SLOT_LABEL[o.slot]})`,
               onclick: () => {
-                if (on) delete who.outfit[o.slot];
-                else who.outfit[o.slot] = o.id;
+                if (on) return;
+                who.outfit[o.slot] = o.id;
                 refresh();
               }
             },
@@ -260,7 +261,7 @@ export default {
           draft[target].outfit = {};
           refresh();
         }
-      }, 'Tirar tudo'),
+      }, t('mycat.strip')),
       el('button', {
         class: 'btn btn--ghost',
         onclick: () => {
@@ -276,7 +277,7 @@ export default {
           draft[target].eyes = EYE_COLORS[Math.floor(Math.random() * EYE_COLORS.length)].id;
           refresh();
         }
-      }, 'Surpresa!'),
+      }, t('mycat.surprise')),
       el('button', {
         class: 'btn btn--ghost',
         onclick: () => {
@@ -287,7 +288,7 @@ export default {
           refresh();
           toast('Voltamos para como estava quando você abriu.');
         }
-      }, 'Desfazer')
+      }, t('mycat.undo'))
     );
 
     root.append(
@@ -297,10 +298,10 @@ export default {
         el(
           'section',
           { class: 'panel mycat__stage' },
-          el('div', { class: 'panel__head' }, el('h2', { class: 'font-pixel' }, 'Camarim'), dirtyFlag),
-          el('p', { class: 'stage__hint font-pixel' }, 'Clique no bichinho — a roupa reage, não sai'),
+          el('div', { class: 'panel__head' }, el('h2', { class: 'font-pixel' }, t('mycat.dressing')), dirtyFlag),
+          el('p', { class: 'stage__hint font-pixel' }, t('mycat.clickHint')),
           preview,
-          el('h3', { class: 'subhead' }, 'Vestindo agora'),
+          el('h3', { class: 'subhead' }, t('mycat.wearing')),
           wearing
         ),
         el(
@@ -309,13 +310,13 @@ export default {
           el(
             'div',
             { class: 'form-grid' },
-            el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome do gato'), catName),
-            el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome da lontra'), otterName)
+            el('label', { class: 'field' }, el('span', { class: 'field__label' }, t('mycat.catName')), catName),
+            el('label', { class: 'field' }, el('span', { class: 'field__label' }, t('mycat.otterName')), otterName)
           ),
-          el('div', { class: 'field' }, el('div', { class: 'field__row' }, el('span', { class: 'field__label' }, 'Quem você está editando'), targetTabs)),
-          el('div', { class: 'field' }, coatLabel, el('p', { class: 'hint' }, 'A pelagem e os olhos valem só para o bichinho escolhido em cima.'), coats),
+          el('div', { class: 'field' }, el('div', { class: 'field__row' }, el('span', { class: 'field__label' }, t('mycat.who')), targetTabs)),
+          el('div', { class: 'field' }, coatLabel, el('p', { class: 'hint' }, t('mycat.coatHint')), coats),
           el('div', { class: 'field' }, eyeLabel, eyes),
-          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Roupinhas e acessórios'), el('p', { class: 'hint' }, 'Separe por cabeça, pescoço, corpo… um item por lugar, então nada se sobrepõe no mesmo sítio. Clique de novo para tirar.'), slotTabs, outfitGrid),
+          el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('mycat.outfits')), el('p', { class: 'hint' }, t('mycat.outfitHint')), slotTabs, outfitGrid),
           actions
         )
       )

@@ -3,6 +3,7 @@ import { createTetrisKit } from '../shared/audio.js';
 import { creatureSVG } from '../shared/creatures.js';
 import { getProfile, kv } from '../shared/store.js';
 import { el, startAudio, toast } from '../shared/ui.js';
+import { t } from '../shared/i18n.js';
 
 const COLS = 10;
 const ROWS = 20;
@@ -111,7 +112,7 @@ export default {
       el('span', { html: creatureSVG('cat', profile.cat, { size: 88, extraClass: 'is-idle', label: profile.cat.name }) }),
       el('span', { html: creatureSVG('otter', profile.otter, { size: 70, extraClass: 'is-dancing', label: profile.otter.name }) })
     );
-    const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => { armAudio(); togglePause(); } }, 'Pausar');
+    const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => { armAudio(); togglePause(); } }, t('common.pause'));
     const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => { armAudio(); newGame(); } }, 'Nova partida');
     const soundBtn = el('button', { class: 'btn btn--ghost btn--sm', type: 'button', onclick: () => toggleSound() }, '');
     const volInput = el('input', {
@@ -133,10 +134,10 @@ export default {
         el(
           'aside',
           { class: 'panel tz-hud' },
-          el('h2', {}, 'Tetris do gato'),
+          el('h2', {}, t('tz.title')),
           mascot,
           nums,
-          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Próxima'), nextBox),
+          el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('tz.next')), nextBox),
           el('div', { class: 'row-actions' }, pauseBtn, newBtn, soundRow),
           el('p', { class: 'hint' }, '← → ou A D andam. ↑ / W gira. ↓ / S acelera. Espaço cai de uma vez. Esc pausa.')
         ),
@@ -182,7 +183,7 @@ export default {
               syncMusic();
               return chip;
             }
-            const kit = createTetrisKit(Tone, { gain: liveGain(), music: !paused && !over && sound && volume > 0 });
+            const kit = createTetrisKit(Tone, { gain: liveGain(), music: false });
             if (!alive) {
               try {
                 kit.dispose();
@@ -475,7 +476,7 @@ export default {
         ['Nível', level],
         ['Recorde', Math.max(best, score)]
       ].forEach(([k, v]) => nums.append(el('div', { class: 'stat' }, el('b', {}, String(v)), el('span', {}, k))));
-      pauseBtn.textContent = paused ? 'Continuar' : 'Pausar';
+      pauseBtn.textContent = paused ? t('common.continue') : t('common.pause');
       pauseBtn.disabled = over;
       refreshSoundUi();
     }
@@ -485,14 +486,14 @@ export default {
         overlay.hidden = false;
         overlay.innerHTML = '';
         overlay.append(
-          el('h2', {}, 'Fim de jogo'),
+          el('h2', {}, t('tz.over')),
           el('p', {}, `${score} pontos · ${lines} linhas`),
-          el('button', { class: 'btn btn--primary', onclick: () => { armAudio(); newGame(); } }, 'De novo')
+          el('button', { class: 'btn btn--primary', onclick: () => { armAudio(); newGame(); } }, t('tz.again'))
         );
       } else if (paused) {
         overlay.hidden = false;
         overlay.innerHTML = '';
-        overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Esc continua.'));
+        overlay.append(el('h2', {}, t('tz.pause')), el('p', {}, t('tz.pauseHint')));
       } else overlay.hidden = true;
     }
 

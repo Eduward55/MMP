@@ -567,6 +567,32 @@
     border-bottom: 1px solid var(--hairline);
   }
 }
+.tm-hist {
+  margin-top: 14px;
+}
+.tm-hist__title {
+  margin: 0 0 8px;
+  font-size: 0.92rem;
+}
+.tm-hist__empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.tm-hist__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.82rem;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.tm-hist__item.is-win b {
+  color: var(--ok);
+}
+.tm-hist__item.is-lose b {
+  color: var(--danger);
+}
 @media (max-width: 640px) {
   .tm-stage {
     width: 140px;

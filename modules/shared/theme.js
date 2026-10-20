@@ -2,6 +2,7 @@
 import { kv } from './store.js';
 import { el } from './ui.js';
 import { icon } from './icons.js';
+import { t } from './i18n.js';
 
 export const COLOR_THEMES = [
   { id: 'night', name: 'Noite', swatch: '#0f0f12', accent: '#7c9cff' },
@@ -91,17 +92,19 @@ export async function loadTheme() {
 export function createThemePicker() {
   const wrap = el('div', { class: 'theme-picker' });
   const btn = el('button', { class: 'theme-fab', type: 'button', 'aria-expanded': 'false', 'aria-haspopup': 'true' });
-  const menu = el('div', { class: 'theme-picker__menu', role: 'radiogroup', 'aria-label': 'Tema de cores' });
+  const menu = el('div', { class: 'theme-picker__menu', role: 'radiogroup', 'aria-label': t('theme.menu') });
   wrap.append(btn, menu);
 
   const paint = () => {
-    const t = COLOR_THEMES.find((x) => x.id === current) || COLOR_THEMES[0];
-    btn.title = `Tema: ${t.name}`;
-    btn.setAttribute('aria-label', `Tema: ${t.name}. Abrir opções`);
+    const cur = COLOR_THEMES.find((x) => x.id === current) || COLOR_THEMES[0];
+    const label = t(`theme.${cur.id}`, cur.name);
+    btn.title = t('theme.open', { name: label });
+    btn.setAttribute('aria-label', t('theme.open', { name: label }));
     btn.innerHTML = '';
-    btn.append(el('span', { class: 'theme-fab__glyph', 'aria-hidden': 'true', html: icon('palette', 16) }), el('span', { class: 'theme-fab__dot', style: `--sw:${t.swatch};--ac:${t.accent}` }));
+    btn.append(el('span', { class: 'theme-fab__glyph', 'aria-hidden': 'true', html: icon('palette', 16) }), el('span', { class: 'theme-fab__dot', style: `--sw:${cur.swatch};--ac:${cur.accent}` }));
     menu.innerHTML = '';
     COLOR_THEMES.forEach((opt) => {
+      const name = t(`theme.${opt.id}`, opt.name);
       menu.append(
         el(
           'button',
@@ -110,8 +113,8 @@ export function createThemePicker() {
             type: 'button',
             role: 'radio',
             'aria-checked': String(current === opt.id),
-            title: opt.name,
-            'aria-label': opt.name,
+            title: name,
+            'aria-label': name,
             style: `--sw:${opt.swatch};--ac:${opt.accent}`,
             onclick: () => {
               applyTheme(opt.id);
@@ -120,7 +123,7 @@ export function createThemePicker() {
             }
           },
           el('span', { class: 'theme-swatch__dot' }),
-          el('span', { class: 'theme-swatch__name' }, opt.name)
+          el('span', { class: 'theme-swatch__name' }, name)
         )
       );
     });

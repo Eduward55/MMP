@@ -3,6 +3,8 @@ import { getProfile, onProfile, appInfo, gallery } from '../shared/store.js';
 import { icon } from '../shared/icons.js';
 import { createThemePicker } from '../shared/theme.js';
 import { el, esc } from '../shared/ui.js';
+import { createLangToggle, t } from '../shared/i18n.js';
+import { createVolumeControl } from '../shared/bgm.js';
 
 const NOTES = ['♪', '♫', '♩', '♬'];
 
@@ -14,7 +16,7 @@ export default {
   async mount(root, { modules }) {
     const greeting = el('p', { class: 'hub__greeting' });
     const renderGreeting = (p) => {
-      greeting.innerHTML = `<strong>${esc(p.cat.name)}</strong> e <strong>${esc(p.otter.name)}</strong> afinaram tudo. Escolha um palco!`;
+      greeting.innerHTML = t('hub.greeting', { cat: esc(p.cat.name), otter: esc(p.otter.name) });
     };
     renderGreeting(getProfile());
     const off = onProfile(renderGreeting);
@@ -24,7 +26,7 @@ export default {
       notes.append(el('span', { class: 'float-note', style: `--i:${i};--x:${8 + ((i * 37) % 84)}%;--d:${5 + (i % 4)}s` }, NOTES[i % NOTES.length]));
     }
 
-    const cards = el('nav', { class: 'cards', 'aria-label': 'Módulos' });
+    const cards = el('nav', { class: 'cards', 'aria-label': t('hub.modules') });
     modules.forEach((m, idx) => {
       let iconHtml = '';
       try {
@@ -37,20 +39,25 @@ export default {
           'a',
           { class: 'card', href: `#/${m.id}`, style: `--delay:${idx * 60}ms` },
           el('span', { class: 'card__icon', html: iconHtml }),
-          el('span', { class: 'card__body' }, el('span', { class: 'card__title' }, m.title), el('span', { class: 'card__desc' }, m.desc)),
+          el(
+            'span',
+            { class: 'card__body' },
+            el('span', { class: 'card__title' }, t(`mod.${m.id}.title`, m.title)),
+            el('span', { class: 'card__desc' }, t(`mod.${m.id}.desc`, m.desc))
+          ),
           m.id === 'gallery' ? el('span', { class: 'card__badge', 'data-gallery-count': '' }) : null
         )
       );
     });
 
-    const footer = el('footer', { class: 'hub__footer' }, el('span', {}, '100% offline · Tone.js e MediaPipe locais em /vendor'));
+    const footer = el('footer', { class: 'hub__footer' }, el('span', {}, t('hub.footer')));
     const podium = el('div', { class: 'stage__podium', 'aria-hidden': 'true' });
     const stage = el(
       'div',
       { class: 'stage' },
       notes,
       el('div', { class: 'stage__spot', 'aria-hidden': 'true' }),
-      el('p', { class: 'stage__hint font-pixel' }, '[ clique para reagir ]'),
+      el('p', { class: 'stage__hint font-pixel' }, t('hub.hint')),
       podium
     );
     let themePicker;
@@ -74,8 +81,8 @@ export default {
             el('h1', { class: 'logo' }, el('span', { class: 'logo__my' }, 'My Music'), el('span', { class: 'logo__place' }, 'Place')),
             el('span', { class: 'logo__tag' }, 'MMP'),
             greeting,
-            el('p', { class: 'hub__how' }, 'Clique nos bichinhos para ver a reação da roupinha. O manual fica no botão Dicas, em cima, em cada módulo.'),
-            el('div', { class: 'hub__theme-wrap' }, themePicker)
+            el('p', { class: 'hub__how' }, t('hub.how')),
+            el('div', { class: 'hub__theme-wrap' }, themePicker, createLangToggle(), createVolumeControl())
           ),
           stage
         ),
@@ -121,7 +128,7 @@ export default {
                 href: '/dist/MyMusicPlace-0.1.0-win-x64.zip',
                 download: 'MyMusicPlace-0.1.0-win-x64-portable.zip'
               },
-              'Baixar Windows (zip com o .exe e o ícone do gato)'
+              t('hub.download')
             )
           );
         }

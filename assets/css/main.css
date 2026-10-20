@@ -1376,6 +1376,57 @@ body:has(.airx .btn--rec.is-active) #dock-root,
 }
 .hub__theme-wrap {
   align-self: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.lang-toggle {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.lang-toggle__btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+.lang-toggle__btn + .lang-toggle__btn {
+  border-left: 1px solid var(--hairline);
+}
+.lang-toggle__btn.is-on {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+}
+.hub-vol {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 2px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.hub-vol__fader {
+  width: 88px;
+  height: 16px;
+  margin: 0 2px;
+  cursor: pointer;
+}
+.hub-vol__mute {
+  min-width: 3.6rem;
+}
+.hub-vol.is-muted .hub-vol__fader {
+  opacity: 0.55;
 }
 .hub__brand {
   display: flex;

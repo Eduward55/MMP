@@ -205,6 +205,14 @@ export function createTetrisKit(Tone, { gain = 0.7, music = true } = {}) {
   };
 }
 
+export const AUDIO_RECORDER_MIMES = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+export const VIDEO_RECORDER_MIMES = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+
+export function pickRecorderMime(list) {
+  if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') return '';
+  return list.find((m) => MediaRecorder.isTypeSupported(m)) || '';
+}
+
 // Grava tudo que sai pelo Tone.Destination (webm/opus).
 export async function createOutputRecorder() {
   const Tone = await startAudio();

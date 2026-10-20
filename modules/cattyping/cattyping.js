@@ -3,6 +3,7 @@ import { kv, getProfile, onProfile } from '../shared/store.js';
 import { creatureSVG } from '../shared/creatures.js';
 import { themeTokens, hexToRgba } from '../shared/theme.js';
 import { el, toast, startAudio } from '../shared/ui.js';
+import { t } from '../shared/i18n.js';
 
 const LIVES = 3;
 const MAX_ROCKS = 6;
@@ -138,10 +139,10 @@ export default {
     const overlay = el('div', { class: 'ct-overlay', hidden: true });
     const stage = el('div', { class: 'ct-stage' }, canvas, ship, typeHud, overlay);
     const nums = el('div', { class: 'ct-hud__nums' });
-    const livesEl = el('div', { class: 'ct-lives', 'aria-label': 'Vidas' });
+    const livesEl = el('div', { class: 'ct-lives', 'aria-label': t('ct.lives') });
     const bestEl = el('p', { class: 'ct-best' });
-    const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Pausar');
-    const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => newGame() }, 'Nova partida');
+    const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, t('common.pause'));
+    const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => newGame() }, t('common.newGame'));
     const soundBtn = el('button', { class: 'btn btn--ghost btn--sm', type: 'button', onclick: () => toggleSound() }, '');
     const volInput = el('input', {
       class: 'range ct-vol',
@@ -154,15 +155,15 @@ export default {
       oninput: (e) => setVolume(e.target.value)
     });
     const soundRow = el('div', { class: 'ct-sound' }, soundBtn, volInput);
-    const skinRow = el('div', { class: 'chips ct-skins', role: 'radiogroup', 'aria-label': 'Nave' });
+    const skinRow = el('div', { class: 'chips ct-skins', role: 'radiogroup', 'aria-label': t('ct.ship') });
     const hud = el(
       'aside',
       { class: 'ct-hud panel' },
-      el('h2', {}, 'Missão'),
+      el('h2', {}, t('ct.mission')),
       nums,
-      el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Vidas'), livesEl),
+      el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('ct.lives')), livesEl),
       bestEl,
-      el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Nave'), skinRow),
+      el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('ct.ship')), skinRow),
       el('div', { class: 'row-actions' }, pauseBtn, newBtn, soundRow),
       el(
         'p',
@@ -359,7 +360,7 @@ export default {
       livesEl.innerHTML = '';
       for (let i = 0; i < LIVES; i++) livesEl.append(el('i', { class: i >= run.lives ? 'is-lost' : '', 'aria-hidden': 'true' }));
       bestEl.textContent = best ? `Melhor: ${best}` : 'Ainda sem recorde local.';
-      pauseBtn.textContent = run.paused ? 'Continuar' : 'Pausar';
+      pauseBtn.textContent = run.paused ? t('common.continue') : t('common.pause');
       pauseBtn.disabled = run.over;
       refreshSoundUi();
       typeHud.textContent = run.typing ? run.typing.toUpperCase() : '';
@@ -374,14 +375,14 @@ export default {
         overlay.hidden = false;
         overlay.innerHTML = '';
         overlay.append(
-          el('h2', {}, 'Fim de jogo'),
-          el('p', {}, `${run.score} pontos · nível ${run.level} · ${run.destroyed} asteroides`),
-          el('button', { class: 'btn btn--primary', onclick: () => newGame() }, 'Jogar de novo')
+          el('h2', {}, t('ct.over')),
+          el('p', {}, `${run.score} · ${t('tz.level')} ${run.level} · ${run.destroyed}`),
+          el('button', { class: 'btn btn--primary', onclick: () => newGame() }, t('ct.again'))
         );
       } else if (run.paused) {
         overlay.hidden = false;
         overlay.innerHTML = '';
-          overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Tab ou Esc continua.'), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Continuar'));
+          overlay.append(el('h2', {}, t('ct.pause')), el('p', {}, t('ct.pauseHint')), el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, t('ct.continue')));
       } else overlay.hidden = true;
     }
 

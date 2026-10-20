@@ -2,6 +2,7 @@
 import { el, toast } from './ui.js';
 import { icon } from './icons.js';
 import { createThemePicker } from './theme.js';
+import { t } from './i18n.js';
 
 function closePops() {
   document.querySelectorAll('.topbar-pop').forEach((n) => n.remove());
@@ -38,16 +39,16 @@ function attachPop(btn, title, bodyNode) {
 export function createTopbar({ title, iconName, onSave, hint }) {
   const saveBtn = el(
     'button',
-    { class: 'btn btn--primary topbar__save', title: 'Salvar (Ctrl+S)' },
+    { class: 'btn btn--primary topbar__save', title: t('top.saveTitle') },
     el('span', { class: 'btn__glyph', 'aria-hidden': 'true', html: icon('disk', 18) }),
-    el('span', { class: 'btn__text' }, 'Salvar')
+    el('span', { class: 'btn__text' }, t('top.save'))
   );
   let busy = false;
 
   async function save() {
     if (busy) return;
     if (!onSave) {
-      toast('Nada para salvar aqui ainda.', 'info');
+      toast(t('top.saveEmpty'), 'info');
       return;
     }
     busy = true;
@@ -55,10 +56,10 @@ export function createTopbar({ title, iconName, onSave, hint }) {
     saveBtn.disabled = true;
     try {
       const msg = await onSave();
-      if (msg !== false) toast(typeof msg === 'string' ? msg : 'Salvo com sucesso!', 'ok');
+      if (msg !== false) toast(typeof msg === 'string' ? msg : t('top.saveOk'), 'ok');
     } catch (err) {
       console.error(err);
-      toast(`Não deu para salvar: ${err.message || err}`, 'error', 4200);
+      toast(t('top.saveFail', { err: err.message || err }), 'error', 4200);
     } finally {
       busy = false;
       saveBtn.classList.remove('is-busy');
@@ -70,11 +71,11 @@ export function createTopbar({ title, iconName, onSave, hint }) {
 
   const hintBtn = el(
     'button',
-    { class: 'btn btn--ghost topbar__hint', type: 'button', title: 'Como mexer neste módulo' },
+    { class: 'btn btn--ghost topbar__hint', type: 'button', title: t('top.tipsTitle') },
     el('span', { class: 'btn__glyph', 'aria-hidden': 'true', html: icon('tips', 18) }),
-    el('span', { class: 'btn__text' }, 'Dicas')
+    el('span', { class: 'btn__text' }, t('top.tips'))
   );
-  attachPop(hintBtn, 'Como mexer', el('p', { class: 'topbar-pop__hint' }, hint || 'Explore os botões. Ctrl+S salva, Galeria guarda o que você criou.'));
+  attachPop(hintBtn, t('top.tipsHead'), el('p', { class: 'topbar-pop__hint' }, hint || t('top.tipsFallback')));
 
   const themePick = createThemePicker();
   themePick.classList.add('topbar__theme');
@@ -84,9 +85,9 @@ export function createTopbar({ title, iconName, onSave, hint }) {
     { class: 'topbar' },
     el(
       'a',
-      { class: 'btn btn--ghost topbar__back', href: '#/hub', title: 'Voltar ao Hub' },
+      { class: 'btn btn--ghost topbar__back', href: '#/hub', title: t('top.back') },
       el('span', { class: 'btn__glyph', 'aria-hidden': 'true' }, '◀'),
-      el('span', { class: 'btn__text' }, 'Hub')
+      el('span', { class: 'btn__text' }, t('top.hub'))
     ),
     el('div', { class: 'topbar__title' }, el('span', { class: 'topbar__icon', html: icon(iconName, 28) }), el('h1', {}, title)),
     el(
@@ -96,9 +97,9 @@ export function createTopbar({ title, iconName, onSave, hint }) {
       saveBtn,
       el(
         'a',
-        { class: 'btn btn--ghost topbar__gallery', href: '#/gallery', title: 'Abrir a Galeria' },
+        { class: 'btn btn--ghost topbar__gallery', href: '#/gallery', title: t('top.galleryTitle') },
         el('span', { class: 'btn__glyph', 'aria-hidden': 'true', html: icon('gallery', 18) }),
-        el('span', { class: 'btn__text' }, 'Galeria')
+        el('span', { class: 'btn__text' }, t('top.gallery'))
       ),
       themePick
     )

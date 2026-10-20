@@ -4,13 +4,14 @@ import { creatureSVG } from '../shared/creatures.js';
 import { getProfile, kv } from '../shared/store.js';
 import { themeTokens, hexToRgba } from '../shared/theme.js';
 import { el, startAudio, toast } from '../shared/ui.js';
+import { t } from '../shared/i18n.js';
 
 const KEY = 'corrida';
 const CARS = [
-  { id: 'laranja', name: 'Laranja', body: '#e8954a', trim: '#9a3412' },
-  { id: 'azul', name: 'Azul', body: '#5b7c9a', trim: '#1e3a5f' },
-  { id: 'menta', name: 'Menta', body: '#4f9d82', trim: '#14532d' },
-  { id: 'ouro', name: 'Ouro', body: '#d4a017', trim: '#7c4a12' }
+  { id: 'laranja', nameKey: 'cr.laranja', body: '#e8954a', trim: '#9a3412' },
+  { id: 'azul', nameKey: 'cr.azul', body: '#5b7c9a', trim: '#1e3a5f' },
+  { id: 'menta', nameKey: 'cr.menta', body: '#4f9d82', trim: '#14532d' },
+  { id: 'ouro', nameKey: 'cr.ouro', body: '#d4a017', trim: '#7c4a12' }
 ];
 
 export default {
@@ -51,8 +52,8 @@ export default {
     const fan = el('div', { class: 'cr-fan' });
     const skinRow = el('div', { class: 'chips cr-skins', role: 'radiogroup', 'aria-label': 'Carrinho' });
     const stage = el('div', { class: 'cr-stage panel' }, canvas, car, overlay);
-    const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, 'Pausar');
-    const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => newGame() }, 'Nova corrida');
+    const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, t('cr.pause'));
+    const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => newGame() }, t('cr.new'));
     const soundBtn = el('button', { class: 'btn btn--ghost btn--sm', onclick: () => toggleSound() }, '');
 
     function skin() {
@@ -76,7 +77,7 @@ export default {
                 persist();
               }
             },
-            c.name
+            t(c.nameKey)
           )
         );
       });
@@ -97,7 +98,7 @@ export default {
         <span class="cr-car__flame cr-car__flame--r"></span>`;
       fan.innerHTML = `
         <span class="cr-fan__art">${creatureSVG('otter', profile.otter, { size: 72, extraClass: 'is-dancing', label: profile.otter.name })}</span>
-        <span class="cr-fan__name">${profile.otter.name} torce!</span>`;
+        <span class="cr-fan__name">${t('cr.cheer', { name: profile.otter.name })}</span>`;
     }
 
     function persist() {
@@ -109,29 +110,15 @@ export default {
       try {
         const Tone = await startAudio();
         const out = new Tone.Gain(0.55).toDestination();
-        const kick = new Tone.MembraneSynth({ pitchDecay: 0.03, octaves: 4, envelope: { attack: 0.001, decay: 0.18, sustain: 0 }, volume: -16 }).connect(out);
-        const bass = new Tone.MonoSynth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.1 }, volume: -18 }).connect(out);
-        const lead = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.005, decay: 0.12, sustain: 0, release: 0.08 }, volume: -22 }).connect(out);
+        const crashSynth = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.001, decay: 0.22, sustain: 0, release: 0.08 }, volume: -14 }).connect(out);
         const noise = new Tone.Noise('brown').start();
         const nf = new Tone.Filter(420, 'lowpass').connect(out);
         const ng = new Tone.Gain(0.02).connect(nf);
         noise.connect(ng);
-        const notes = ['G3', 'Bb3', 'C4', 'D4', 'F4', 'D4', 'C4', 'Bb3'];
-        let i = 0;
-        const loop = new Tone.Loop((time) => {
-          if (over || paused) return;
-          kick.triggerAttackRelease('C1', '8n', time);
-          bass.triggerAttackRelease(notes[i % notes.length], '8n', time);
-          if (i % 2 === 0) lead.triggerAttackRelease(notes[(i + 2) % notes.length], '16n', time);
-          i++;
-        }, '8n');
-        Tone.Transport.bpm.value = 118;
-        loop.start(0);
-        if (Tone.Transport.state !== 'started') Tone.Transport.start();
         chip = {
           crash() {
             try {
-              lead.triggerAttackRelease('G2', 0.28);
+              crashSynth.triggerAttackRelease('G2', 0.28);
             } catch {}
           },
           setEngine(v) {
@@ -139,10 +126,9 @@ export default {
           },
           dispose() {
             try {
-              loop.dispose();
               noise.stop();
             } catch {}
-            [kick, bass, lead, noise, nf, ng, out].forEach((n) => n.dispose && n.dispose());
+            [crashSynth, noise, nf, ng, out].forEach((n) => n.dispose && n.dispose());
           }
         };
       } catch {
@@ -153,7 +139,7 @@ export default {
 
     function toggleSound() {
       musicOn = !musicOn;
-      soundBtn.textContent = `Som: ${musicOn ? 'ligado' : 'desligado'}`;
+      soundBtn.textContent = musicOn ? t('common.soundOn') : t('common.soundOff');
       if (musicOn) ensureSound().catch(() => {});
       else if (chip) {
         chip.dispose();
@@ -169,19 +155,19 @@ export default {
         el(
           'aside',
           { class: 'panel cr-hud' },
-          el('h2', {}, 'Corridinha'),
+          el('h2', {}, t('cr.title')),
           nums,
           fan,
-          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Carrinho'), skinRow),
+          el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('cr.car')), skinRow),
           el('div', { class: 'row-actions' }, pauseBtn, newBtn, soundBtn),
-          el('p', { class: 'hint' }, 'W/↑ acelera. A/D ou ← → desviam. Esc pausa. O bico do carro aponta para cima da pista.')
+          el('p', { class: 'hint' }, t('cr.hint'))
         ),
         stage
       )
     );
     renderCar();
     renderSkins();
-    soundBtn.textContent = `Som: ${musicOn ? 'ligado' : 'desligado'}`;
+    soundBtn.textContent = musicOn ? t('common.soundOn') : t('common.soundOff');
 
     const ctx = canvas.getContext('2d');
     let lastHud = '';
@@ -203,13 +189,13 @@ export default {
         lastHud = key;
         nums.innerHTML = '';
         [
-          ['Metros', Math.floor(dist)],
-          ['Velocidade', Math.round(speed)],
-          ['Recorde', Math.max(best, Math.floor(dist))]
+          [t('cr.meters'), Math.floor(dist)],
+          [t('cr.speed'), Math.round(speed)],
+          [t('cr.best'), Math.max(best, Math.floor(dist))]
         ].forEach(([k, v]) => nums.append(el('div', { class: 'stat' }, el('b', {}, String(v)), el('span', {}, k))));
-        pauseBtn.textContent = paused ? 'Continuar' : 'Pausar';
+        pauseBtn.textContent = paused ? t('cr.resume') : t('cr.pause');
         pauseBtn.disabled = over;
-        soundBtn.textContent = `Som: ${musicOn ? 'ligado' : 'desligado'}`;
+        soundBtn.textContent = musicOn ? t('common.soundOn') : t('common.soundOff');
       }
       const left = `${(x * 100).toFixed(2)}%`;
       if (car.style.left !== left) car.style.left = left;
@@ -223,11 +209,11 @@ export default {
       if (over) {
         overlay.hidden = false;
         overlay.innerHTML = '';
-        overlay.append(el('h2', {}, 'Batida!'), el('p', {}, `${Math.floor(dist)} metros`), el('button', { class: 'btn btn--primary', onclick: () => newGame() }, 'De novo'));
+        overlay.append(el('h2', {}, t('cr.crash')), el('p', {}, `${Math.floor(dist)} ${t('cr.meters').toLowerCase()}`), el('button', { class: 'btn btn--primary', onclick: () => newGame() }, t('cr.again')));
       } else if (paused) {
         overlay.hidden = false;
         overlay.innerHTML = '';
-        overlay.append(el('h2', {}, 'Pausa'), el('p', {}, 'Esc continua.'));
+        overlay.append(el('h2', {}, t('cr.pauseTitle')), el('p', {}, t('cr.pauseHint')));
       } else overlay.hidden = true;
     }
 
@@ -247,8 +233,10 @@ export default {
       paused = false;
       obstacles = [];
       spark = [];
-      spawnIn = 0.6;
+      spawnIn = 0.55;
       hitFlash = 0;
+      spawn('sack', 0.32);
+      spawn('cone', 0.12);
       showOverlay();
       hud();
     }
@@ -267,14 +255,15 @@ export default {
       hud();
     }
 
-    function spawn() {
+    function spawn(kind, y = -0.1) {
+      const pick = kind || (Math.random() < 0.38 ? 'sack' : Math.random() < 0.55 ? 'cone' : 'rock');
       const lane = 0.28 + Math.floor(Math.random() * 3) * 0.22;
       obstacles.push({
         id: idSeq++,
-        x: lane + (Math.random() - 0.5) * 0.06,
-        y: -0.08,
-        w: 0.045,
-        kind: Math.random() < 0.55 ? 'cone' : 'rock'
+        x: lane + (Math.random() - 0.5) * 0.05,
+        y,
+        w: pick === 'sack' ? 0.12 : pick === 'rock' ? 0.1 : 0.09,
+        kind: pick
       });
     }
 
@@ -301,10 +290,10 @@ export default {
       obstacles = obstacles.filter((o) => o.y < 1.2);
       const px = x;
       const py = 0.9;
-      const hitW = 0.038;
-      const hitH = 0.028;
+      const hitW = 0.042;
+      const hitH = 0.036;
       obstacles.forEach((o) => {
-        if (Math.abs(o.x - px) < hitW + o.w * 0.35 && Math.abs(o.y - py) < hitH + 0.018) crash();
+        if (Math.abs(o.x - px) < hitW + o.w * 0.42 && Math.abs(o.y - py) < hitH + 0.03) crash();
       });
       if (Math.random() < dt * 14) {
         spark.push({ x: x + (Math.random() - 0.5) * 0.04, y: 0.93, vy: 0.2 + Math.random() * 0.15, life: 0.35 });
@@ -377,23 +366,50 @@ export default {
         const ox = o.x * w;
         const oy = o.y * h;
         if (o.kind === 'cone') {
-          ctx.fillStyle = '#f97316';
+          ctx.fillStyle = '#ea580c';
           ctx.beginPath();
-          ctx.moveTo(ox, oy - 16);
-          ctx.lineTo(ox + 11, oy + 12);
-          ctx.lineTo(ox - 11, oy + 12);
+          ctx.moveTo(ox, oy - 42);
+          ctx.lineTo(ox + 26, oy + 22);
+          ctx.lineTo(ox - 26, oy + 22);
           ctx.closePath();
           ctx.fill();
           ctx.fillStyle = '#fafafa';
-          ctx.fillRect(ox - 7, oy - 2, 14, 5);
+          ctx.fillRect(ox - 16, oy - 6, 32, 10);
+          ctx.fillStyle = '#9a3412';
+          ctx.fillRect(ox - 22, oy + 18, 44, 8);
+        } else if (o.kind === 'sack') {
+          ctx.fillStyle = '#9a6b2f';
+          ctx.beginPath();
+          ctx.moveTo(ox - 22, oy + 28);
+          ctx.quadraticCurveTo(ox - 30, oy + 4, ox - 16, oy - 18);
+          ctx.lineTo(ox + 16, oy - 18);
+          ctx.quadraticCurveTo(ox + 30, oy + 4, ox + 22, oy + 28);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#c4893a';
+          ctx.beginPath();
+          ctx.ellipse(ox, oy - 8, 20, 14, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#fbbf24';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(ox - 10, oy - 22);
+          ctx.quadraticCurveTo(ox, oy - 38, ox + 10, oy - 22);
+          ctx.stroke();
+          ctx.fillStyle = '#7c4a12';
+          ctx.fillRect(ox - 14, oy + 6, 28, 8);
+          ctx.fillStyle = '#fde68a';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('SACO', ox, oy + 16);
         } else {
           ctx.fillStyle = '#57534e';
           ctx.beginPath();
-          ctx.ellipse(ox, oy + 4, 12, 9, 0, 0, Math.PI * 2);
+          ctx.ellipse(ox, oy + 8, 28, 20, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.fillStyle = '#78716c';
           ctx.beginPath();
-          ctx.ellipse(ox - 3, oy - 1, 6, 4, -0.4, 0, Math.PI * 2);
+          ctx.ellipse(ox - 8, oy - 2, 14, 10, -0.4, 0, Math.PI * 2);
           ctx.fill();
         }
       });
@@ -437,12 +453,13 @@ export default {
     raf = requestAnimationFrame(loop);
 
     window.__mmpCorrida = {
-      state: () => ({ x, dist, speed, over, paused, obstacles: obstacles.length, car: carSkin }),
+      state: () => ({ x, dist, speed, over, paused, obstacles: obstacles.length, kinds: obstacles.map((o) => o.kind), car: carSkin }),
       input: (k, on = true) => {
         if (on) keys.add(k);
         else keys.delete(k);
       },
       tick: (dt) => tick(dt),
+      spawnSack: () => spawn('sack', 0.42),
       crash,
       newGame
     };

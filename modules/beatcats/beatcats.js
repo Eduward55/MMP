@@ -6,6 +6,7 @@ import { createEventLog, eventsSummary, openInStudio } from '../shared/events.js
 import { OUTFIT_BY_ID } from '../shared/outfits.js';
 import { gallery, getProfile, kv } from '../shared/store.js';
 import { el, esc, startAudio, stamp, toast } from '../shared/ui.js';
+import { t } from '../shared/i18n.js';
 import { GROUPS, GROUP_BY_ID, LOOP_STEPS, SOUNDS, SOUND_BY_ID, makeCaptured, otterSplash } from './sounds.js';
 
 const CAT_COUNT = 8;
@@ -122,7 +123,7 @@ export default {
     const log = createEventLog({ source: 'beatcats', bpm: state.bpm, scale: 'minor', root: 9 });
 
     /* ---------- DOM ---------- */
-    const nameInput = el('input', { class: 'input', type: 'text', maxlength: '60', value: name, 'aria-label': 'Nome do beat' });
+    const nameInput = el('input', { class: 'input', type: 'text', maxlength: '60', value: name, 'aria-label': t('bc.beatName') });
     const playBtn = el('button', { class: 'btn btn--primary btn--lg' }, 'Tocar');
     const bpmInput = el('input', { class: 'range', type: 'range', min: '60', max: '160', value: String(state.bpm), 'aria-label': 'BPM' });
     const bpmLabel = el('span', { class: 'pill' }, `${state.bpm} BPM`);
@@ -189,9 +190,9 @@ export default {
     const otter = el(
       'div',
       { class: 'bc-otter', role: 'button', tabindex: '0', title: 'Efeito especial da lontra' },
-      el('span', { class: 'bc-otter__art', html: creatureSVG('otter', profile.otter, { size: 80, label: profile.otter.name }) }),
+      el('span', { class: 'bc-otter__art', html: creatureSVG('otter', profile.otter, { size: 108, label: profile.otter.name }) }),
       el('span', { class: 'bc-otter__name' }, profile.otter.name),
-      el('span', { class: 'bc-otter__hint' }, 'Splash!'),
+      el('span', { class: 'bc-otter__hint' }, t('bc.splash')),
       otterVol
     );
     const stage = el('div', { class: 'bc-stage' }, el('div', { class: 'bc-line' }, el('div', { class: 'bc-cats' }, ...catEls), otter));
@@ -204,7 +205,7 @@ export default {
         const t = el(
           'button',
           { class: 'bc-token', 'data-sound': s.id, style: `--c:${g.color}`, title: `${s.name} (${g.name})` },
-          el('span', { class: 'bc-token__art', html: accessorySVG(s.outfit, { size: 28, label: s.name }) }),
+          el('span', { class: 'bc-token__art', html: accessorySVG(s.outfit, { size: 44, label: s.name }) }),
           el('span', { class: 'bc-token__name' }, s.name),
           el('span', { class: 'bc-token__who' })
         );
@@ -238,13 +239,13 @@ export default {
       const g = s && GROUP_BY_ID[s.group];
       c.className = `bc-cat ${current ? 'is-active' : 'is-empty'} ${s ? `bc-cat--${s.group}` : ''} ${pending.has(i) ? (target ? 'is-pending' : 'is-leaving') : ''}`;
       c.style.setProperty('--c', g ? g.color : '#2a2a32');
-      const svg = creatureSVG('cat', catLook(i, shown), { size: 118, label: members[i].name }).replace('</svg>', `${MOUTH}</svg>`);
+      const svg = creatureSVG('cat', catLook(i, shown), { size: 148, label: members[i].name }).replace('</svg>', `${MOUTH}</svg>`);
       c.innerHTML = `
         <div class="bc-cat__spot" aria-hidden="true"></div>
         <div class="bc-cat__art">${svg}</div>
         <span class="bc-cat__name">${esc(members[i].name)}</span>
-        <span class="bc-cat__tag">${s ? esc(s.name) : 'vazio'}</span>
-        ${s ? '<span class="bc-cat__remove" aria-hidden="true">×</span>' : '<span class="bc-cat__drop">solte aqui</span>'}`;
+        <span class="bc-cat__tag">${s ? esc(s.name) : esc(t('bc.empty'))}</span>
+        ${s ? '<span class="bc-cat__remove" aria-hidden="true">×</span>' : `<span class="bc-cat__drop">${esc(t('bc.drop'))}</span>`}`;
       c.setAttribute('aria-label', `Gato ${members[i].name}: ${s ? s.name : 'vazio'}`);
       c.append(catVolEls[i]);
     }
@@ -550,7 +551,7 @@ export default {
       if (e.button !== undefined && e.button !== 0) return;
       e.preventDefault();
       ensureAudio().catch(() => {});
-      const ghost = el('div', { class: 'bc-ghost', html: accessorySVG(SOUND_BY_ID[soundId].outfit, { size: 64 }) });
+      const ghost = el('div', { class: 'bc-ghost', html: accessorySVG(SOUND_BY_ID[soundId].outfit, { size: 88 }) });
       const sx = e.clientX;
       const sy = e.clientY;
       let moved = false;
@@ -724,18 +725,18 @@ export default {
             playBtn,
             el('label', { class: 'toolbar__bpm' }, bpmLabel, bpmInput),
             el('div', { class: 'toolbar__bpm bc-vol bc-vol--master' }, volLabel, volInput, muteBtn),
-            el('div', { class: 'bc-opt' }, el('span', { class: 'field__label' }, 'Modo'), modeTabs),
+            el('div', { class: 'bc-opt' }, el('span', { class: 'field__label' }, t('bc.mode')), modeTabs),
             recBtn,
             timer,
             clearBtn,
             studioBtn
           ),
-          el('div', { class: 'bc-name-row' }, el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome do beat'), nameInput), status)
+          el('div', { class: 'bc-name-row' }, el('label', { class: 'field' }, el('span', { class: 'field__label' }, t('bc.beatName')), nameInput), status)
         ),
         el(
           'section',
           { class: 'panel bc-side' },
-          el('div', { class: 'panel__head' }, el('h2', {}, 'Acessórios sonoros'), el('span', { class: 'pill' }, `${SOUNDS.length} sons`)),
+          el('div', { class: 'panel__head' }, el('h2', {}, t('bc.accessories')), el('span', { class: 'pill' }, t('bc.sounds', { n: SOUNDS.length }))),
           el('p', { class: 'hint' }, 'Arraste um acessório para um gato. Toque na lontra (ou O) para o splash. Som de cada um no palco; Volume no transporte.'),
           palette
         )

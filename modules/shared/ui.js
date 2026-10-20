@@ -1,4 +1,5 @@
 // Utilidades de interface compartilhadas: criação de elementos, toasts e modais.
+import { t } from './i18n.js';
 
 export function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
@@ -47,7 +48,7 @@ export function modal({ title, body, actions = [], onClose, wide = false }) {
   const onKey = (e) => {
     if (e.key === 'Escape') close(null);
   };
-  const header = el('div', { class: 'modal__head' }, el('h2', {}, title), el('button', { class: 'icon-btn', 'aria-label': 'Fechar', onclick: () => close(null) }, '✕'));
+  const header = el('div', { class: 'modal__head' }, el('h2', {}, title), el('button', { class: 'icon-btn', 'aria-label': t('common.close'), onclick: () => close(null) }, '✕'));
   const content = el('div', { class: 'modal__body' });
   if (typeof body === 'string') content.innerHTML = body;
   else if (body) content.append(body);
@@ -66,7 +67,8 @@ export function modal({ title, body, actions = [], onClose, wide = false }) {
   return { close, box, content };
 }
 
-export function prompt({ title, label, value = '', confirm = 'Salvar' }) {
+export function prompt({ title, label, value = '', confirm } = {}) {
+  const ok = confirm || t('common.save');
   return new Promise((resolve) => {
     const input = el('input', { class: 'input', type: 'text', value, maxlength: '80', 'aria-label': label });
     const wrap = el('label', { class: 'field' }, el('span', { class: 'field__label' }, label), input);
@@ -75,8 +77,8 @@ export function prompt({ title, label, value = '', confirm = 'Salvar' }) {
       body: wrap,
       onClose: resolve,
       actions: [
-        { label: 'Cancelar', value: null },
-        { label: confirm, kind: 'primary', onClick: (close) => close(input.value.trim() || null) }
+        { label: t('common.cancel'), value: null },
+        { label: ok, kind: 'primary', onClick: (close) => close(input.value.trim() || null) }
       ]
     });
     input.addEventListener('keydown', (e) => {
@@ -86,15 +88,15 @@ export function prompt({ title, label, value = '', confirm = 'Salvar' }) {
   });
 }
 
-export function confirmDialog({ title, message, confirm = 'Confirmar', danger = false }) {
+export function confirmDialog({ title, message, confirm, danger = false }) {
   return new Promise((resolve) => {
     modal({
       title,
       body: el('p', {}, message),
       onClose: (v) => resolve(Boolean(v)),
       actions: [
-        { label: 'Cancelar', value: false },
-        { label: confirm, kind: danger ? 'danger' : 'primary', value: true }
+        { label: t('common.cancel'), value: false },
+        { label: confirm || t('common.confirm'), kind: danger ? 'danger' : 'primary', value: true }
       ]
     });
   });

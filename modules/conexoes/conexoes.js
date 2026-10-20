@@ -1,7 +1,8 @@
 // Conexões: 16 palavras, 4 grupos. O gerador combina categorias de data/conexoes/categories.json.
 import { kv, getProfile, onProfile } from '../shared/store.js';
 import { creatureSVG } from '../shared/creatures.js';
-import { el, toast, confirmDialog, formatDate } from '../shared/ui.js';
+import { el, toast, confirmDialog } from '../shared/ui.js';
+import { formatDay, t } from '../shared/i18n.js';
 import {
   LEVELS,
   THEME_LABEL,
@@ -107,11 +108,11 @@ export default {
     const solvedEl = el('div', { class: 'cn-solved' });
     const grid = el('div', { class: 'cn-grid', role: 'group', 'aria-label': 'Palavras' });
     const actions = el('div', { class: 'cn-actions' });
-    const submitBtn = el('button', { class: 'btn btn--primary', onclick: () => submit() }, 'Enviar');
-    const shuffleBtn = el('button', { class: 'btn btn--ghost', onclick: () => onShuffle() }, 'Embaralhar');
-    const hintBtn = el('button', { class: 'btn btn--ghost', onclick: () => onHint() }, 'Dica');
-    const clearBtn = el('button', { class: 'btn btn--ghost', onclick: () => onClear() }, 'Limpar');
-    const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => askNewGame() }, 'Nova partida');
+    const submitBtn = el('button', { class: 'btn btn--primary', onclick: () => submit() }, t('cn.submit'));
+    const shuffleBtn = el('button', { class: 'btn btn--ghost', onclick: () => onShuffle() }, t('cn.shuffle'));
+    const hintBtn = el('button', { class: 'btn btn--ghost', onclick: () => onHint() }, t('cn.hint'));
+    const clearBtn = el('button', { class: 'btn btn--ghost', onclick: () => onClear() }, t('cn.clear'));
+    const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => askNewGame() }, t('cn.new'));
     actions.append(submitBtn, shuffleBtn, hintBtn, clearBtn, newBtn);
 
     const section = el(
@@ -254,7 +255,15 @@ export default {
     function toggle(word) {
       if (!game || game.done) return;
       if (selected.has(word)) selected.delete(word);
-      else if (selected.size < GROUP_SIZE) selected.add(word);
+      else if (selected.size < GROUP_SIZE) {
+        selected.add(word);
+        if (selected.size === GROUP_SIZE) {
+          renderGrid();
+          renderToolbar();
+          submit();
+          return;
+        }
+      }
       renderGrid();
       renderToolbar();
     }
@@ -262,7 +271,7 @@ export default {
     function submit() {
       if (!game || game.done) return;
       if (selected.size !== GROUP_SIZE) {
-        toast('Escolha exatamente 4 palavras.', 'info');
+        toast(t('cn.needFour'), 'info');
         return;
       }
       const words = [...selected];
@@ -289,8 +298,8 @@ export default {
           void t.offsetWidth;
           t.classList.add('is-shake');
         });
-        if (res.oneAway) toast('Falta uma!', 'warn');
-        else toast('Não é um grupo.', 'info');
+        if (res.oneAway) toast(t('cn.oneAway'), 'warn');
+        else toast(t('cn.noGroup'), 'info');
         if (game.mistakes >= MAX_MISTAKES) finish(false);
         else {
           persist();
@@ -350,9 +359,9 @@ export default {
     async function askNewGame() {
       if (game && !game.done && (game.solved.length || game.mistakes || game.guesses.length)) {
         const okNew = await confirmDialog({
-          title: 'Começar outra partida?',
-          message: 'A partida atual ainda não acabou e vai contar como derrota no recorde.',
-          confirm: 'Nova partida',
+          title: t('cn.askTitle'),
+          message: t('cn.askMsg'),
+          confirm: t('cn.new'),
           danger: true
         });
         if (!okNew) return;
@@ -369,11 +378,11 @@ export default {
 
     function renderToolbar() {
       toolbar.innerHTML = '';
-      const lives = el('div', { class: 'cn-lives', 'aria-label': `Erros restantes: ${remainingLives()}` }, el('span', {}, 'Erros'));
+      const lives = el('div', { class: 'cn-lives', 'aria-label': t('cn.livesLeft', { n: remainingLives() }) }, el('span', {}, t('cn.errors')));
       for (let i = 0; i < MAX_MISTAKES; i++) {
-        lives.append(el('i', { class: `cn-pip ${i >= remainingLives() ? 'is-lost' : ''}`, 'aria-hidden': 'true' }));
+        lives.append(el('i', { class: `cn-pip ${i >= remainingLives() ? 'is-lost' : ''}`, 'aria-hidden': 'true' }, '♥'));
       }
-      toolbar.append(lives, el('span', { class: 'muted' }, game && game.done ? '' : `${selected.size}/4 selecionadas`));
+      toolbar.append(lives, el('span', { class: 'muted' }, game && game.done ? '' : t('cn.picked', { n: selected.size })));
       submitBtn.disabled = !game || game.done || selected.size !== GROUP_SIZE;
       shuffleBtn.disabled = !game || game.done;
       hintBtn.disabled = !game || game.done || game.hintUsed || unsolvedGroups().length === 0;
@@ -386,8 +395,14 @@ export default {
       result.className = `cn-result ${game.won ? 'is-win' : 'is-lose'}`;
       result.innerHTML = '';
       result.append(
-        el('strong', {}, game.won ? `Vitória com ${game.mistakes} erro${game.mistakes === 1 ? '' : 's'}!` : `Derrota · ${game.solved.length}/4 grupos`),
-        el('button', { class: 'btn btn--primary btn--sm', onclick: () => askNewGame() }, 'Jogar de novo')
+        el(
+          'strong',
+          {},
+          game.won
+            ? t('cn.winMistakes', { n: game.mistakes, s: game.mistakes === 1 ? '' : 's' })
+            : t('cn.loseGroups', { n: game.solved.length })
+        ),
+        el('button', { class: 'btn btn--primary btn--sm', onclick: () => askNewGame() }, t('cn.again'))
       );
     }
 
@@ -441,17 +456,17 @@ export default {
       const pct = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
       statsEl.innerHTML = '';
       statsEl.append(
-        el('h3', { class: 'cn-stats__title' }, 'Recorde local'),
+        el('h3', { class: 'cn-stats__title' }, t('cn.record')),
         el(
           'div',
           { class: 'cn-stats__nums' },
           ...[
-            ['Jogos', stats.played],
-            ['Vitórias', `${pct}%`],
-            ['Sequência', stats.streak],
-            ['Melhor', stats.best],
-            ['Derrotas', stats.losses],
-            ['Menos erros', stats.fewestMistakes == null ? '—' : stats.fewestMistakes]
+            [t('cn.played'), stats.played],
+            [t('cn.wins'), `${pct}%`],
+            [t('cn.streak'), stats.streak],
+            [t('cn.best'), stats.best],
+            [t('cn.losses'), stats.losses],
+            [t('cn.fewest'), stats.fewestMistakes == null ? '—' : stats.fewestMistakes]
           ].map(([k, v]) => el('div', { class: 'stat' }, el('b', {}, String(v)), el('span', {}, k)))
         ),
         el(
@@ -461,9 +476,9 @@ export default {
         )
       );
       histEl.innerHTML = '';
-      histEl.append(el('h3', { class: 'cn-hist__title' }, 'Histórico'));
+      histEl.append(el('h3', { class: 'cn-hist__title' }, t('cn.history')));
       if (!history.length) {
-        histEl.append(el('p', { class: 'cn-hist__empty' }, 'Nenhuma partida ainda. A primeira é por conta da casa!'));
+        histEl.append(el('p', { class: 'cn-hist__empty' }, t('cn.empty')));
         return;
       }
       const list = el('div', { class: 'cn-hist__list' });
@@ -472,9 +487,9 @@ export default {
           el(
             'div',
             { class: `cn-hist__item ${h.won ? 'is-win' : 'is-lose'}` },
-            el('b', {}, h.won ? 'Vitória' : 'Derrota'),
+            el('b', {}, h.won ? t('common.win') : t('common.lose')),
             el('span', { class: 'cn-hist__cats' }, (h.titles || []).join(' · ')),
-            el('span', {}, `${formatDate(h.at)} · ${h.mistakes} erro${h.mistakes === 1 ? '' : 's'}`)
+            el('span', {}, `${formatDay(h.at)} · ${h.mistakes} ${h.mistakes === 1 ? t('cn.err1') : t('cn.errN')}`)
           )
         );
       });

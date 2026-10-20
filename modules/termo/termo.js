@@ -3,6 +3,7 @@
 import { kv, getProfile, onProfile } from '../shared/store.js';
 import { creatureSVG } from '../shared/creatures.js';
 import { el, esc, toast, confirmDialog } from '../shared/ui.js';
+import { formatDay, t } from '../shared/i18n.js';
 
 const LEN = 5;
 const KB = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
@@ -19,7 +20,10 @@ const THEMES = [
   { id: 'historia', label: 'História' },
   { id: 'gerais', label: 'Gerais' }
 ];
-const THEME_LABEL = Object.fromEntries(THEMES.map((t) => [t.id, t.label]));
+const THEME_LABEL = Object.fromEntries(THEMES.map((x) => [x.id, x.label]));
+const themeLabel = (id) => t(`termo.theme.${id}`, THEME_LABEL[id] || id);
+const modeLabel = (id) => t(`termo.mode.${id}`, MODE_BY_ID[id]?.label || id);
+const HISTORY_MAX = 16;
 const MIN_ATTEMPTS = 4;
 const MAX_ATTEMPTS = 15;
 const DEFAULT_SETTINGS = { mode: 'simples', attempts: 10, theme: 'todos' };
@@ -88,7 +92,8 @@ export default {
     settings.attempts = clampAttempts(settings.attempts);
     if (!MODE_BY_ID[settings.mode]) settings.mode = 'simples';
     const stats = Object.fromEntries(MODES.map((m) => [m.id, { ...emptyStats(), ...((saved.stats || {})[m.id] || {}) }]));
-    const games = { ...(saved.games || {}) };
+    const games = {};
+    const history = Array.isArray(saved.history) ? saved.history.slice(0, HISTORY_MAX) : [];
     const used = new Set(Array.isArray(saved.used) ? saved.used : []);
     let words = null;
     let slots = Array(LEN).fill('');
@@ -106,7 +111,7 @@ export default {
     };
 
     const game = () => games[settings.mode];
-    const persist = () => kv.set('termo', { version: 2, settings, stats, games, used: [...used] }).catch(() => {});
+    const persist = () => kv.set('termo', { version: 3, settings, stats, history, used: [...used] }).catch(() => {});
     const typingOf = () => slots.join('');
     const resetInput = () => {
       slots = Array(LEN).fill('');
@@ -123,11 +128,11 @@ export default {
     const bubble = el('p', { class: 'tm-bubble', role: 'status', 'aria-live': 'polite' });
     const modeTabs = el('div', { class: 'segmented tm-modes', role: 'radiogroup', 'aria-label': 'Modo de jogo' });
     const themeSel = el('select', { class: 'input input--select tm-theme', 'aria-label': 'Tema das palavras' });
-    THEMES.forEach((t) => themeSel.append(el('option', { value: t.id }, t.label)));
+    THEMES.forEach((th) => themeSel.append(el('option', { value: th.id }, themeLabel(th.id))));
     const attemptsOut = el('output', { class: 'tm-attempts__n', 'aria-live': 'polite' });
     const attemptsDown = el('button', { class: 'btn btn--sm', 'aria-label': 'Menos tentativas', onclick: () => changeAttempts(-1) }, '−');
     const attemptsUp = el('button', { class: 'btn btn--sm', 'aria-label': 'Mais tentativas', onclick: () => changeAttempts(1) }, '+');
-    const newBtn = el('button', { class: 'btn btn--primary tm-new', onclick: () => askNewGame() }, 'Nova partida');
+    const newBtn = el('button', { class: 'btn btn--primary tm-new', onclick: () => askNewGame() }, t('termo.new'));
     const statsEl = el('div', { class: 'tm-stats', 'aria-label': 'Estatísticas' });
     const result = el('div', { class: 'tm-result', hidden: true });
     const boardsEl = el('div', { class: 'tm-boards' });
@@ -140,12 +145,12 @@ export default {
       el(
         'div',
         { class: 'tm-side tm-side--controls panel' },
-        el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Modo'), modeTabs),
-        el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Tema'), themeSel),
+        el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('termo.mode')), modeTabs),
+        el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('termo.theme')), themeSel),
         el(
           'div',
           { class: 'field' },
-          el('span', { class: 'field__label' }, 'Tentativas'),
+          el('span', { class: 'field__label' }, t('termo.attempts')),
           el('div', { class: 'tm-attempts' }, attemptsDown, attemptsOut, attemptsUp)
         ),
         newBtn
@@ -208,7 +213,7 @@ export default {
         words.answers.filter(fits).forEach((a) => used.delete(a.word));
         pool = words.answers.filter((a) => fits(a) && prefer(a));
         if (pool.length < n) pool = words.answers.filter(fits);
-        toast(`Você já viu todas as palavras de ${THEME_LABEL[theme].toLowerCase()}! Embaralhando de novo.`, 'ok', 3600);
+        toast(`Você já viu todas as palavras de ${themeLabel(theme).toLowerCase()}! Embaralhando de novo.`, 'ok', 3600);
       }
       const picked = [];
       while (picked.length < n && pool.length) picked.push(pool.splice(randInt(pool.length), 1)[0]);
@@ -255,9 +260,9 @@ export default {
       const g = game();
       if (g && !g.done && g.guesses.length) {
         const okNew = await confirmDialog({
-          title: 'Começar outra partida?',
-          message: 'A partida atual ainda não acabou e vai contar como derrota nas estatísticas.',
-          confirm: 'Nova partida',
+          title: t('termo.askTitle'),
+          message: t('termo.askMsg'),
+          confirm: t('termo.new'),
           danger: true
         });
         if (!okNew) return;
@@ -284,6 +289,14 @@ export default {
         s.losses++;
         s.streak = 0;
       }
+      history.unshift({
+        at: g.finishedAt,
+        won,
+        mode: g.mode,
+        guesses: g.guesses.length,
+        answers: g.answers.map((a) => a.display)
+      });
+      if (history.length > HISTORY_MAX) history.length = HISTORY_MAX;
       persist();
       later(() => {
         setMood(won ? 'win' : 'lose');
@@ -431,7 +444,7 @@ export default {
 
     themeSel.addEventListener('change', () => {
       settings.theme = themeSel.value;
-      applySettings(`O tema ${THEME_LABEL[settings.theme]}`);
+      applySettings(`O tema ${themeLabel(settings.theme)}`);
     });
 
     // ---------- Desenho ----------
@@ -525,7 +538,7 @@ export default {
               'div',
               { class: `tm-answer ${solved !== null ? 'is-ok' : ''}` },
               el('b', {}, a.display.toUpperCase()),
-              el('span', { class: 'tm-answer__theme' }, THEME_LABEL[a.theme] || a.theme)
+              el('span', { class: 'tm-answer__theme' }, themeLabel(a.theme))
             )
           );
         }
@@ -560,7 +573,7 @@ export default {
       kbEl.dataset.boards = g.answers.length;
       KB.forEach((line, li) => {
         const row = el('div', { class: 'tm-kbrow' });
-        if (li === 2) row.append(el('button', { class: 'tm-key tm-key--wide', 'data-key': 'enter', onclick: () => press('enter') }, 'Enviar'));
+        if (li === 2) row.append(el('button', { class: 'tm-key tm-key--wide', 'data-key': 'enter', onclick: () => press('enter') }, t('termo.send')));
         [...line].forEach((ch) => {
           const { state, style } = keyBackground(g, ch);
           row.append(
@@ -571,7 +584,7 @@ export default {
             )
           );
         });
-        if (li === 2) row.append(el('button', { class: 'tm-key tm-key--wide', 'data-key': 'backspace', 'aria-label': 'Apagar letra', onclick: () => press('backspace') }, 'Apagar'));
+        if (li === 2) row.append(el('button', { class: 'tm-key tm-key--wide', 'data-key': 'backspace', 'aria-label': t('termo.erase'), onclick: () => press('backspace') }, t('termo.erase')));
         kbEl.append(row);
       });
     }
@@ -581,15 +594,15 @@ export default {
       const pct = s.played ? Math.round((s.wins / s.played) * 100) : 0;
       statsEl.innerHTML = '';
       statsEl.append(
-        el('h3', { class: 'tm-stats__title' }, `Estatísticas · ${MODE_BY_ID[settings.mode].label}`),
+        el('h3', { class: 'tm-stats__title' }, t('termo.statsTitle', { mode: modeLabel(settings.mode) })),
         el(
           'div',
           { class: 'tm-stats__nums' },
           ...[
-            ['Jogos', s.played],
-            ['Vitórias', `${pct}%`],
-            ['Sequência', s.streak],
-            ['Recorde', s.best]
+            [t('termo.played'), s.played],
+            [t('termo.wins'), `${pct}%`],
+            [t('termo.streak'), s.streak],
+            [t('termo.best'), s.best]
           ].map(([k, v]) => el('div', { class: 'stat' }, el('b', {}, String(v)), el('span', {}, k)))
         )
       );
@@ -613,8 +626,24 @@ export default {
           )
         )
       );
-      statsEl.append(el('p', { class: 'tm-stats__sub' }, 'Vitórias por número de tentativas'), dist);
-      if (!s.played) statsEl.append(el('p', { class: 'tm-stats__empty' }, 'Nenhuma partida neste modo ainda. A primeira é por conta da casa!'));
+      statsEl.append(el('p', { class: 'tm-stats__sub' }, t('termo.dist')), dist);
+      if (!s.played) statsEl.append(el('p', { class: 'tm-stats__empty' }, t('termo.empty')));
+      const hist = el('div', { class: 'tm-hist', 'aria-label': t('common.history') });
+      hist.append(el('h3', { class: 'tm-hist__title' }, t('common.history')));
+      if (!history.length) hist.append(el('p', { class: 'tm-hist__empty' }, t('termo.histEmpty')));
+      else {
+        history.slice(0, 8).forEach((h) => {
+          hist.append(
+            el(
+              'div',
+              { class: `tm-hist__item ${h.won ? 'is-win' : 'is-lose'}` },
+              el('b', {}, h.won ? t('termo.histWin') : t('termo.histLose')),
+              el('span', {}, `${formatDay(h.at)} · ${modeLabel(h.mode)}`)
+            )
+          );
+        });
+      }
+      statsEl.append(hist);
     }
 
     function renderResult() {
@@ -628,9 +657,9 @@ export default {
         el(
           'span',
           { class: 'tm-result__words' },
-          ...g.answers.map((a) => el('span', { class: 'tm-chip', html: `${esc(a.display.toUpperCase())} <small>${esc(THEME_LABEL[a.theme] || a.theme)}</small>` }))
+          ...g.answers.map((a) => el('span', { class: 'tm-chip', html: `${esc(a.display.toUpperCase())} <small>${esc(themeLabel(a.theme))}</small>` }))
         ),
-        el('button', { class: 'btn btn--primary btn--sm', onclick: () => askNewGame() }, 'Jogar de novo')
+        el('button', { class: 'btn btn--primary btn--sm', onclick: () => askNewGame() }, t('termo.again'))
       );
     }
 
@@ -641,7 +670,7 @@ export default {
           el(
             'button',
             { class: `segmented__btn ${settings.mode === m.id ? 'is-on' : ''}`, role: 'radio', 'aria-checked': String(settings.mode === m.id), onclick: () => setMode(m.id) },
-            m.label,
+            modeLabel(m.id),
             ' ',
             el('small', {}, m.boards === 1 ? '1×' : `${m.boards}×`)
           )
@@ -707,8 +736,8 @@ export default {
     // ---------- Início ----------
     renderStage();
     renderControls();
-    boardsEl.append(el('div', { class: 'state' }, el('div', { class: 'boot__spinner' }), el('p', {}, 'Abrindo o dicionário…')));
-    say('Carregando as palavras…');
+    boardsEl.append(el('div', { class: 'state' }, el('div', { class: 'boot__spinner' }), el('p', {}, t('termo.loading'))));
+    say(t('termo.sayLoad'));
     try {
       words = await loadWords();
     } catch (err) {
@@ -718,26 +747,21 @@ export default {
         el(
           'div',
           { class: 'state state--error' },
-          el('h2', {}, 'Não consegui abrir as listas de palavras'),
-          el('p', {}, `Confira se data/termo/answers.json e valid.json existem (npm run termo:words). ${err.message || err}`)
+          el('h2', {}, t('termo.noWords')),
+          el('p', {}, t('termo.noWordsHint', { err: err.message || err }))
         )
       );
-      say('Sem palavras, sem jogo. Miau triste.');
+      say(t('termo.noWordsSay'));
       setMood('lose', true);
       return { save: async () => false, unmount: () => cleanup() };
     }
     if (!alive) return { save: async () => false, unmount() {} };
-    const g0 = game();
-    if (!g0 || !g0.answers || !g0.answers.length) newGame();
-    else {
-      setMood(g0.done ? (g0.won ? 'win' : 'lose') : 'idle', true);
-      say(g0.done ? doneLine(g0) : g0.guesses.length ? `${getProfile().cat.name}: continuando a sua partida!` : 'Pode começar: digite uma palavra de 5 letras.');
-    }
+    newGame();
     render();
 
     window.__mmpTermo = {
       words: () => ({ answers: words.answers.length, valid: words.valid.size, themes: words.themes }),
-      state: () => JSON.parse(JSON.stringify({ settings, game: game(), stats, used: [...used], typing: typingOf(), slots: [...slots], cursor, mood: catMood })),
+      state: () => JSON.parse(JSON.stringify({ settings, game: game(), stats, history, used: [...used], typing: typingOf(), slots: [...slots], cursor, mood: catMood })),
       isValid: (w) => words.valid.has(norm(w)),
       score,
       type: (w) => [...norm(w)].forEach((ch) => press(ch)),
@@ -765,7 +789,7 @@ export default {
 
     return {
       async save() {
-        await kv.set('termo', { version: 2, settings, stats, games, used: [...used] });
+        await persist();
         const g = game();
         return g && !g.done && g.guesses.length ? `Partida salva: ${g.guesses.length}/${g.attempts} tentativas.` : 'Configurações e estatísticas do Termo salvas.';
       },

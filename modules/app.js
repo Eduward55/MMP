@@ -2,10 +2,12 @@
 // O Hub monta sem esperar Tone/AudioContext/MediaPipe nem o grafo pesado dos módulos.
 import { loadProfile } from './shared/store.js';
 import { mountDock, setDockVisible } from './shared/companion.js';
-import { HINTS } from './shared/hints.js';
+import { getHint } from './shared/hints.js';
 import { loadTheme } from './shared/theme.js';
 import { createTopbar } from './shared/topbar.js';
 import { el, toast } from './shared/ui.js';
+import { loadLang, t } from './shared/i18n.js';
+import { armBgmOnGesture, loadVolume, setBgmRoute } from './shared/bgm.js';
 import hub from './hub/hub.js';
 
 const LOADERS = {
@@ -89,8 +91,10 @@ async function navigate() {
   app.dataset.route = name;
   delete app.dataset.ready;
   const meta = META[name] || hub;
-  document.title = name === 'hub' ? 'My Music Place' : `${meta.title} · My Music Place`;
+  const liveTitle = name === 'hub' ? 'My Music Place' : t(`mod.${name}.title`, meta.title);
+  document.title = name === 'hub' ? 'My Music Place' : `${liveTitle} · My Music Place`;
   setDockVisible(!meta.hideDock);
+  setBgmRoute(name).catch(() => {});
 
   const page = el('div', { class: `page page--${name}` });
   app.append(page);
@@ -112,9 +116,9 @@ async function navigate() {
   if (name !== 'hub') {
     let instance = null;
     topbar = createTopbar({
-      title: mod.title,
+      title: t(`mod.${name}.title`, mod.title),
       iconName: mod.icon,
-      hint: HINTS[name] || mod.desc,
+      hint: getHint(name) || t(`mod.${name}.desc`, mod.desc),
       onSave: () => (instance && instance.save ? instance.save() : false)
     });
     main = el('main', { class: 'page__main' });
@@ -150,9 +154,9 @@ function errorState(err) {
   return el(
     'div',
     { class: 'state state--error' },
-    el('h2', {}, 'Ops! Esse módulo tropeçou no novelo.'),
+    el('h2', {}, t('boot.errorTitle')),
     el('p', {}, String(err && err.message ? err.message : err)),
-    el('a', { class: 'btn btn--primary', href: '#/hub' }, 'Voltar ao Hub')
+    el('a', { class: 'btn btn--primary', href: '#/hub' }, t('boot.errorBack'))
   );
 }
 
@@ -161,7 +165,7 @@ function revealError(err) {
   app.innerHTML = '';
   app.append(errorState(err));
   app.dataset.ready = 'error';
-  toast('Falha ao iniciar o MMP.', 'error');
+  toast(t('boot.fail'), 'error');
 }
 
 window.addEventListener('keydown', (e) => {
@@ -172,6 +176,11 @@ window.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('hashchange', () => {
+  if (navigating) return;
+  navigate().catch((err) => console.error(err));
+});
+
+window.addEventListener('mmp-lang', () => {
   if (navigating) return;
   navigate().catch((err) => console.error(err));
 });
@@ -200,6 +209,17 @@ async function boot() {
     } catch (err) {
       console.warn(err);
     }
+    try {
+      await loadLang();
+    } catch (err) {
+      console.warn(err);
+    }
+    try {
+      await loadVolume();
+    } catch (err) {
+      console.warn(err);
+    }
+    armBgmOnGesture();
     if (!location.hash) location.hash = '#/hub';
     await navigate();
     try {

@@ -139,9 +139,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 4px 3px 4px;
-  min-height: 118px;
+  gap: 4px;
+  padding: 8px 4px 8px;
+  min-height: 168px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -160,9 +160,10 @@
 .bc-cat__art {
   position: relative;
   z-index: 1;
-  width: 64px;
+  width: 108px;
   max-width: 100%;
   transform-origin: 50% 100%;
+  transform: scale(1.08);
 }
 .bc-cat__art svg {
   display: block;
@@ -172,13 +173,14 @@
 .bc-cat__name {
   position: relative;
   z-index: 1;
-  font-family: var(--font-pixel);
-  font-size: 8px;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  line-height: 1.4;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
   color: var(--text);
   text-align: center;
+  transform: none;
 }
 .bc-cat__tag {
   position: relative;
@@ -216,8 +218,8 @@
   opacity: 0.8;
 }
 .bc-cat.is-empty .bc-cat__art {
-  filter: grayscale(0.8) brightness(0.65);
-  opacity: 0.6;
+  filter: grayscale(0.25) brightness(0.92);
+  opacity: 0.9;
 }
 .bc-cat.is-active {
   border-color: var(--c);
@@ -269,7 +271,7 @@
 }
 @keyframes bc-squash {
   50% {
-    transform: scale(1.12, 0.88);
+    transform: scale(1.06, 0.98);
   }
 }
 @keyframes bc-sway {
@@ -340,9 +342,9 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  padding: 6px 8px;
-  flex: 0 0 120px;
-  min-width: 120px;
+  padding: 8px 10px;
+  flex: 0 0 148px;
+  min-width: 148px;
   font: inherit;
   text-align: center;
   background: var(--bg);
@@ -358,7 +360,7 @@
   outline: none;
 }
 .bc-otter__art {
-  width: 80px;
+  width: 108px;
   max-width: 100%;
   transform-origin: 50% 100%;
 }
@@ -495,9 +497,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
-  padding: 3px 2px 2px;
-  min-height: 44px;
+  gap: 3px;
+  padding: 6px 4px 6px;
+  min-height: 72px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 8px;
@@ -515,24 +517,24 @@
   cursor: grabbing;
 }
 .bc-token__art {
-  height: 22px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
 }
 .bc-token__art svg {
-  max-width: 26px;
-  max-height: 26px;
+  max-width: 44px;
+  max-height: 44px;
   width: auto;
   height: auto;
 }
 .bc-token__name {
-  font-size: 0.65rem;
-  line-height: 1.1;
+  font-size: 0.78rem;
+  line-height: 1.2;
   text-align: center;
-  max-height: 2.2em;
-  overflow: hidden;
+  max-height: none;
+  overflow: visible;
 }
 .bc-token__who {
   font-size: 0.58rem;

@@ -25,12 +25,51 @@
       $('.hub__greeting') && $('.hub__greeting').textContent
     );
     ok('Hub: seletor de tema compacto', $('.theme-fab') && $$('.theme-swatch').length >= 8, String($$('.theme-swatch').length));
+    ok(
+      'Hub: PT/EN e volume ao lado do tema',
+      $('.hub__theme-wrap .theme-fab') &&
+        $$('.hub__theme-wrap .lang-toggle__btn').length === 2 &&
+        $('.hub__theme-wrap .hub-vol') &&
+        $$('.lang-toggle__btn')[0].textContent.includes('English') &&
+        $$('.lang-toggle__btn')[1].textContent.includes('Português'),
+      $$('.lang-toggle__btn').map((b) => b.textContent).join('|')
+    );
+    $$('.lang-toggle__btn').find((b) => /English/i.test(b.textContent)).click();
+    await sleep(900);
+    ok(
+      'Hub: inglês traduz o chrome',
+      $('.hub__how') && /Click the critters/i.test($('.hub__how').textContent) && $$('.card__title').some((n) => n.textContent === 'Connections'),
+      $('.hub__how') && $('.hub__how').textContent
+    );
+    $$('.lang-toggle__btn').find((b) => /Portugu/i.test(b.textContent)).click();
+    await sleep(900);
+    ok('Hub: volta para português', $('.hub__how') && /Clique nos bichinhos/i.test($('.hub__how').textContent), $('.hub__how') && $('.hub__how').textContent);
+
+    const bgmMod = window.__mmpBgm;
+    const beds = bgmMod && bgmMod.listBeds();
+    const bedBy = Object.fromEntries((beds || []).map((b) => [b.id, b]));
+    ok(
+      'BGM: todas as beds ≥ 120s antes de repetir',
+      beds && beds.length >= 6 && beds.every((b) => b.seconds >= 120 && b.periodSeconds >= 120),
+      JSON.stringify(beds)
+    );
+    ok('BGM Hub calmo ≥ 2 min', bedBy.hub && bedBy.hub.seconds >= 120 && bedBy.hub.bpm <= 60, JSON.stringify(bedBy.hub));
+    const muteBtn = $('.hub__theme-wrap .hub-vol__mute');
+    muteBtn.click();
+    ok('Hub: mudo liga', bgmMod && bgmMod.getVolumeState().muted === true, JSON.stringify(bgmMod && bgmMod.getVolumeState()));
+    muteBtn.click();
+    ok('Hub: mudo desliga', bgmMod && bgmMod.getVolumeState().muted === false, JSON.stringify(bgmMod && bgmMod.getVolumeState()));
 
     for (const r of ['airpads', 'beatcats', 'studio', 'cantar', 'gallery', 'termo', 'conexoes', 'cattyping', 'tetris', 'corrida', 'mycat']) {
       await go(r);
       const bar = $('.topbar');
       const hasAll = bar && bar.querySelector('.topbar__back') && bar.querySelector('.topbar__save') && bar.querySelector('a[href="#/gallery"]') && bar.querySelector('.topbar__hint');
       ok(`barra superior em ${r}`, hasAll);
+      ok(
+        `sem lang/mute na barra de ${r}`,
+        bar && !bar.querySelector('.lang-toggle') && !bar.querySelector('.hub-vol'),
+        bar && `${$$('.topbar .lang-toggle').length} lang · ${$$('.topbar .hub-vol').length} vol`
+      );
       ok(`gato+lontra visíveis em ${r}`, $$('svg.creature--cat').length && $$('svg.creature--otter').length);
     }
 
@@ -589,6 +628,8 @@
     CR.tick(0.4);
     CR.input('arrowleft', false);
     ok('Corrida: seta esquerda desvia', CR.state().x < x0, `${x0} → ${CR.state().x}`);
+    CR.spawnSack();
+    ok('Corrida: saco grande na pista', CR.state().kinds.includes('sack') && CR.state().obstacles >= 1, JSON.stringify(CR.state().kinds));
 
     /* ---------- Studio ---------- */
     await go('studio?demo=1');
@@ -777,6 +818,16 @@
     ts = T.state();
     ok('Termo: acertar vence e o gato comemora', ts.game.done && ts.game.won && ts.mood === 'win' && $('.tm-stage[data-mood="win"] .tm-heart') && !$('.tm-result').hidden, answer);
     ok('Termo: estatísticas do Simples', ts.stats.simples.played === 1 && ts.stats.simples.wins === 1 && ts.stats.simples.dist['2'] === 1 && $('.tm-dist__row.is-last'), JSON.stringify(ts.stats.simples));
+    ok(
+      'Termo: histórico com data, sem hora',
+      ts.history &&
+        ts.history[0] &&
+        ts.history[0].won &&
+        $('.tm-hist__item') &&
+        !/\d{1,2}:\d{2}/.test($('.tm-hist__item').textContent) &&
+        /20\d{2}|[A-Za-zÀ-ú]{3}/.test($('.tm-hist__item').textContent),
+      $('.tm-hist__item') && $('.tm-hist__item').textContent
+    );
     const savedTermo = await window.mmp.store.read('termo');
     ok('Termo: estatísticas salvas localmente', savedTermo && savedTermo.stats.simples.wins === 1 && savedTermo.used.includes(answer));
 
@@ -822,7 +873,11 @@
     await go('termo');
     await sleep(400);
     ts = window.__mmpTermo.state();
-    ok('Termo: partida em andamento continua ao voltar', ts.settings.mode === 'simples' && ts.game.guesses.length === 1 && !ts.game.done && $$('.tm-board .tm-row')[0].querySelectorAll('.tm-tile--absent, .tm-tile--present, .tm-tile--correct').length === 5);
+    ok(
+      'Termo: abrir começa partida nova',
+      ts.settings.mode === 'simples' && ts.game.guesses.length === 0 && !ts.game.done && $$('.tm-board .tm-row')[0].querySelectorAll('.tm-tile--absent, .tm-tile--present, .tm-tile--correct').length === 0,
+      JSON.stringify({ guesses: ts.game.guesses, done: ts.game.done })
+    );
 
     await go('conexoes');
     await sleep(500);
@@ -859,10 +914,9 @@
     ok('Conexões: gato e lontra no palco', $$('.cn-stage svg.creature--cat').length && $$('.cn-stage svg.creature--otter').length);
     const g0 = cs.game.groups[0];
     g0.words.forEach((w) => C.select(w));
-    ok('Conexões: seleciona até 4', C.state().selected.length === 4);
-    C.submit();
     await sleep(80);
     cs = C.state();
+    ok('Conexões: 4º clique envia sozinho', cs.game.solved[0] === g0.id && cs.selected.length === 0, JSON.stringify(cs.selected));
     ok(
       'Conexões: acerto revela categoria e cor',
       cs.game.solved[0] === g0.id && $(`.cn-group[data-color="${g0.color}"]`) && $('.cn-group b').textContent === g0.title && cs.mood === 'yay',
@@ -882,7 +936,6 @@
       if (C.state().game.solved.includes(g.id)) continue;
       C.clear();
       g.words.forEach((w) => C.select(w));
-      C.submit();
     }
     await sleep(400);
     cs = C.state();
