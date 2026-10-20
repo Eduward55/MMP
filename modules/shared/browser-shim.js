@@ -3,7 +3,27 @@
 
 const STORE_PREFIX = 'mmp-preview-store:';
 const GALLERY_KEY = 'mmp-preview-gallery';
+const FILES_KEY = 'mmp-preview-files';
 const FILES = new Map();
+
+function hydrateFiles() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(FILES_KEY) || '{}');
+    if (!raw || typeof raw !== 'object') return;
+    Object.entries(raw).forEach(([id, f]) => {
+      if (!f || typeof f !== 'object') return;
+      FILES.set(id, { json: f.json, events: f.events, data: undefined });
+    });
+  } catch {}
+}
+
+function persistFiles() {
+  const obj = {};
+  FILES.forEach((f, id) => {
+    if (f && (f.json || f.events)) obj[id] = { json: f.json || null, events: f.events || null };
+  });
+  localStorage.setItem(FILES_KEY, JSON.stringify(obj));
+}
 
 function loadGallery() {
   try {
@@ -26,6 +46,7 @@ function toBuffer(data) {
 }
 
 function installPreviewMmp() {
+  hydrateFiles();
   window.mmp = {
     info: async () => ({
       version: '0.1.0-preview',
@@ -51,6 +72,7 @@ function installPreviewMmp() {
         const now = new Date().toISOString();
         const body = isJson ? JSON.stringify(payload.json) : toBuffer(payload.data);
         FILES.set(id, { json: isJson ? payload.json : undefined, data: isJson ? undefined : body, events: payload.events });
+        persistFiles();
         const item = {
           id,
           type: payload.type,
@@ -75,6 +97,7 @@ function installPreviewMmp() {
         if (!item) throw new Error('Item não encontrado na Galeria.');
         const prev = FILES.get(id) || {};
         FILES.set(id, { ...prev, json });
+        persistFiles();
         item.size = JSON.stringify(json).length;
         if (name) item.name = String(name).slice(0, 80);
         item.updatedAt = new Date().toISOString();
@@ -108,6 +131,7 @@ function installPreviewMmp() {
       remove: async (id) => {
         saveGallery(loadGallery().filter((i) => i.id !== id));
         FILES.delete(id);
+        persistFiles();
         return true;
       },
       export: async () => ({ canceled: true })

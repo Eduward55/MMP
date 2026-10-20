@@ -48,6 +48,9 @@ export default {
     const slotTabs = el('div', { class: 'outfit-tabs', role: 'tablist', 'aria-label': 'Categoria da roupa' });
     const outfitGrid = el('div', { class: 'outfits' });
     let slotFilter = 'all';
+    let lastSlot = null;
+    let takeBtn = null;
+    let stripBtn = null;
 
     function dirty() {
       return JSON.stringify(draft) !== saved;
@@ -86,6 +89,7 @@ export default {
       renderWearing();
       renderCoats();
       renderEyes();
+      renderOutfitBar();
       if (outfits) renderOutfits();
       if (ready) scheduleSave();
     }
@@ -224,10 +228,11 @@ export default {
             {
               class: `outfit ${on ? 'is-on' : ''}`,
               'aria-pressed': String(on),
-              title: `${o.name} (${SLOT_LABEL[o.slot]})`,
+              title: on ? `Clique de novo para tirar ${o.name}` : `${o.name} (${SLOT_LABEL[o.slot]})`,
               onclick: () => {
-                if (on) return;
-                who.outfit[o.slot] = o.id;
+                lastSlot = o.slot;
+                if (on) delete who.outfit[o.slot];
+                else who.outfit[o.slot] = o.id;
                 refresh();
               }
             },
@@ -237,6 +242,26 @@ export default {
           )
         );
       });
+    }
+
+    function takeCurrent() {
+      const who = draft[target];
+      if (slotFilter !== 'all' && who.outfit[slotFilter]) {
+        delete who.outfit[slotFilter];
+      } else if (lastSlot && who.outfit[lastSlot]) {
+        delete who.outfit[lastSlot];
+      } else {
+        const slots = Object.keys(who.outfit);
+        if (slots.length) delete who.outfit[slots[slots.length - 1]];
+      }
+      refresh();
+    }
+
+    function renderOutfitBar() {
+      if (!takeBtn || !stripBtn) return;
+      const n = Object.keys(draft[target].outfit).length;
+      takeBtn.disabled = n === 0;
+      stripBtn.disabled = n === 0;
     }
 
     catName.addEventListener('input', () => {
@@ -254,16 +279,19 @@ export default {
       refresh({ outfits: false });
     });
 
+    takeBtn = el('button', { class: 'btn btn--ghost outfit-bar__take', type: 'button', title: t('mycat.takeHint') }, t('mycat.take'));
+    stripBtn = el('button', { class: 'btn btn--ghost', type: 'button', title: t('mycat.stripHint') }, t('mycat.strip'));
+    takeBtn.addEventListener('click', takeCurrent);
+    stripBtn.addEventListener('click', () => {
+      draft[target].outfit = {};
+      lastSlot = null;
+      refresh();
+    });
+    const outfitBar = el('div', { class: 'outfit-bar', role: 'toolbar', 'aria-label': t('mycat.take') }, takeBtn, stripBtn);
+
     const actions = el(
       'div',
       { class: 'row-actions' },
-      el('button', {
-        class: 'btn btn--ghost',
-        onclick: () => {
-          draft[target].outfit = {};
-          refresh();
-        }
-      }, t('mycat.strip')),
       el('button', {
         class: 'btn btn--ghost',
         onclick: () => {
@@ -317,7 +345,7 @@ export default {
           el('div', { class: 'field' }, el('div', { class: 'field__row' }, el('span', { class: 'field__label' }, t('mycat.who')), targetTabs)),
           el('div', { class: 'field' }, coatLabel, el('p', { class: 'hint' }, t('mycat.coatHint')), coats),
           el('div', { class: 'field' }, eyeLabel, eyes),
-          el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('mycat.outfits')), el('p', { class: 'hint' }, t('mycat.outfitHint')), slotTabs, outfitGrid),
+          el('div', { class: 'field field--outfits' }, el('span', { class: 'field__label' }, t('mycat.outfits')), el('p', { class: 'hint' }, t('mycat.outfitHint')), outfitBar, slotTabs, outfitGrid),
           actions
         )
       )

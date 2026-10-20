@@ -292,7 +292,7 @@ export default {
       editHint.textContent =
         view === 'roll'
           ? 'Clique para criar · arraste para mover · ponta direita para duração · duplo clique apaga. Fileiras escuras saem da escala.'
-          : 'Cada quadrado é uma semicolcheia. Clique para ligar ou desligar. Na bateria, as fileiras são as peças do kit.';
+          : 'Cada quadrado é uma semicolcheia. Clique para ligar ou desligar. Notas longas acendem o trecho inteiro; a faixa Acordes mostra o nome (Lám, Fá…). Na bateria, as fileiras são as peças do kit.';
     }
 
     function renderAll() {

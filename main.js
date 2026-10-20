@@ -338,6 +338,18 @@ async function runScreenshots(win) {
         else setTimeout(check, 50); })(); })`
     );
     await wait(Number(process.env.MMP_SCREENSHOT_DELAY) || 1500);
+    const base = route.split('?')[0];
+    if (base === 'mycat') {
+      await win.webContents.executeJavaScript(`{
+        const b = [...document.querySelectorAll('.outfit')].find((c) => /Coroa/.test(c.textContent));
+        if (b) b.click();
+      }`);
+      await wait(400);
+    }
+    if (base === 'studio' && /demo=/.test(route)) {
+      await win.webContents.executeJavaScript(`window.__mmpStudio && (window.__mmpStudio.selectTrack('acordes'), window.__mmpStudio.setView('steps'), 1)`);
+      await wait(500);
+    }
     win.webContents.invalidate();
     await wait(200);
     const errors = await win.webContents.executeJavaScript('JSON.stringify(window.__mmpErrors || [])');

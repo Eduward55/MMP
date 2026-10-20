@@ -344,7 +344,7 @@
 .st-grid {
   display: grid;
   grid-template-columns: 108px max-content;
-  grid-template-rows: 26px auto;
+  grid-template-rows: 26px 30px auto;
   width: max-content;
   min-height: 100%;
 }
@@ -374,6 +374,54 @@
   color: var(--text-muted);
   border-left: 1px solid var(--accent);
   height: 18px;
+}
+.st-chord-head {
+  position: sticky;
+  top: 26px;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  height: 30px;
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--surface);
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+.st-chords {
+  position: sticky;
+  top: 26px;
+  z-index: 3;
+  height: 30px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+}
+.st-chords__cell {
+  position: absolute;
+  top: 3px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  border-left: 1px solid color-mix(in srgb, var(--accent) 40%, var(--hairline));
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.st-chords__cell.is-on {
+  color: #141018;
+  background: color-mix(in srgb, var(--c, var(--accent)) 68%, #fff);
+  box-shadow: inset 0 0 0 1px rgba(20, 16, 24, 0.28);
 }
 .st-keys {
   position: sticky;
@@ -428,11 +476,24 @@
   position: absolute;
   height: calc(var(--row) - 3px);
   margin-top: 1px;
-  background: var(--c);
-  border: 1px solid var(--bg);
+  background: color-mix(in srgb, var(--c) 78%, #fff);
+  border: 1px solid #141018;
   border-radius: 4px;
   cursor: grab;
   z-index: 2;
+  overflow: hidden;
+}
+.st-note__name {
+  display: block;
+  padding: 2px 5px 0;
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.1;
+  color: #141018;
+  white-space: nowrap;
+  overflow: hidden;
+  pointer-events: none;
 }
 .st-note::after {
   content: '';
@@ -465,20 +526,34 @@
   padding: 0;
   border: 0;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.1);
+  color: transparent;
+  font-family: var(--font);
+  font-size: 9px;
+  font-weight: 750;
+  line-height: 1;
   cursor: pointer;
 }
 .st-cell.is-odd {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
 }
 .st-cell.is-beat {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.16);
 }
 .st-cell:hover {
   background: color-mix(in srgb, var(--c) 40%, transparent);
 }
 .st-cell.is-on {
-  background: var(--c);
+  background: color-mix(in srgb, var(--c) 72%, #fff);
+  color: #141018;
+  box-shadow: inset 0 0 0 1px rgba(20, 16, 24, 0.35);
+  z-index: 1;
+}
+.st-cell.is-on.is-hold {
+  border-radius: 0;
+}
+.st-cell.is-on.is-start {
+  border-radius: 3px 0 0 3px;
 }
 .st-cell:focus-visible {
   outline: 2px solid #fff;
@@ -620,6 +695,9 @@
 @media (max-width: 560px) {
   .st-grid {
     grid-template-columns: 72px max-content;
+  }
+  .st-chords__cell {
+    font-size: 0.64rem;
   }
   .st-key {
     font-size: 0.68rem;

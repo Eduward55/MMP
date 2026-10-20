@@ -61,7 +61,7 @@ const PT = {
   mycat: `Meu Gato — como mexer
 • Escolha o gato ou a lontra em cima: pelagem e olhos são de cada um.
 • Digite o nome nos campos Nome do gato / Nome da lontra.
-• Um item por lugar: clique em outro para trocar. Tirar tudo remove.
+• Clique de novo na mesma peça para tirar. Tirar fica em cima da lista.
 • Tudo salva sozinho; o botão Salvar também confirma.
 • Clique no bichinho para ver a carinha fofa.`
 };
@@ -126,7 +126,7 @@ const EN = {
   mycat: `My Cat — how to play
 • Pick the cat or the otter at the top: coat and eyes belong to each one.
 • Type names in the Cat name / Otter name fields.
-• One item per place: click another to swap. Strip all removes them.
+• Click the same piece again to take it off. Strip stays at the top of the list.
 • Everything auto-saves; Save also confirms.
 • Click the critter for a cute face.`
 };

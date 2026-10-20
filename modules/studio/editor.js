@@ -1,6 +1,6 @@
 // Editores do Studio: piano roll (tempo livre, arrastar/esticar notas) e step sequencer (grade de semicolcheias).
 // Os dois editam a mesma lista de eventos { time, dur, note, vel, inst, track } (tempo e duração em batidas).
-import { DRUM_BY_NOTE, DRUM_KIT, INSTRUMENT_BY_ID, inScale, midiName, nearestDrum, scaleRange } from '../shared/instruments.js';
+import { DRUM_BY_NOTE, DRUM_KIT, INSTRUMENT_BY_ID, NOTE_NAMES, chordName, inScale, midiName, nearestDrum, scaleRange } from '../shared/instruments.js';
 import { el } from '../shared/ui.js';
 
 export const CELL = 32;
@@ -78,13 +78,14 @@ export function createEditor({ project, track, view, onCommit, onAudition, onSel
     rows.forEach((r, i) => !r.inScale || r.black ? lanes.append(el('div', { class: `st-row ${r.inScale ? '' : 'is-out'} ${r.black ? 'is-black' : ''}`, style: `top:${i * ROW}px` })) : null);
     const head = el('div', { class: 'st-ruler', style: `width:${width}px` });
     for (let b = 0; b < p.length; b += 4) head.append(el('span', { class: 'st-ruler__bar', style: `left:${b * 4 * CELL}px` }, String(b / 4 + 1)));
+    const { head: chordHead, strip: chordStrip } = renderChordStrip(p, width);
 
     if (view() === 'steps') renderSteps(p, t, steps);
     else renderRoll(p, t);
 
     playhead = el('div', { class: 'st-playhead', hidden: true });
     lanes.append(playhead);
-    const scroll = el('div', { class: 'st-scroll', 'data-key': `${t.id}:${view()}` }, el('div', { class: 'st-grid' }, el('div', { class: 'st-corner' }), head, keys, lanes));
+    const scroll = el('div', { class: 'st-scroll', 'data-key': `${t.id}:${view()}`, style: `--c:${color}` }, el('div', { class: 'st-grid' }, el('div', { class: 'st-corner' }), head, chordHead, chordStrip, keys, lanes));
     root.append(scroll);
     if (keep) {
       scroll.scrollLeft = keep.left;
@@ -117,7 +118,7 @@ export function createEditor({ project, track, view, onCommit, onAudition, onSel
       .forEach((e) => {
         const i = rowIndex(e.note);
         if (i < 0) return;
-        const n = el('div', { class: `st-note ${e === selected ? 'is-selected' : ''}`, title: `${rows[i].label} · ${e.time.toFixed(2)} · ${e.dur.toFixed(2)} batidas` });
+        const n = el('div', { class: `st-note ${e === selected ? 'is-selected' : ''}`, title: `${rows[i].label} · ${e.time.toFixed(2)} · ${e.dur.toFixed(2)} batidas` }, el('span', { class: 'st-note__name' }, rows[i].label));
         n._ev = e;
         place(n, e);
         lanes.append(n);
@@ -139,7 +140,9 @@ export function createEditor({ project, track, view, onCommit, onAudition, onSel
     n.style.left = `${e.time * 4 * CELL}px`;
     n.style.top = `${i * ROW}px`;
     n.style.width = `${Math.max(6, e.dur * 4 * CELL - 1)}px`;
-    n.style.opacity = String(0.55 + e.vel * 0.45);
+    n.style.opacity = String(0.72 + e.vel * 0.28);
+    const tag = n.querySelector('.st-note__name');
+    if (tag && i >= 0) tag.textContent = rows[i].label;
   }
 
   function onRollDown(ev) {
@@ -162,7 +165,7 @@ export function createEditor({ project, track, view, onCommit, onAudition, onSel
       const time = Math.max(0, Math.min(p.length - STEP, Math.floor(x0 / CELL) * STEP));
       e = { time, dur: lastDur, note: rows[ri].note, vel: 0.8, inst: t.inst, track: t.id };
       p.events.push(e);
-      n = el('div', { class: 'st-note' });
+      n = el('div', { class: 'st-note' }, el('span', { class: 'st-note__name' }, rows[ri].label));
       n._ev = e;
       place(n, e);
       lanes.append(n);
@@ -220,26 +223,67 @@ export function createEditor({ project, track, view, onCommit, onAudition, onSel
     onCommit();
   }
 
+  /* ---------- Acordes visíveis no beat ---------- */
+  function coversStep(e, s) {
+    const t0 = s * STEP;
+    const t1 = t0 + STEP;
+    return e.time < t1 - 1e-6 && e.time + e.dur > t0 + 1e-6;
+  }
+
+  function chordLabelAt(p, beat) {
+    const byTrack = new Map();
+    p.events.forEach((e) => {
+      if (!INSTRUMENT_BY_ID[e.inst] || INSTRUMENT_BY_ID[e.inst].drums) return;
+      if (!(e.time <= beat + 0.08 && e.time + e.dur > beat + 0.08)) return;
+      if (!byTrack.has(e.track)) byTrack.set(e.track, []);
+      byTrack.get(e.track).push(e.note);
+    });
+    const selected = track();
+    if (selected && byTrack.has(selected.id) && byTrack.get(selected.id).length >= 2) return chordName(byTrack.get(selected.id));
+    let best = [];
+    byTrack.forEach((notes) => {
+      if (notes.length > best.length) best = notes;
+    });
+    return best.length >= 2 ? chordName(best) : '';
+  }
+
+  function renderChordStrip(p, width) {
+    const beats = Math.max(1, Math.round(p.length));
+    const strip = el('div', { class: 'st-chords', style: `width:${width}px` });
+    for (let b = 0; b < beats; b++) {
+      const label = chordLabelAt(p, b);
+      strip.append(
+        el(
+          'span',
+          {
+            class: `st-chords__cell ${label ? 'is-on' : ''}`,
+            style: `left:${b * 4 * CELL}px;width:${4 * CELL}px`,
+            title: label ? `Acorde: ${label}` : 'Sem acorde neste tempo'
+          },
+          label
+        )
+      );
+    }
+    return { head: el('div', { class: 'st-chord-head' }, 'Acordes'), strip };
+  }
+
   /* ---------- Step sequencer ---------- */
   function renderSteps(p, t, steps) {
     const mine = p.events.filter((e) => e.track === t.id);
-    const on = new Map();
-    mine.forEach((e) => {
-      const key = `${e.note}:${Math.round(e.time / STEP)}`;
-      if (!on.has(key)) on.set(key, []);
-      on.get(key).push(e);
-    });
+    const drums = Boolean(INSTRUMENT_BY_ID[t.inst].drums);
     const frag = document.createDocumentFragment();
     rows.forEach((r, ri) => {
       for (let s = 0; s < steps; s++) {
-        const hit = on.get(`${r.note}:${s}`);
+        const hit = mine.filter((e) => e.note === r.note && coversStep(e, s));
+        const start = hit.some((e) => Math.round(e.time / STEP) === s);
         const c = document.createElement('button');
-        c.className = `st-cell ${hit ? 'is-on' : ''} ${s % 4 === 0 ? 'is-beat' : ''} ${Math.floor(s / 4) % 2 ? 'is-odd' : ''}`;
+        c.className = `st-cell ${hit.length ? 'is-on' : ''} ${start ? 'is-start' : hit.length ? 'is-hold' : ''} ${s % 4 === 0 ? 'is-beat' : ''} ${Math.floor(s / 4) % 2 ? 'is-odd' : ''}`;
         c.style.left = `${s * CELL}px`;
         c.style.top = `${ri * ROW}px`;
         c.dataset.row = String(ri);
         c.dataset.step = String(s);
-        c.setAttribute('aria-label', `${r.label}, passo ${s + 1}${hit ? ', ligado' : ''}`);
+        if (hit.length && !drums && start) c.textContent = NOTE_NAMES[((r.note % 12) + 12) % 12];
+        c.setAttribute('aria-label', `${r.label}, passo ${s + 1}${hit.length ? ', ligado' : ''}`);
         frag.append(c);
       }
     });
@@ -255,7 +299,7 @@ export function createEditor({ project, track, view, onCommit, onAudition, onSel
     const p = project();
     const t = track();
     const note = rows[ri].note;
-    const hits = p.events.filter((e) => e.track === t.id && e.note === note && Math.round(e.time / STEP) === s);
+    const hits = p.events.filter((e) => e.track === t.id && e.note === note && coversStep(e, s));
     if (hits.length) {
       p.events = p.events.filter((e) => !hits.includes(e));
     } else {

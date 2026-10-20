@@ -122,9 +122,45 @@
       JSON.stringify(prof)
     );
     ok('Meu Gato: olhos da lontra não copiam os do gato', prof.otter.eyes.toLowerCase() !== prof.cat.eyes.toLowerCase(), `${prof.cat.eyes} vs ${prof.otter.eyes}`);
+    ok(
+      'Meu Gato: Tirar no topo do painel',
+      $('.outfit-bar') &&
+        $('.outfits') &&
+        ($('.outfit-bar').compareDocumentPosition($('.outfits')) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+        /Tirar/.test($('.outfit-bar').textContent) &&
+        !$$('.mycat__form > .row-actions .btn').some((b) => /Tirar/.test(b.textContent)),
+      $('.outfit-bar') && $('.outfit-bar').textContent
+    );
 
     await go('hub');
     ok('Hub reflete o gato salvo', $('.hub__greeting').textContent.includes('Bolinha') && $('.acc--coroa') && !$('.acc--batuta'));
+
+    await go('mycat');
+    $$('.segmented__btn')[0].click();
+    const coroaBtn = $$('.outfit').find((c) => c.textContent.includes('Coroa'));
+    ok('Meu Gato: Coroa ainda vestida depois do reload da tela', coroaBtn && coroaBtn.classList.contains('is-on'));
+    if (coroaBtn) coroaBtn.click();
+    await sleep(400);
+    ok(
+      'Meu Gato: clicar de novo tira a peça',
+      !$$('.outfit').find((c) => c.textContent.includes('Coroa')).classList.contains('is-on') && !$('.mycat__preview .acc--coroa'),
+      $$('.outfit').find((c) => c.textContent.includes('Coroa')) && $$('.outfit').find((c) => c.textContent.includes('Coroa')).className
+    );
+    $('.topbar__save').click();
+    await sleep(700);
+    const profOff = await window.mmp.store.read('profile');
+    ok(
+      'Meu Gato: toggle persiste sem a Coroa',
+      profOff.cat.outfit.head !== 'coroa' && profOff.otter.outfit.body === 'astronauta',
+      JSON.stringify(profOff.cat.outfit)
+    );
+    const coroaOn = $$('.outfit').find((c) => c.textContent.includes('Coroa'));
+    if (coroaOn) coroaOn.click();
+    await sleep(400);
+    $('.topbar__save').click();
+    await sleep(700);
+    const profOn = await window.mmp.store.read('profile');
+    ok('Meu Gato: vestir de novo também persiste', profOn.cat.outfit.head === 'coroa', JSON.stringify(profOn.cat.outfit));
 
     await go('gallery');
     ok('Galeria lista 3 cards', $$('.gcard').length === 3, $$('.gcard').length);
@@ -796,6 +832,28 @@
       ok('Studio: mesa de som com faders grandes', faders.length === 4 && fh >= 140, `${faders.length} faders · ${Math.round(fh || 0)}px`);
       ok('Studio: piano roll ocupa o palco', eh >= 360, `${Math.round(eh || 0)}px`);
     }
+    S.selectTrack('acordes');
+    S.setView('steps');
+    await sleep(50);
+    {
+      const chordText = $$('.st-chords__cell').map((c) => c.textContent.trim()).join('|');
+      const onCells = $$('.st-cell.is-on');
+      ok(
+        'Studio: faixa de acordes visível no beat',
+        /Lám/.test(chordText) && /Fá/.test(chordText) && /Dó/.test(chordText) && /Sol/.test(chordText),
+        chordText
+      );
+      ok('Studio: acordes acendem a duração inteira no step', onCells.length >= 100, `${onCells.length} células`);
+      ok(
+        'Studio: nome da nota no passo do acorde',
+        onCells.some((c) => /^(A|C|E|F|G)$/.test(c.textContent.trim())),
+        onCells
+          .map((c) => c.textContent.trim())
+          .filter(Boolean)
+          .slice(0, 8)
+          .join(',')
+      );
+    }
     S.selectTrack('bateria');
     S.setView('steps');
     await sleep(50);
@@ -895,6 +953,19 @@
     sst = window.__mmpStudio.state();
     ok('Studio: reabre da Galeria para continuar editando', location.hash.includes(proj.id) && sst.opened === proj.id && sst.notes === notesSaved && sst.bpm === 140 && sst.scale === 'major' && sst.root === 2 && sst.tracks.find((t) => t.id === 'acordes').inst === 'pad', JSON.stringify({ notes: sst.notes, bpm: sst.bpm }));
     const S2 = window.__mmpStudio;
+    S2.selectTrack('acordes');
+    S2.setView('steps');
+    await sleep(80);
+    {
+      const reChords = $$('.st-chords__cell.is-on').map((c) => c.textContent.trim()).filter(Boolean);
+      const reCells = $$('.st-cell.is-on').length;
+      const chordNotes = S2.json().events.filter((e) => e.track === 'acordes');
+      ok(
+        'Studio: acordes voltam depois de Salvar',
+        chordNotes.length >= 12 && reChords.length >= 4 && reCells >= 40,
+        `${reChords.join('|')} · ${reCells} células · ${chordNotes.length} notas`
+      );
+    }
     S2.addTrack('bells');
     const nGal = (await window.mmp.gallery.list()).length;
     $('.topbar__save').click();

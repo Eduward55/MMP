@@ -18,6 +18,47 @@ export function midiName(m) {
 }
 export const midiHz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
+const CHORD_QUALITIES = [
+  { ints: [0, 4, 7, 10], suffix: '7' },
+  { ints: [0, 4, 7, 11], suffix: '7M' },
+  { ints: [0, 3, 7, 10], suffix: 'm7' },
+  { ints: [0, 3, 6, 9], suffix: 'dim7' },
+  { ints: [0, 3, 6, 10], suffix: 'm7b5' },
+  { ints: [0, 4, 7], suffix: '' },
+  { ints: [0, 3, 7], suffix: 'm' },
+  { ints: [0, 3, 6], suffix: 'dim' },
+  { ints: [0, 4, 8], suffix: 'aug' },
+  { ints: [0, 5, 7], suffix: 'sus4' },
+  { ints: [0, 2, 7], suffix: 'sus2' },
+  { ints: [0, 7], suffix: '5' }
+];
+
+function pitchClasses(midiNotes) {
+  return [...new Set((midiNotes || []).filter((n) => Number.isFinite(n)).map((n) => ((n % 12) + 12) % 12))];
+}
+
+/** Nome PT-BR do acorde (Lám, Fá, Dó…) a partir das MIDI que soam juntas. */
+export function chordName(midiNotes) {
+  const pcs = pitchClasses(midiNotes);
+  if (!pcs.length) return '';
+  if (pcs.length === 1) return ROOTS[pcs[0]];
+  const hasAll = (need) => need.every((p) => pcs.includes(p));
+  for (const q of CHORD_QUALITIES) {
+    for (let root = 0; root < 12; root++) {
+      const need = q.ints.map((i) => (root + i) % 12);
+      if (need.length === pcs.length && hasAll(need) && pcs.every((p) => need.includes(p))) return ROOTS[root] + q.suffix;
+    }
+  }
+  for (const q of CHORD_QUALITIES) {
+    for (let root = 0; root < 12; root++) {
+      const need = q.ints.map((i) => (root + i) % 12);
+      if (hasAll(need) && pcs.length - need.length <= 2) return ROOTS[root] + q.suffix;
+    }
+  }
+  if (pcs.length === 2) return pcs.map((p) => ROOTS[p]).join('+');
+  return '';
+}
+
 export function inScale(midi, scaleId, root) {
   const steps = (SCALE_BY_ID[scaleId] || SCALES[0]).steps;
   return steps.includes((((midi - root) % 12) + 12) % 12);
