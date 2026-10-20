@@ -586,6 +586,12 @@
     await go('cantar');
     const CG = window.__mmpCantar;
     ok('Cantar: palco com gato no microfone e 3 lontrinhas', $$('.cantar__cat svg.creature--cat').length === 1 && $$('.cantar__otter').length === 3 && $$('.cantar__otter svg.creature--otter').length === 3);
+    ok(
+      'Cantar: microfone e câmera são botões separados',
+      $('.cantar__mic') && $('.cantar__cam-btn') && $('.cantar__mic') !== $('.cantar__cam-btn'),
+      $$('.cantar .toolbar button').map((b) => b.textContent).join(' | ')
+    );
+    ok('Cantar: campo para cantar texto', $('.cantar__lyrics') && $('.cantar__sing'));
     const chipLabel = (id) => ({ robo: 'robô', radio: 'rádio', alvinhos: 'alvinhos', transformers: 'transformers' }[id] || id);
     const requiredChips = ['natural', 'autotune', 'agudo', 'grave', 'robo', 'eco', 'acapela', 'velhinha', 'alvinhos', 'transformers'];
     ok(
@@ -966,8 +972,33 @@
       JSON.stringify({ guesses: ts.game.guesses, done: ts.game.done })
     );
 
+    await go('hub');
+    await window.mmp.store.write('conexoes', {
+      version: 1,
+      history: [{ at: '2026-10-18T12:00:00.000Z', won: false, mistakes: 4, solved: 1, titles: ['Velha derrota'] }],
+      stats: { played: 1, wins: 0, losses: 1, streak: 0, best: 0, fewestMistakes: null },
+      game: { done: true, won: false, mistakes: 4, solved: [], groups: [], board: [] },
+      used: []
+    });
     await go('conexoes');
     await sleep(500);
+    const wipedConn = await window.mmp.store.read('conexoes');
+    ok(
+      'Conexões: derrota antiga some do histórico',
+      wipedConn &&
+        wipedConn.version >= 3 &&
+        Array.isArray(wipedConn.history) &&
+        wipedConn.history.length === 0 &&
+        wipedConn.stats.losses === 0 &&
+        !(wipedConn.game && wipedConn.game.done && !wipedConn.game.won),
+      JSON.stringify({
+        version: wipedConn && wipedConn.version,
+        history: wipedConn && wipedConn.history,
+        losses: wipedConn && wipedConn.stats && wipedConn.stats.losses,
+        done: wipedConn && wipedConn.game && wipedConn.game.done,
+        won: wipedConn && wipedConn.game && wipedConn.game.won
+      })
+    );
     const C = window.__mmpConexoes;
     const cd = C.data();
     ok(
@@ -998,7 +1029,15 @@
     C.newGame();
     let cs = C.state();
     ok('Conexões: 16 cartas e 4 vidas', $$('.cn-tile').length === 16 && $$('.cn-pip').length === 4 && !cs.game.done && /vidas/i.test($('.cn-lives') && $('.cn-lives').textContent || ''), `${$$('.cn-tile').length} cartas`);
+    ok(
+      'Conexões: vidas em PT-BR (você / fica tranquila)',
+      /você tem/i.test(($('.cn-lives') && $('.cn-lives').getAttribute('aria-label')) || '') &&
+        /fica tranquila/i.test(($('.cn-lives') && $('.cn-lives').textContent) || '') &&
+        !/erros a cometer/i.test(document.body.innerText || ''),
+      ($('.cn-lives') && ($('.cn-lives').getAttribute('aria-label') + ' | ' + $('.cn-lives').textContent)) || ''
+    );
     ok('Conexões: sem botão Enviar', !$$('.cn-actions button').some((b) => /enviar/i.test(b.textContent)), $$('.cn-actions button').map((b) => b.textContent).join(' | '));
+    ok('Conexões: 4º clique aparece na barra', /4º clique envia sozinho/i.test(($('.cn-toolbar .muted') && $('.cn-toolbar .muted').textContent) || ''), $('.cn-toolbar .muted') && $('.cn-toolbar .muted').textContent);
     ok('Conexões: gato e lontra no palco', $$('.cn-stage svg.creature--cat').length && $$('.cn-stage svg.creature--otter').length);
     const g0 = cs.game.groups[0];
     g0.words.forEach((w) => C.select(w));
@@ -1018,8 +1057,12 @@
       cs = C.state();
       ok(
         'Conexões: erro treme as 4 selecionadas',
-        cs.game.mistakes === 1 && cs.selected.length === 4 && $$('.cn-tile.is-on').length === 4 && $$('.cn-tile.is-shake').length === 4,
-        JSON.stringify({ mistakes: cs.game.mistakes, selected: cs.selected, shake: $$('.cn-tile.is-shake').length })
+        cs.game.mistakes === 1 &&
+          cs.selected.length === 4 &&
+          $$('.cn-tile.is-on').length === 4 &&
+          $$('.cn-tile.is-shake').length === 4 &&
+          $$('.cn-tile.is-miss').length === 4,
+        JSON.stringify({ mistakes: cs.game.mistakes, selected: cs.selected, shake: $$('.cn-tile.is-shake').length, miss: $$('.cn-tile.is-miss').length })
       );
       await sleep(480);
       cs = C.state();

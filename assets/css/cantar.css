@@ -41,6 +41,33 @@
   background: var(--accent);
   transition: width 0.05s linear;
 }
+.cantar__stage-art {
+  position: relative;
+  width: 100%;
+}
+.cantar__type-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.cantar__lyrics {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cantar__cam {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: min(168px, 36%);
+  border-radius: 12px;
+  border: 2px solid color-mix(in srgb, var(--accent) 40%, var(--hairline));
+  transform: scaleX(-1);
+  z-index: 2;
+  background: #111;
+}
+.cantar__cam[hidden] {
+  display: none;
+}
 .cantar__cat {
   position: relative;
   display: grid;

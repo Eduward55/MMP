@@ -113,8 +113,11 @@ export default {
     let Tone = null;
     let audioPromise = null;
     let stream = null;
+    let camStream = null;
     let micPromise = null;
     let micNode = null;
+    let singer = null;
+    let singTimer = 0;
     let voiceFx = null;
     let backingGain = null;
     let pitchGain = null;
@@ -150,7 +153,16 @@ export default {
     const log = createEventLog({ source: 'cantar', bpm, scale: 'minor', root: 0 });
 
     const nameInput = el('input', { class: 'input', type: 'text', maxlength: '60', value: `Canto ${stamp()}`, 'aria-label': 'Nome da gravação' });
-    const micBtn = el('button', { class: 'btn btn--primary' }, t('cantar.micOn'));
+    const micBtn = el('button', { class: 'btn btn--primary cantar__mic', type: 'button', 'aria-pressed': 'false' }, t('cantar.micOn'));
+    const camBtn = el('button', { class: 'btn btn--ghost cantar__cam-btn', type: 'button', 'aria-pressed': 'false' }, t('cantar.camOn'));
+    const lyricInput = el('input', {
+      class: 'input cantar__lyrics',
+      type: 'text',
+      maxlength: '80',
+      placeholder: t('cantar.typePh'),
+      'aria-label': t('cantar.type')
+    });
+    const singBtn = el('button', { class: 'btn btn--ghost cantar__sing', type: 'button' }, t('cantar.singText'));
     const recBtn = el('button', { class: 'btn btn--rec', disabled: true }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar'));
     const timer = el('span', { class: 'pill' }, '00:00');
     const status = el('p', { class: 'muted' }, t('cantar.status'));
@@ -163,7 +175,9 @@ export default {
     const mixInput = el('input', { class: 'range', type: 'range', min: '0', max: '100', value: '70', 'aria-label': 'Mix da voz' });
     const backingSel = el('select', { class: 'input input--select cantar__backing-sel', 'aria-label': 'Acompanhamento' });
     const pitchSel = el('select', { class: 'input input--select cantar__pitch cantar__pitch-sel', 'aria-label': 'Pitch inicial' });
+    const camVideo = el('video', { class: 'cantar__cam', autoplay: true, muted: true, playsinline: true, hidden: true });
     const catStage = el('div', { class: 'cantar__cat' });
+    const catWrap = el('div', { class: 'cantar__stage-art' }, catStage, camVideo);
     const ottersRow = el('div', { class: 'cantar__otters' });
     const meterFill = el('div', { class: 'cantar__meter-fill' });
     const meter = el('div', { class: 'cantar__meter', title: 'Volume da voz' }, meterFill);
@@ -440,8 +454,9 @@ export default {
       Tone.connect(src, micNode);
       Tone.connect(micNode, voiceFx.input);
       recBtn.disabled = false;
-      micBtn.textContent = t('cantar.micLive');
-      micBtn.disabled = true;
+      micBtn.textContent = t('cantar.micOff');
+      micBtn.disabled = false;
+      micBtn.setAttribute('aria-pressed', 'true');
       status.textContent = t('cantar.statusLive');
       applyFx();
       if (sync && Tone.Transport.state !== 'started') Tone.Transport.start('+0.05');
@@ -497,6 +512,111 @@ export default {
         }
       }
       raf = requestAnimationFrame(tickMouth);
+    }
+
+    function stopMic() {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      if (stream) {
+        stream.getTracks().forEach((t) => t.stop());
+        stream = null;
+      }
+      micPromise = null;
+      if (micNode) {
+        try {
+          micNode.dispose();
+        } catch {}
+        micNode = null;
+      }
+      recBtn.disabled = true;
+      micBtn.textContent = t('cantar.micOn');
+      micBtn.setAttribute('aria-pressed', 'false');
+      status.textContent = t('cantar.status');
+    }
+
+    async function toggleMic() {
+      if (stream) {
+        stopMic();
+        return;
+      }
+      await ensureMic();
+    }
+
+    function stopCam() {
+      if (camStream) {
+        camStream.getTracks().forEach((t) => t.stop());
+        camStream = null;
+      }
+      camVideo.srcObject = null;
+      camVideo.hidden = true;
+      camBtn.textContent = t('cantar.camOn');
+      camBtn.setAttribute('aria-pressed', 'false');
+    }
+
+    async function toggleCam() {
+      if (camStream) {
+        stopCam();
+        return;
+      }
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        if (!alive) {
+          camStream.getTracks().forEach((t) => t.stop());
+          camStream = null;
+          return;
+        }
+        camVideo.srcObject = camStream;
+        camVideo.hidden = false;
+        camBtn.textContent = t('cantar.camOff');
+        camBtn.setAttribute('aria-pressed', 'true');
+      } catch (err) {
+        camStream = null;
+        toast(err.message || 'Sem câmera.', 'error');
+      }
+    }
+
+    async function singTyped(text) {
+      const raw = String(text == null ? lyricInput.value : text).trim();
+      if (!raw) {
+        toast('Escreva uma frase para o gato cantar.', 'info');
+        return false;
+      }
+      await ensureAudio();
+      if (!alive || !Tone || !voiceFx) return false;
+      if (!singer) {
+        singer = new Tone.PolySynth(Tone.FMSynth, {
+          harmonicity: 3.05,
+          modulationIndex: 8.5,
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.03, decay: 0.14, sustain: 0.38, release: 0.2 },
+          volume: -12
+        });
+        singer.connect(voiceFx.input);
+      }
+      try {
+        voiceFx.setGate(true, 1);
+      } catch {}
+      const letters = [...raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()].filter((c) => /[a-z]/.test(c));
+      if (!letters.length) return false;
+      const now = Tone.now() + 0.05;
+      letters.slice(0, 40).forEach((ch, i) => {
+        const deg = SCALE[ch.charCodeAt(0) % SCALE.length];
+        const midi = 62 + deg + (i % 3 === 2 ? 12 : 0);
+        const hz = 440 * Math.pow(2, (midi - 69) / 12);
+        try {
+          singer.triggerAttackRelease(hz, 0.2, now + i * 0.15, 0.7);
+        } catch {}
+      });
+      const total = Math.min(40, letters.length) * 150 + 180;
+      mouthOpen = true;
+      paintCat();
+      clearTimeout(singTimer);
+      singTimer = setTimeout(() => {
+        if (!alive) return;
+        mouthOpen = false;
+        paintCat();
+      }, total);
+      return true;
     }
 
     function stopPitchDrone() {
@@ -975,7 +1095,15 @@ export default {
       }
     });
 
-    micBtn.addEventListener('click', () => ensureMic().catch((err) => toast(err.message || 'Sem microfone.', 'error')));
+    micBtn.addEventListener('click', () => toggleMic().catch((err) => toast(err.message || 'Sem microfone.', 'error')));
+    camBtn.addEventListener('click', () => toggleCam().catch((err) => toast(err.message || 'Sem câmera.', 'error')));
+    singBtn.addEventListener('click', () => singTyped().catch((err) => toast(err.message || 'Não deu para cantar.', 'error')));
+    lyricInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        singTyped().catch((err) => toast(err.message || 'Não deu para cantar.', 'error'));
+      }
+    });
     autoBtn.addEventListener('click', () => {
       autotune = !autotune;
       autoBtn.textContent = t('cantar.auto', { on: autotune ? t('cantar.yes') : t('cantar.no') });
@@ -1021,7 +1149,7 @@ export default {
           { class: 'panel cantar__stage' },
           el('div', { class: 'panel__head' }, el('h2', {}, t('cantar.stage')), el('span', { class: 'pill' }, profile.cat.name)),
           meter,
-          catStage,
+          catWrap,
           el('h3', { class: 'subhead' }, t('cantar.overvoice', { name: profile.otter.name })),
           ottersRow
         ),
@@ -1029,7 +1157,13 @@ export default {
           'section',
           { class: 'panel cantar__desk' },
           el('label', { class: 'field' }, el('span', { class: 'field__label' }, t('cantar.name')), nameInput),
-          el('div', { class: 'toolbar' }, micBtn, recBtn, timer),
+          el('div', { class: 'toolbar' }, micBtn, camBtn, recBtn, timer),
+          el(
+            'label',
+            { class: 'field' },
+            el('span', { class: 'field__label' }, t('cantar.type')),
+            el('div', { class: 'cantar__type-row' }, lyricInput, singBtn)
+          ),
           status,
           el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('cantar.fx')), fxRow, fxCaption, autoBtn),
           el(
@@ -1077,6 +1211,8 @@ export default {
         otters: otterClips.filter(Boolean).length,
         otterSolo,
         mic: Boolean(stream),
+        cam: Boolean(camStream),
+        lyrics: lyricInput.value,
         graph: currentGraph(),
         otterLoops: otterClips.map((c, i) => ({
           hasClip: Boolean(c),
@@ -1129,7 +1265,10 @@ export default {
       soloOtter,
       resetOtter,
       openOtterDeck: () => renderOtters(),
-      clearOtter
+      clearOtter,
+      singText: (text) => singTyped(text),
+      toggleCam,
+      toggleMic
     };
 
     status.textContent = t('cantar.status');
@@ -1144,6 +1283,14 @@ export default {
         cancelAnimationFrame(raf);
         cancelAnimationFrame(otterAnimRaf);
         clearInterval(recTimer);
+        clearTimeout(singTimer);
+        stopCam();
+        if (singer) {
+          try {
+            singer.dispose();
+          } catch {}
+          singer = null;
+        }
         stopBacking();
         stopPitchDrone();
         if (otterRecSession) otterRecSession.stop();

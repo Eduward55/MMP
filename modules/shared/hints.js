@@ -31,7 +31,7 @@ const PT = {
   conexoes: `Conexões — como mexer
 • Encontre 4 grupos de 4 palavras que combinam.
 • O 4º clique envia sozinho — não tem botão Enviar.
-• Temos vidas (corações). Um palpite errado treme e desmarca as 4. Fica tranquila.
+• Você tem vidas (corações). Um palpite errado treme e desmarca as 4. Fica tranquila.
 • Dica ilumina duas palavras do grupo mais fácil que resta.
 • Embaralhar só muda a ordem.`,
   cattyping: `Cat Typing — como mexer
@@ -40,6 +40,8 @@ const PT = {
 • Tab ou Esc pausa.
 • Palavras vêm com 3 a 7 letras, misturadas.`,
   cantar: `Cantar — como mexer
+• Ligar microfone e Ligar câmera são botões separados: um não liga o outro.
+• Escreva um texto e aperte Cantar texto — o gato canta essa frase (os chips de voz continuam valendo).
 • Clique em Ligar microfone (ou num chip) e cante. O gato abre a boca no volume.
 • Cada chip muda a voz de verdade: Agudo/Grave o tom, Alvinhos (esquilos), Transformers (robô metálico), Eco, Caverna…
 • Nota inicial: um pitchzinho (Dó, Ré, Mi…) para você afinar. Tocar nota liga/desliga.
@@ -102,6 +104,8 @@ const EN = {
 • Tab or Esc pauses.
 • Words are 3 to 7 letters, mixed.`,
   cantar: `Sing — how to play
+• Turn mic on and Turn camera on are separate — one does not force the other.
+• Type a line and press Sing text; the cat sings it (voice chips still apply).
 • Click Turn mic on (or a chip) and sing. The cat opens its mouth with the volume.
 • Each chip really changes the voice: High/Low pitch, Chipmunks, Transformers (metallic robot), Echo, Cave…
 • Starting pitch: a little drone (C, D, E…) so you can tune. Playing the note toggles it.
