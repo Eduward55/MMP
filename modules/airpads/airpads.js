@@ -124,12 +124,7 @@ export default {
     const fsCam = el('button', { class: 'btn btn--ghost airx__fs-cam', type: 'button', hidden: true }, 'Desligar câmera');
     const fsHint = el('span', { class: 'airx__fs-hint' }, 'Esc também sai.');
     const fsBar = el('div', { class: 'airx__fsbar', hidden: true, 'aria-label': 'Controles da tela cheia' }, fsBack, fsExit, fsCam, fsHint);
-    const rest = el(
-      'div',
-      { class: 'air-rest', title: 'Neutro — sem som. Junte as mãos aqui para palmas.' },
-      el('span', { class: 'air-rest__hole' }),
-      el('span', { class: 'air-rest__label' }, 'neutro')
-    );
+    const rest = el('div', { class: 'air-rest', title: 'Junte as mãos aqui para palmas.' });
     const arena = el('div', { class: 'airx__arena' }, video, ...circles, rest, canvas, ...huds, maestro, fsBar);
     arena.style.setProperty('--air-deadzone', String(DEADZONE));
     rest.style.setProperty('--air-deadzone', String(DEADZONE));
@@ -181,7 +176,7 @@ export default {
       c.style.setProperty('--air-deadzone', String(DEADZONE));
       c.style.setProperty('--pie', `conic-gradient(from -90deg, ${pie})`);
       const slices = labels.map((_, k) => `<span class="air-slice" style="--i:${k};--n:${n}"></span>`).join('');
-      c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span><span class="air-circle__hole" title="Neutro — sem som"></span><span class="air-circle__note">${lastLabel[i] || ''}</span><span class="air-bead" aria-hidden="true"></span><span class="air-circle__name">${inst.name}</span>`;
+      c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span><span class="air-circle__hole" title="Silêncio — sem som"></span><span class="air-circle__note">${lastLabel[i] || ''}</span><span class="air-bead" aria-hidden="true"></span><span class="air-circle__name">${inst.name}</span>`;
     }
 
     function renderHud(i) {
@@ -400,11 +395,11 @@ export default {
       if (wasInside && continuous && engines && engines[i] && engines[i].release) engines[i].release();
       if (wasInside && continuous) theremin[i] = null;
       if (wasInside && continuous) log.noteOff(`theremin-${i}`);
-      lastLabel[i] = 'neutro';
+      lastLabel[i] = '';
       const noteEl = circles[i].querySelector('.air-circle__note');
       const hudEl = huds[i].querySelector('.air-hud__note');
-      if (noteEl) noteEl.textContent = 'neutro';
-      if (hudEl) hudEl.textContent = 'neutro';
+      if (noteEl) noteEl.textContent = '';
+      if (hudEl) hudEl.textContent = 'silêncio';
     }
 
     function playClap(x, y) {

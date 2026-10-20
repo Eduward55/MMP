@@ -132,8 +132,11 @@
     const ap = window.__mmpAirPads;
     ok('Air Pads: 2 círculos + HUD + gato maestro', $$('.air-circle').length === 2 && $$('.air-hud').length === 2 && $('.air-maestro svg.creature--cat'));
     ok(
-      'Air Pads: furo em cada disco e bolinha neutra no meio',
-      $$('.air-circle__hole').length === 2 && $('.air-rest') && /neutro/i.test($('.air-rest').textContent),
+      'Air Pads: furo em cada disco, sem texto neutro',
+      $$('.air-circle__hole').length === 2 &&
+        $('.air-rest') &&
+        !/neutro/i.test(($('.airx') && $('.airx').textContent) || '') &&
+        !$('.air-rest__label'),
       $('.air-rest') && $('.air-rest').textContent
     );
     {

@@ -136,13 +136,46 @@ export function createInstrument(Tone, id, out) {
     return { play: (m, t) => s.triggerAttackRelease(midiHz(m), '4n', t), dispose: () => s.dispose() };
   }
   if (id === 'harpa') {
-    const s = new Tone.PluckSynth({
-      attackNoise: 0.6,
-      dampening: 3200,
-      resonance: 0.85
-    }).connect(out);
-    s.volume.value = -8;
-    return { play: (m, t) => s.triggerAttack(midiHz(m), t), dispose: () => s.dispose() };
+    const room = new Tone.FeedbackDelay(0.18, 0.28).connect(out);
+    room.wet.value = 0.22;
+    const air = new Tone.Filter(180, 'highpass').connect(room);
+    const body = new Tone.PolySynth(Tone.Synth, {
+      maxPolyphony: 8,
+      oscillator: { type: 'triangle' },
+      envelope: { attack: 0.002, decay: 2.8, sustain: 0.04, release: 3.1 },
+      volume: -18
+    }).connect(air);
+    const partials = new Tone.PolySynth(Tone.FMSynth, {
+      maxPolyphony: 10,
+      harmonicity: 2.015,
+      modulationIndex: 1.35,
+      oscillator: { type: 'sine' },
+      modulation: { type: 'sine' },
+      envelope: { attack: 0.001, decay: 2.2, sustain: 0, release: 2.6 },
+      modulationEnvelope: { attack: 0.001, decay: 0.45, sustain: 0, release: 0.5 },
+      volume: -22
+    }).connect(air);
+    const pluck = new Tone.PluckSynth({
+      attackNoise: 0.28,
+      dampening: 2100,
+      resonance: 0.975
+    }).connect(air);
+    pluck.volume.value = -9;
+    return {
+      play(m, t) {
+        const hz = midiHz(m);
+        const when = t;
+        try {
+          pluck.triggerAttack(hz, when);
+          body.triggerAttackRelease(hz, 2.8, when, 0.62);
+          partials.triggerAttackRelease(hz * 2.003, 2.1, when, 0.2);
+          partials.triggerAttackRelease(hz * 3.011, 1.4, when, 0.08);
+        } catch {}
+      },
+      dispose() {
+        [pluck, body, partials, air, room].forEach((n) => n.dispose());
+      }
+    };
   }
   if (id === 'flauta') {
     const s = new Tone.Synth({

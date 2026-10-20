@@ -135,16 +135,7 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, #fff 22%, #111);
 }
 .air-rest__label {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #c8c8cc;
-  text-shadow: 0 1px 2px #000;
-  pointer-events: none;
+  display: none;
 }
 .air-rest.is-inside .air-rest__hole {
   box-shadow: 0 0 0 3px color-mix(in srgb, #fff 40%, #111);
