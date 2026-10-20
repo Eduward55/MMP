@@ -18,7 +18,7 @@ export { SCALES, SCALE_BY_ID, ROOTS, midiName } from '../shared/instruments.js';
 
 export const DRUM_ZONES = ['Chimbal', 'Caixa', 'Bumbo'];
 
-/** Miolo preto do pad (e da bolinha central): sem som. rx/ry ∈ [-1, 1]. */
+/** Furo central do pad (anel = círculo menos este raio). rx/ry ∈ [-1, 1]; 0.3 = 30% do raio. */
 export const DEADZONE = 0.3;
 export function inDeadzone(rx, ry, r = DEADZONE) {
   return Math.hypot(Number(rx) || 0, Number(ry) || 0) < r;

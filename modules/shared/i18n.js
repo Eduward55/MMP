@@ -41,7 +41,7 @@ const DICT = {
     'theme.open': 'Tema: {name}. Abrir opções',
 
     'mod.airpads.title': 'Air Pads',
-    'mod.airpads.desc': 'Dois círculos no ar, um por mão. O miolo preto é silêncio; junte as mãos no meio para palmas.',
+    'mod.airpads.desc': 'Dois círculos no ar, um por mão. O furo do centro é silêncio; junte as mãos no meio para palmas.',
     'mod.beatcats.title': 'Beat Cats',
     'mod.beatcats.desc': 'Beatbox em grupo: vista os gatos com acessórios e cada um entra cantando no loop.',
     'mod.studio.title': 'Studio',
@@ -389,7 +389,7 @@ const DICT = {
     'theme.open': 'Theme: {name}. Open options',
 
     'mod.airpads.title': 'Air Pads',
-    'mod.airpads.desc': 'Two circles in the air, one per hand. The black center is silent; join your hands in the middle to clap.',
+    'mod.airpads.desc': 'Two circles in the air, one per hand. The hole in the center is silent; join your hands in the middle to clap.',
     'mod.beatcats.title': 'Beat Cats',
     'mod.beatcats.desc': 'Group beatbox: dress the cats with accessories and each one sings in the loop.',
     'mod.studio.title': 'Studio',

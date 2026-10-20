@@ -45,7 +45,7 @@ export default {
   title: 'Air Pads',
   icon: 'airpads',
   accent: '#9b5cff',
-  desc: 'Dois círculos no ar, um por mão. O miolo preto é silêncio; junte as mãos no meio para palmas.',
+  desc: 'Dois círculos no ar, um por mão. O furo do centro é silêncio; junte as mãos no meio para palmas.',
   async mount(root, { params }) {
     const config = normalize(await kv.get('airpads').catch(() => null));
     const profile = getProfile();
@@ -92,7 +92,11 @@ export default {
     const video = el('video', { class: 'airx__video', autoplay: true, muted: true, playsinline: true });
     const canvas = el('canvas', { class: 'airx__canvas' });
     const ctx = canvas.getContext('2d');
-    const circles = [0, 1].map((i) => el('div', { class: `air-circle air-circle--${i}`, 'data-circle': String(i) }));
+    const circles = [0, 1].map((i) => {
+      const n = el('div', { class: `air-circle air-circle--${i}`, 'data-circle': String(i) });
+      n.style.setProperty('--air-deadzone', String(DEADZONE));
+      return n;
+    });
     const huds = [0, 1].map((i) => el('div', { class: `air-hud air-hud--${i}` }));
     const bubble = el('div', { class: 'air-maestro__bubble' }, 'Prontos?');
     const maestroArt = el('div', {
@@ -127,12 +131,14 @@ export default {
       el('span', { class: 'air-rest__label' }, 'neutro')
     );
     const arena = el('div', { class: 'airx__arena' }, video, ...circles, rest, canvas, ...huds, maestro, fsBar);
+    arena.style.setProperty('--air-deadzone', String(DEADZONE));
+    rest.style.setProperty('--air-deadzone', String(DEADZONE));
 
     const camBtn = el('button', { class: 'btn btn--primary', type: 'button', 'aria-pressed': 'false' }, 'Ativar câmera');
     const demoBtn = el('button', { class: 'btn btn--ghost', 'aria-pressed': 'false' }, 'Simular dedos: Não');
     const recBtn = el('button', { class: 'btn btn--rec', 'aria-pressed': 'false' }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar: Não'));
     const timer = el('span', { class: 'pill' }, '00:00');
-    const status = el('p', { class: 'muted airx__status' }, 'O miolo preto é silêncio. Junte as mãos no meio para palmas. Mouse ou A / L sem câmera.');
+    const status = el('p', { class: 'muted airx__status' }, 'O furo no centro de cada disco é silêncio. Junte as mãos no meio para palmas. Mouse ou A / L sem câmera.');
     const distHint = el('p', { class: 'airx__dist hint', hidden: true }, '');
     const fsBtn = el('button', { class: 'btn btn--ghost', 'aria-pressed': 'false' }, 'Tela cheia');
 
@@ -172,9 +178,10 @@ export default {
           return `${fill} ${a}deg ${b}deg`;
         })
         .join(',');
+      c.style.setProperty('--air-deadzone', String(DEADZONE));
       c.style.setProperty('--pie', `conic-gradient(from -90deg, ${pie})`);
       const slices = labels.map((_, k) => `<span class="air-slice" style="--i:${k};--n:${n}"></span>`).join('');
-      c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span><span class="air-circle__hole" title="Neutro"></span><span class="air-circle__note">${lastLabel[i] || ''}</span><span class="air-bead" aria-hidden="true"></span><span class="air-circle__name">${inst.name}</span>`;
+      c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span><span class="air-circle__hole" title="Neutro — sem som"></span><span class="air-circle__note">${lastLabel[i] || ''}</span><span class="air-bead" aria-hidden="true"></span><span class="air-circle__name">${inst.name}</span>`;
     }
 
     function renderHud(i) {
@@ -363,6 +370,15 @@ export default {
       };
     }
 
+    function syncRestToHole() {
+      const b = circles[0].getBoundingClientRect();
+      const holeD = Math.min(b.width, b.height) * DEADZONE;
+      if (holeD > 2) {
+        rest.style.width = `${holeD}px`;
+        rest.style.height = `${holeD}px`;
+      }
+    }
+
     function restGeom() {
       const a = arena.getBoundingClientRect();
       const b = rest.getBoundingClientRect();
@@ -498,6 +514,7 @@ export default {
     }
 
     function step(now) {
+      syncRestToHole();
       const geoms = [geom(0), geom(1)];
       const rg = restGeom();
       if (!rvfc) runDetect(now);
@@ -684,7 +701,7 @@ export default {
       if (!on) {
         distHint.textContent = '';
         distHint.classList.remove('is-warn');
-        status.textContent = 'O miolo preto é silêncio. Junte as mãos no meio para palmas. Mouse ou A / L.';
+        status.textContent = 'O furo no centro de cada disco é silêncio. Junte as mãos no meio para palmas. Mouse ou A / L.';
       }
       syncFsChrome();
     }

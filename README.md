@@ -2,15 +2,28 @@
 
 App desktop musical, fofo e **100% offline**, feito com **Electron + HTML/JS/CSS puro** (sem frameworks de UI, sem bundler). Tema padrão **Noite** (fundo `#0f0f12`, bordas zinco, acento azul). O ícone de paleta no Hub e na barra de cima abre as paletas (Noite, Oceano, Dia, Floresta, Creme, Rosa, Menta, Uva, Dourado, Pôr do sol, Praia). As cores ficam em `assets/css/theme.css`. A gata **Pirrinha** e a lontra **Manhoso** aparecem em todos os módulos.
 
-## Como jogar
+## Como jogar — só dois arquivos para clicar
 
-No Linux (Lenovo), **um comando só**:
+1. **No Linux (Lenovo):** clique em `entrega/juntar.sh`  
+   **No Windows (para juntar os pedaços):** clique em `entrega/juntar.bat`
+
+   Isso monta `MyMusicPlace-Windows.zip` (~118 MB). Extraia a pasta inteira.
+
+2. **No Windows, depois de extrair:** clique em **My Music Place.exe** (ícone do gato Pirrinha).
+
+Só esses dois. Sem navegador, sem endereço de servidor.
+
+Atualizar o Lenovo se o jogo já está clonado:
+
+```bash
+cd ~/MMP && git pull && cd entrega && bash juntar.sh
+```
+
+Primeira vez (clone novo):
 
 ```bash
 rm -rf ~/MMP && git clone https://github.com/Eduward55/MMP.git ~/MMP && cd ~/MMP/entrega && bash juntar.sh
 ```
-
-Isso clona o jogo e junta os pedaços do zip do Windows (~118 MB depois de juntar). Extraia `MyMusicPlace-Windows.zip` (a pasta inteira) e envie para quem for jogar no Windows; lá, abra **My Music Place.exe**. Você está no Linux: o `.exe` é o pacote para mandar a outras pessoas.
 
 ## O que tem
 
@@ -19,7 +32,7 @@ Isso clona o jogo e junta os pedaços do zip do Windows (~118 MB depois de junta
 - **Galeria** — lista áudios, vídeos, beats e projetos do Studio, com filtro, busca, ordenação e ações de **abrir, renomear, exportar e apagar**. Itens que têm notas (gravações dos módulos, beats, projetos) ganham o botão **No Studio**.
 - **Beat Cats** — palco dos **8 gatos** em cima (grade 2×4) + a lontra; tocar/BPM no meio; **acessórios sonoros embaixo** em grelha larga. Arraste um dos **28** acessórios para um gato: ele entra no loop, canta e dança. **Limpar todos os beats** silencia a linha. A lontra faz um *splash* especial (tecla O). Grava só áudio ou áudio + animação (vídeo webm) direto na Galeria.
 - **Studio** — edita as notas tocadas nos módulos: **piano roll** e **step sequencer**. Projeto novo nasce como **Projeto 1** (sem data no nome). Dicas na barra de cima. **Exportar WAV** / **WebM**; **Salvar** guarda na Galeria.
-- **Air Pads** — duas mãos, dois círculos em fatias (vinil). O **miolo preto** (e a bolinha no meio do palco) é **neutro**: não faz barulho. Juntar as mãos no meio faz **palmas**. Instrumentos: piano, bateria, synth, baixo, theremin, bloco, sinos, harpa e flauta. A bolinha e a nota **seguem o mouse/dedo**. **Tela cheia** amplia o palco. Sem câmera: mouse, teclas **A** e **L**, ou **Simular dedos**.
+- **Air Pads** — duas mãos, dois discos em fatias (vinil em **anel**: círculo menos o furo do centro). O **furo** (e a bolinha no meio do palco) é **neutro**: não faz barulho. Juntar as mãos no meio faz **palmas**. Instrumentos: piano, bateria, synth, baixo, theremin, bloco, sinos, harpa e flauta. A bolinha e a nota **seguem o mouse/dedo**. **Tela cheia** amplia o palco. Sem câmera: mouse, teclas **A** e **L**, ou **Simular dedos**.
 - **Termo** — palavras de 5 letras mais cotidianas. **Cada vez que você abre o jogo começa uma partida nova** (não reabre puzzle já resolvido). Clique numa casa, **espaço** pula para a próxima, Backspace apaga a casa atual. Histórico só com **data** (sem hora).
 - **Conexões** — jogo de 16 palavras em **4 grupos de 4**, no espírito do Connections. O tabuleiro é gerado na hora a partir de **400+ categorias** reais (`data/conexoes/categories.json`: psicologia, arte, história, música e gerais, 8 a 12 palavras cada). O gerador escolhe 4 categorias **sem palavras ambíguas** (uma palavra não pode pertencer a duas das quatro) e pega 4 palavras de cada; isso dá **centenas de milhões** de combinações. O **4º clique envia sozinho**. Acertou, o grupo revela a categoria e a cor; **4 erros (corações) e perde**. Tem **embaralhar**, **dica**, **histórico só com data** e **recorde local**.
 - **Cat Typing** — Pirrinha e Manhoso **dentro da nave**, sem vidro na frente. Vidas em coração. Asteroides com crateras e **vários bosses** (dragão, lula, disco, cristal, baleia). Customiza a nave no próprio jogo. **Tab** ou **Esc** pausa. Lista com 5.000+ palavras reais.

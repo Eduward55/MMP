@@ -96,6 +96,7 @@
       "icon": "build/icon.png",
       "artifactName": "MyMusicPlace-${version}-mac-${arch}.${ext}"
     },
+    "afterPack": "./scripts/afterpack-win-icon.cjs",
     "win": {
       "icon": "build/icon.ico",
       "signAndEditExecutable": false,

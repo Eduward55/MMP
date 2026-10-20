@@ -132,10 +132,40 @@
     const ap = window.__mmpAirPads;
     ok('Air Pads: 2 círculos + HUD + gato maestro', $$('.air-circle').length === 2 && $$('.air-hud').length === 2 && $('.air-maestro svg.creature--cat'));
     ok(
-      'Air Pads: miolo preto e bolinha neutra no meio',
+      'Air Pads: furo em cada disco e bolinha neutra no meio',
       $$('.air-circle__hole').length === 2 && $('.air-rest') && /neutro/i.test($('.air-rest').textContent),
       $('.air-rest') && $('.air-rest').textContent
     );
+    {
+      const pad = $('.air-circle');
+      const hole = $('.air-circle__hole');
+      const slices = $('.air-circle__slices');
+      const pr = pad && pad.getBoundingClientRect();
+      const hr = hole && hole.getBoundingClientRect();
+      const padR = pr ? Math.min(pr.width, pr.height) / 2 : 0;
+      const holeR = hr ? Math.min(hr.width, hr.height) / 2 : 0;
+      const dx = pr && hr ? hr.left + hr.width / 2 - (pr.left + pr.width / 2) : 99;
+      const dy = pr && hr ? hr.top + hr.height / 2 - (pr.top + pr.height / 2) : 99;
+      const dz = ap && typeof ap.state === 'function' ? ap.state().deadzone : 0.3;
+      const mask = slices ? getComputedStyle(slices).webkitMaskImage || getComputedStyle(slices).maskImage : '';
+      ok(
+        'Air Pads: furo = DEADZONE e concêntrico (anel)',
+        padR > 20 &&
+          Math.abs(holeR / padR - dz) < 0.03 &&
+          Math.abs(dx) < 2.5 &&
+          Math.abs(dy) < 2.5 &&
+          /radial/i.test(mask || ''),
+        JSON.stringify({
+          holeR: Math.round(holeR * 10) / 10,
+          padR: Math.round(padR * 10) / 10,
+          ratio: padR ? Math.round((holeR / padR) * 1000) / 1000 : 0,
+          dz,
+          dx: Math.round(dx * 10) / 10,
+          dy: Math.round(dy * 10) / 10,
+          mask: String(mask).slice(0, 80)
+        })
+      );
+    }
     ok('Air Pads: modelos extra no seletor (bloco, sinos, harpa, flauta)', $$('.airx__pick .chip').length >= 9, String($$('.airx__pick .chip').length));
     ok('Air Pads: círculos em fatias com as notas', $$('.air-slice').length >= 6, String($$('.air-slice').length));
     ok('Air Pads: HUD mostra os instrumentos', $('.air-hud--0').textContent.includes('Piano') && $('.air-hud--1').textContent.includes('Bateria'), $$('.air-hud').map((h) => h.textContent).join(' | '));
@@ -220,7 +250,7 @@
     ap.tap(0, 0, 0);
     await sleep(120);
     ok(
-      'Air Pads: miolo preto é neutro (sem som)',
+      'Air Pads: furo central é neutro (sem som)',
       ap.state().hits[0] === hitsBeforeHole && ap.state().neutral && ap.state().neutral[0],
       JSON.stringify(ap.state())
     );

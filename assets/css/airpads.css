@@ -52,8 +52,11 @@
   z-index: 4;
 }
 
+/* Anel = círculo menos o furo. --air-deadzone é o raio do furo / raio do pad (DEADZONE no JS, 0.3). */
 .air-circle {
   --c: var(--accent);
+  --air-deadzone: 0.3;
+  --hole-d: calc(var(--air-deadzone) * 100%);
   position: absolute;
   top: 56%;
   width: min(34%, 62cqh, 60%);
@@ -67,12 +70,10 @@
   gap: 0;
   z-index: 2;
   color: var(--text);
-  background:
-    radial-gradient(circle at 50% 50%, transparent 29%, color-mix(in srgb, var(--c) 14%, transparent) 30%),
-    repeating-radial-gradient(circle at 50% 50%, color-mix(in srgb, #fff 6%, transparent) 0 1px, transparent 1px 7px);
-  border: 2px solid color-mix(in srgb, var(--c) 70%, #111);
-  box-shadow: inset 0 0 24px color-mix(in srgb, #000 35%, transparent);
-  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+  background: transparent;
+  border: 0;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 70%, #111);
+  transition: box-shadow 0.18s ease;
   user-select: none;
 }
 .air-circle--0 {
@@ -82,8 +83,9 @@
   left: 75%;
 }
 .air-circle.is-inside {
-  border-color: var(--accent-hover);
-  box-shadow: inset 0 0 24px color-mix(in srgb, #000 28%, transparent), 0 0 18px color-mix(in srgb, var(--c) 28%, transparent);
+  box-shadow:
+    0 0 0 2px var(--accent-hover),
+    0 0 18px color-mix(in srgb, var(--c) 28%, transparent);
 }
 .air-circle.is-hit {
   animation: air-hit 0.36s ease;
@@ -101,21 +103,22 @@
   left: 50%;
   top: 50%;
   z-index: 2;
-  width: 30%;
-  height: 30%;
+  width: var(--hole-d);
+  height: var(--hole-d);
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 34%, #2a2a30 0 18%, #050508 55%, #000 100%);
-  border: 2px solid #111;
-  box-shadow: inset 0 0 8px #000, 0 0 0 2px color-mix(in srgb, #fff 10%, transparent);
+  background: transparent;
+  border: 0;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 55%, #111);
   pointer-events: none;
 }
 .air-rest {
+  --air-deadzone: 0.3;
   position: absolute;
   left: 50%;
-  top: 54%;
+  top: 56%;
   z-index: 3;
-  width: min(11%, 18cqh, 92px);
+  width: min(calc(var(--air-deadzone) * 34%), calc(var(--air-deadzone) * 62cqh), 92px);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   display: flex;
@@ -127,9 +130,9 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #3a3a42 0 14%, #0a0a0c 48%, #000 100%);
-  border: 3px solid #16161a;
-  box-shadow: 0 0 0 2px color-mix(in srgb, #fff 12%, transparent), inset 0 0 10px #000;
+  background: transparent;
+  border: 0;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #fff 22%, #111);
 }
 .air-rest__label {
   position: relative;
@@ -144,7 +147,7 @@
   pointer-events: none;
 }
 .air-rest.is-inside .air-rest__hole {
-  box-shadow: 0 0 0 3px color-mix(in srgb, #fff 22%, transparent), inset 0 0 10px #000;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #fff 40%, #111);
 }
 .air-rest.is-clap .air-rest__hole {
   animation: air-hit 0.28s ease;
@@ -156,7 +159,30 @@
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
-  background: var(--pie);
+  background:
+    var(--pie),
+    repeating-radial-gradient(
+      circle closest-side at 50% 50%,
+      color-mix(in srgb, #fff 7%, transparent) 0 1px,
+      transparent 1px 8px
+    );
+  /* closest-side: 100% = raio do pad. Furo = DEADZONE · raio, concêntrico. */
+  -webkit-mask-image: radial-gradient(
+    circle closest-side at 50% 50%,
+    transparent calc(var(--air-deadzone) * 100%),
+    #000 calc(var(--air-deadzone) * 100%)
+  );
+  mask-image: radial-gradient(
+    circle closest-side at 50% 50%,
+    transparent calc(var(--air-deadzone) * 100%),
+    #000 calc(var(--air-deadzone) * 100%)
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
 }
 .air-slice {
   position: absolute;

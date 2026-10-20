@@ -1,11 +1,16 @@
-My Music Place — Windows
+My Music Place — só dois arquivos para clicar
 
-Como chegar aqui (Linux):
+1) No Linux (Lenovo): clique em juntar.sh
+   No Windows: clique em juntar.bat
 
-rm -rf ~/MMP && git clone https://github.com/Eduward55/MMP.git ~/MMP && cd ~/MMP/entrega && bash juntar.sh
+   Isso junta os pedaços e cria MyMusicPlace-Windows.zip (~118 MB).
+   Extraia a pasta inteira.
 
-1. O comando acima junta os pedaços (~118 MB).
-2. Extraia MyMusicPlace-Windows.zip (a pasta inteira).
-3. No Windows, abra "My Music Place.exe" de dentro da pasta extraída.
+2) No Windows, depois de extrair: clique em "My Music Place.exe"
+   (ícone do gato Pirrinha).
 
-O .exe é para mandar a outras pessoas no Windows.
+Só esses dois. Sem navegador.
+
+Se o jogo já está em ~/MMP:
+
+cd ~/MMP && git pull && cd entrega && bash juntar.sh

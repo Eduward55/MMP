@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=My Music Place
+Comment=App musical offline — Pirrinha
+Exec=bash -c 'cd "$(dirname "$(dirname "$(readlink -f %k)")")" && npm start'
+Icon=icon.png
+Path=
+Terminal=false
+Categories=AudioVideo;Audio;Game;
+StartupNotify=true
