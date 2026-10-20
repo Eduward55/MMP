@@ -30,7 +30,8 @@ const PT = {
 • Temas e tentativas ficam no painel da esquerda. O histórico mostra só a data.`,
   conexoes: `Conexões — como mexer
 • Encontre 4 grupos de 4 palavras que combinam.
-• O 4º clique envia sozinho. 4 erros e o jogo acaba (vidas em coração).
+• O 4º clique envia sozinho — não tem botão Enviar.
+• Temos vidas (corações). Um palpite errado treme e desmarca as 4. Fica tranquila.
 • Dica ilumina duas palavras do grupo mais fácil que resta.
 • Embaralhar só muda a ordem.`,
   cattyping: `Cat Typing — como mexer
@@ -90,7 +91,8 @@ const EN = {
 • Themes and attempts sit on the left. History shows the date only.`,
   conexoes: `Connections — how to play
 • Find 4 groups of 4 words that belong together.
-• The 4th click submits by itself. 4 misses and the game ends (heart lives).
+• The 4th click submits by itself — there is no Submit button.
+• Heart lives. A wrong guess shakes and deselects all 4.
 • Hint lights two words from the easiest remaining group.
 • Shuffle only changes the order.`,
   cattyping: `Cat Typing — how to play

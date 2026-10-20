@@ -956,7 +956,8 @@
     ok('Conexões: gerador sem palavras ambíguas entre as 4 categorias', disjointOk === 24, `${disjointOk}/24`);
     C.newGame();
     let cs = C.state();
-    ok('Conexões: 16 cartas e 4 erros', $$('.cn-tile').length === 16 && $$('.cn-pip').length === 4 && !cs.game.done, `${$$('.cn-tile').length} cartas`);
+    ok('Conexões: 16 cartas e 4 vidas', $$('.cn-tile').length === 16 && $$('.cn-pip').length === 4 && !cs.game.done && /vidas/i.test($('.cn-lives') && $('.cn-lives').textContent || ''), `${$$('.cn-tile').length} cartas`);
+    ok('Conexões: sem botão Enviar', !$$('.cn-actions button').some((b) => /enviar/i.test(b.textContent)), $$('.cn-actions button').map((b) => b.textContent).join(' | '));
     ok('Conexões: gato e lontra no palco', $$('.cn-stage svg.creature--cat').length && $$('.cn-stage svg.creature--otter').length);
     const g0 = cs.game.groups[0];
     g0.words.forEach((w) => C.select(w));
@@ -968,6 +969,25 @@
       cs.game.solved[0] === g0.id && $(`.cn-group[data-color="${g0.color}"]`) && $('.cn-group b').textContent === g0.title && cs.mood === 'yay',
       $('.cn-group') && $('.cn-group').textContent
     );
+    {
+      const leftover = C.state().game.groups.filter((g) => !C.state().game.solved.includes(g.id));
+      const missPick = [leftover[0].words[0], leftover[1].words[0], leftover[2].words[0], leftover[0].words[1]];
+      missPick.forEach((w) => C.select(w));
+      await sleep(80);
+      cs = C.state();
+      ok(
+        'Conexões: erro treme as 4 selecionadas',
+        cs.game.mistakes === 1 && cs.selected.length === 4 && $$('.cn-tile.is-on').length === 4 && $$('.cn-tile.is-shake').length === 4,
+        JSON.stringify({ mistakes: cs.game.mistakes, selected: cs.selected, shake: $$('.cn-tile.is-shake').length })
+      );
+      await sleep(480);
+      cs = C.state();
+      ok(
+        'Conexões: erro desmarca as 4 depois da animação',
+        cs.game.mistakes === 1 && cs.selected.length === 0 && $$('.cn-tile.is-on').length === 0 && !cs.busy,
+        JSON.stringify({ selected: cs.selected, on: $$('.cn-tile.is-on').length, busy: cs.busy })
+      );
+    }
     const cnBefore = $$('.cn-tile').map((t) => t.textContent).join('|');
     let cnAfter = cnBefore;
     for (let i = 0; i < 10 && cnAfter === cnBefore; i++) {
@@ -988,12 +1008,17 @@
     ok('Conexões: vitória e o gato comemora', cs.game.done && cs.game.won && cs.mood === 'win' && $('.cn-stage[data-mood="win"] .cn-heart') && !$('.cn-result').hidden);
     ok('Conexões: recorde local', cs.stats.played === 1 && cs.stats.wins === 1 && cs.stats.streak === 1 && cs.history[0].won, JSON.stringify(cs.stats));
     C.newGame();
-    C.state().game.groups.forEach((g) => C.select(g.words[0]));
-    for (let i = 0; i < 4; i++) C.submit();
+    for (let i = 0; i < 4; i++) {
+      const st = C.state();
+      if (st.game.done) break;
+      C.clear();
+      st.game.groups.forEach((g) => C.select(g.words[0]));
+      await sleep(500);
+    }
     await sleep(400);
     cs = C.state();
     const cnTear = $('.cn-tear');
-    ok('Conexões: 4 erros = derrota e o gato chora', cs.game.done && !cs.game.won && cs.mood === 'lose' && cnTear && getComputedStyle(cnTear).display === 'block' && $$('.cn-group').length === 4);
+    ok('Conexões: 4 vidas perdidas = derrota e o gato chora', cs.game.done && !cs.game.won && cs.mood === 'lose' && cnTear && getComputedStyle(cnTear).display === 'block' && $$('.cn-group').length === 4);
     C.newGame();
     C.state().game.groups[0].words.forEach((w) => C.select(w));
     C.submit();

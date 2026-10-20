@@ -341,7 +341,25 @@
   border-color: var(--accent-hover);
 }
 .cn-tile.is-shake {
-  animation: shake 0.35s ease;
+  animation: cn-miss 0.4s ease;
+}
+@keyframes cn-miss {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-7px) rotate(-1.5deg);
+  }
+  40% {
+    transform: translateX(7px) rotate(1.5deg);
+  }
+  60% {
+    transform: translateX(-5px);
+  }
+  80% {
+    transform: translateX(5px);
+  }
 }
 .cn-tile:disabled {
   cursor: default;

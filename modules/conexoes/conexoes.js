@@ -19,8 +19,10 @@ import {
 } from './engine.js';
 
 const STORE_KEY = 'conexoes';
+const STORE_VERSION = 2;
 const HISTORY_MAX = 16;
 const USED_MAX = 240;
+const MISS_SHAKE_MS = 420;
 const randInt = (n) => {
   const buf = new Uint32Array(1);
   crypto.getRandomValues(buf);
@@ -68,6 +70,27 @@ function gameOk(g, categories) {
   return disjointGroups(g.groups);
 }
 
+function migrateSaved(saved) {
+  const stats = { ...emptyStats(), ...(saved.stats || {}) };
+  let history = Array.isArray(saved.history) ? saved.history.slice(0, HISTORY_MAX) : [];
+  let game = saved.game || null;
+  const used = new Set(Array.isArray(saved.used) ? saved.used : []);
+  if (saved.version !== STORE_VERSION) {
+    history = [];
+    stats.losses = 0;
+    stats.played = Number(stats.wins) || 0;
+    if (stats.played === 0) {
+      stats.streak = 0;
+      stats.best = 0;
+    }
+    if (game && game.done && !game.won) game = null;
+    else if (game && !game.done) {
+      game = { ...game, mistakes: 0 };
+    }
+  }
+  return { stats, history, game, used };
+}
+
 export default {
   id: 'conexoes',
   title: 'Conexões',
@@ -77,13 +100,15 @@ export default {
   hideDock: true,
   async mount(root, { params } = {}) {
     const saved = (await kv.get(STORE_KEY).catch(() => null)) || {};
-    const stats = { ...emptyStats(), ...(saved.stats || {}) };
-    const history = Array.isArray(saved.history) ? saved.history.slice(0, HISTORY_MAX) : [];
-    const used = new Set(Array.isArray(saved.used) ? saved.used : []);
-    let game = saved.game || null;
+    const migrated = migrateSaved(saved);
+    const stats = migrated.stats;
+    const history = migrated.history;
+    const used = migrated.used;
+    let game = migrated.game;
     let selected = new Set();
     let catMood = 'idle';
     let alive = true;
+    let busy = false;
     let data = null;
     const timers = new Set();
     const later = (fn, ms) => {
@@ -96,7 +121,7 @@ export default {
 
     const persist = () =>
       kv
-        .set(STORE_KEY, { version: 1, game, stats, history, used: [...used] })
+        .set(STORE_KEY, { version: STORE_VERSION, game, stats, history, used: [...used] })
         .catch(() => {});
 
     const stage = el('div', { class: 'cn-stage' });
@@ -108,12 +133,11 @@ export default {
     const solvedEl = el('div', { class: 'cn-solved' });
     const grid = el('div', { class: 'cn-grid', role: 'group', 'aria-label': 'Palavras' });
     const actions = el('div', { class: 'cn-actions' });
-    const submitBtn = el('button', { class: 'btn btn--primary', onclick: () => submit() }, t('cn.submit'));
     const shuffleBtn = el('button', { class: 'btn btn--ghost', onclick: () => onShuffle() }, t('cn.shuffle'));
     const hintBtn = el('button', { class: 'btn btn--ghost', onclick: () => onHint() }, t('cn.hint'));
     const clearBtn = el('button', { class: 'btn btn--ghost', onclick: () => onClear() }, t('cn.clear'));
     const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => askNewGame() }, t('cn.new'));
-    actions.append(submitBtn, shuffleBtn, hintBtn, clearBtn, newBtn);
+    actions.append(shuffleBtn, hintBtn, clearBtn, newBtn);
 
     const section = el(
       'section',
@@ -196,7 +220,7 @@ export default {
       selected = new Set();
       setMood('idle');
       const { cat } = names();
-      say(`${cat}: 16 palavras, 4 grupos. Escolha 4 que têm algo em comum!`);
+      say(`${cat}: 16 palavras, 4 grupos. Temos vidas — fica tranquila e escolha 4 que têm algo em comum!`);
       persist();
     }
 
@@ -253,7 +277,7 @@ export default {
     }
 
     function toggle(word) {
-      if (!game || game.done) return;
+      if (!game || game.done || busy) return;
       if (selected.has(word)) selected.delete(word);
       else if (selected.size < GROUP_SIZE) {
         selected.add(word);
@@ -268,8 +292,33 @@ export default {
       renderToolbar();
     }
 
+    function flashMissThenClear() {
+      busy = true;
+      renderGrid();
+      renderToolbar();
+      const shake = () => {
+        grid.querySelectorAll('.cn-tile.is-on').forEach((tile) => {
+          tile.classList.remove('is-shake');
+          void tile.offsetWidth;
+          tile.classList.add('is-shake');
+        });
+      };
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(shake);
+      else shake();
+      later(() => {
+        selected = new Set();
+        busy = false;
+        if (!alive || !game) return;
+        if (game.mistakes >= MAX_MISTAKES && !game.done) finish(false);
+        else {
+          renderGrid();
+          renderToolbar();
+        }
+      }, MISS_SHAKE_MS);
+    }
+
     function submit() {
-      if (!game || game.done) return;
+      if (!game || game.done || busy) return;
       if (selected.size !== GROUP_SIZE) {
         toast(t('cn.needFour'), 'info');
         return;
@@ -291,30 +340,33 @@ export default {
           say(`${otter}: ${group.title}! Faltam ${4 - game.solved.length}. ${cat} está pulando.`);
           later(() => catMood === 'yay' && setMood('idle'), 1400);
         }
+        render();
       } else {
         game.mistakes++;
-        grid.querySelectorAll('.cn-tile.is-on').forEach((t) => {
-          t.classList.remove('is-shake');
-          void t.offsetWidth;
-          t.classList.add('is-shake');
-        });
         if (res.oneAway) toast(t('cn.oneAway'), 'warn');
         else toast(t('cn.noGroup'), 'info');
-        if (game.mistakes >= MAX_MISTAKES) finish(false);
-        else {
+        const left = remainingLives();
+        const { cat } = names();
+        if (left > 0) {
           persist();
-          const left = remainingLives();
           setMood(left <= 1 ? 'worried' : 'oops');
-          const { cat } = names();
-          say(left === 1 ? `${cat}: última vida! Pensa com o bigode.` : `${cat}: hmpf. Ainda restam ${left} erros.`);
+          say(
+            left === 1
+              ? `${cat}: última vida! Fica tranquila, pensa com o bigode.`
+              : `${cat}: temos vidas. Fica tranquila — ainda restam ${left}.`
+          );
           later(() => (catMood === 'oops' || catMood === 'worried') && !game.done && setMood(left <= 1 ? 'worried' : 'idle'), 1200);
+        } else {
+          persist();
+          setMood('oops');
+          say(`${cat}: acabaram as vidas… fica tranquila, a gente tenta de novo.`);
         }
+        flashMissThenClear();
       }
-      render();
     }
 
     function onShuffle() {
-      if (!game || game.done) return;
+      if (!game || game.done || busy) return;
       const rest = game.board.filter((w) => {
         const gi = groupOf(game, w);
         return gi >= 0 && !game.solved.includes(game.groups[gi].id);
@@ -333,7 +385,7 @@ export default {
     }
 
     function onHint() {
-      if (!game || game.done) return;
+      if (!game || game.done || busy) return;
       if (game.hintUsed) {
         toast('A dica desta partida já foi usada.', 'info');
         return;
@@ -351,6 +403,7 @@ export default {
     }
 
     function onClear() {
+      if (busy) return;
       selected = new Set();
       renderGrid();
       renderToolbar();
@@ -378,15 +431,14 @@ export default {
 
     function renderToolbar() {
       toolbar.innerHTML = '';
-      const lives = el('div', { class: 'cn-lives', 'aria-label': t('cn.livesLeft', { n: remainingLives() }) }, el('span', {}, t('cn.errors')));
+      const lives = el('div', { class: 'cn-lives', 'aria-label': t('cn.livesLeft', { n: remainingLives() }) }, el('span', {}, t('cn.lives')));
       for (let i = 0; i < MAX_MISTAKES; i++) {
         lives.append(el('i', { class: `cn-pip ${i >= remainingLives() ? 'is-lost' : ''}`, 'aria-hidden': 'true' }, '♥'));
       }
       toolbar.append(lives, el('span', { class: 'muted' }, game && game.done ? '' : t('cn.picked', { n: selected.size })));
-      submitBtn.disabled = !game || game.done || selected.size !== GROUP_SIZE;
-      shuffleBtn.disabled = !game || game.done;
-      hintBtn.disabled = !game || game.done || game.hintUsed || unsolvedGroups().length === 0;
-      clearBtn.disabled = !game || game.done || selected.size === 0;
+      shuffleBtn.disabled = !game || game.done || busy;
+      hintBtn.disabled = !game || game.done || busy || game.hintUsed || unsolvedGroups().length === 0;
+      clearBtn.disabled = !game || game.done || busy || selected.size === 0;
     }
 
     function renderResult() {
@@ -399,7 +451,11 @@ export default {
           'strong',
           {},
           game.won
-            ? t('cn.winMistakes', { n: game.mistakes, s: game.mistakes === 1 ? '' : 's' })
+            ? t('cn.winLives', {
+                n: game.mistakes,
+                life: game.mistakes === 1 ? t('cn.life1') : t('cn.lifeN'),
+                s: game.mistakes === 1 ? '' : 's'
+              })
             : t('cn.loseGroups', { n: game.solved.length })
         ),
         el('button', { class: 'btn btn--primary btn--sm', onclick: () => askNewGame() }, t('cn.again'))
@@ -541,7 +597,15 @@ export default {
     else {
       setMood(game.done ? (game.won ? 'win' : 'lose') : 'idle', true);
       const { cat } = names();
-      say(game.done ? (game.won ? `${cat}: ainda tô comemorando!` : `${cat}: essa doeu. Nova partida?`) : game.solved.length || game.mistakes ? `${cat}: continuando a sua partida!` : `${cat}: 16 palavras, 4 grupos. Manda ver.`);
+      say(
+        game.done
+          ? game.won
+            ? `${cat}: ainda tô comemorando!`
+            : `${cat}: essa doeu. Nova partida? Fica tranquila.`
+          : game.solved.length || game.mistakes
+            ? `${cat}: continuando a sua partida! Temos vidas — fica tranquila.`
+            : `${cat}: 16 palavras, 4 grupos. Temos vidas. Manda ver.`
+      );
     }
     render();
 
@@ -553,7 +617,7 @@ export default {
         wordsMin: Math.min(...data.categories.map((c) => c.words.length)),
         wordsMax: Math.max(...data.categories.map((c) => c.words.length))
       }),
-      state: () => JSON.parse(JSON.stringify({ game, stats, history, selected: [...selected], mood: catMood })),
+      state: () => JSON.parse(JSON.stringify({ game, stats, history, selected: [...selected], mood: catMood, busy })),
       select: (word) => toggle(word),
       submit,
       shuffle: onShuffle,
@@ -576,8 +640,8 @@ export default {
 
     return {
       async save() {
-        await kv.set(STORE_KEY, { version: 1, game, stats, history, used: [...used] });
-        if (game && !game.done) return `Partida salva: ${game.solved.length}/4 grupos, ${game.mistakes} erro${game.mistakes === 1 ? '' : 's'}.`;
+        await kv.set(STORE_KEY, { version: STORE_VERSION, game, stats, history, used: [...used] });
+        if (game && !game.done) return `Partida salva: ${game.solved.length}/4 grupos, ${remainingLives()} vida${remainingLives() === 1 ? '' : 's'}.`;
         return 'Recorde e histórico do Conexões salvos.';
       },
       unmount() {
