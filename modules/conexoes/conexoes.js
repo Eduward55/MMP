@@ -14,12 +14,12 @@ import {
   shuffle as shuffleList,
   mulberry32,
   disjointGroups,
-  emptyStats,
-  groupOf
+  groupOf,
+  STORE_VERSION,
+  migrateSaved
 } from './engine.js';
 
 const STORE_KEY = 'conexoes';
-const STORE_VERSION = 2;
 const HISTORY_MAX = 16;
 const USED_MAX = 240;
 const MISS_SHAKE_MS = 420;
@@ -70,27 +70,6 @@ function gameOk(g, categories) {
   return disjointGroups(g.groups);
 }
 
-function migrateSaved(saved) {
-  const stats = { ...emptyStats(), ...(saved.stats || {}) };
-  let history = Array.isArray(saved.history) ? saved.history.slice(0, HISTORY_MAX) : [];
-  let game = saved.game || null;
-  const used = new Set(Array.isArray(saved.used) ? saved.used : []);
-  if (saved.version !== STORE_VERSION) {
-    history = [];
-    stats.losses = 0;
-    stats.played = Number(stats.wins) || 0;
-    if (stats.played === 0) {
-      stats.streak = 0;
-      stats.best = 0;
-    }
-    if (game && game.done && !game.won) game = null;
-    else if (game && !game.done) {
-      game = { ...game, mistakes: 0 };
-    }
-  }
-  return { stats, history, game, used };
-}
-
 export default {
   id: 'conexoes',
   title: 'Conexões',
@@ -100,10 +79,10 @@ export default {
   hideDock: true,
   async mount(root, { params } = {}) {
     const saved = (await kv.get(STORE_KEY).catch(() => null)) || {};
-    const migrated = migrateSaved(saved);
+    const migrated = migrateSaved(saved, HISTORY_MAX);
     const stats = migrated.stats;
     const history = migrated.history;
-    const used = migrated.used;
+    const used = new Set(migrated.used);
     let game = migrated.game;
     let selected = new Set();
     let catMood = 'idle';
@@ -123,6 +102,7 @@ export default {
       kv
         .set(STORE_KEY, { version: STORE_VERSION, game, stats, history, used: [...used] })
         .catch(() => {});
+    if (migrated.stale) persist();
 
     const stage = el('div', { class: 'cn-stage' });
     const bubble = el('p', { class: 'cn-bubble', role: 'status', 'aria-live': 'polite' });
@@ -220,7 +200,7 @@ export default {
       selected = new Set();
       setMood('idle');
       const { cat } = names();
-      say(`${cat}: 16 palavras, 4 grupos. Temos vidas — fica tranquila e escolha 4 que têm algo em comum!`);
+      say(`${cat}: 16 palavras, 4 grupos. Você tem vidas — fica tranquila e escolha 4 que têm algo em comum!`);
       persist();
     }
 
@@ -298,9 +278,9 @@ export default {
       renderToolbar();
       const shake = () => {
         grid.querySelectorAll('.cn-tile.is-on').forEach((tile) => {
-          tile.classList.remove('is-shake');
+          tile.classList.remove('is-shake', 'is-miss');
           void tile.offsetWidth;
-          tile.classList.add('is-shake');
+          tile.classList.add('is-shake', 'is-miss');
         });
       };
       if (typeof requestAnimationFrame === 'function') requestAnimationFrame(shake);
@@ -353,7 +333,7 @@ export default {
           say(
             left === 1
               ? `${cat}: última vida! Fica tranquila, pensa com o bigode.`
-              : `${cat}: temos vidas. Fica tranquila — ainda restam ${left}.`
+              : `${cat}: você tem vidas. Fica tranquila — ainda restam ${left}.`
           );
           later(() => (catMood === 'oops' || catMood === 'worried') && !game.done && setMood(left <= 1 ? 'worried' : 'idle'), 1200);
         } else {
@@ -435,7 +415,11 @@ export default {
       for (let i = 0; i < MAX_MISTAKES; i++) {
         lives.append(el('i', { class: `cn-pip ${i >= remainingLives() ? 'is-lost' : ''}`, 'aria-hidden': 'true' }, '♥'));
       }
-      toolbar.append(lives, el('span', { class: 'muted' }, game && game.done ? '' : t('cn.picked', { n: selected.size })));
+      lives.append(el('span', { class: 'cn-lives__calm' }, t('cn.calm')));
+      toolbar.append(
+        lives,
+        el('span', { class: 'muted' }, game && game.done ? '' : `${t('cn.picked', { n: selected.size })} · ${t('cn.autoShort')}`)
+      );
       shuffleBtn.disabled = !game || game.done || busy;
       hintBtn.disabled = !game || game.done || busy || game.hintUsed || unsolvedGroups().length === 0;
       clearBtn.disabled = !game || game.done || busy || selected.size === 0;
@@ -603,8 +587,8 @@ export default {
             ? `${cat}: ainda tô comemorando!`
             : `${cat}: essa doeu. Nova partida? Fica tranquila.`
           : game.solved.length || game.mistakes
-            ? `${cat}: continuando a sua partida! Temos vidas — fica tranquila.`
-            : `${cat}: 16 palavras, 4 grupos. Temos vidas. Manda ver.`
+            ? `${cat}: continuando a sua partida! Você tem vidas — fica tranquila.`
+            : `${cat}: 16 palavras, 4 grupos. Você tem vidas. Manda ver.`
       );
     }
     render();
@@ -617,7 +601,8 @@ export default {
         wordsMin: Math.min(...data.categories.map((c) => c.words.length)),
         wordsMax: Math.max(...data.categories.map((c) => c.words.length))
       }),
-      state: () => JSON.parse(JSON.stringify({ game, stats, history, selected: [...selected], mood: catMood, busy })),
+      state: () =>
+        JSON.parse(JSON.stringify({ game, stats, history, selected: [...selected], mood: catMood, busy, storeVersion: STORE_VERSION })),
       select: (word) => toggle(word),
       submit,
       shuffle: onShuffle,

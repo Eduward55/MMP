@@ -15,6 +15,12 @@ const pre = spawnSync(process.execPath, [path.join(__dirname, 'build-conexoes.mj
 });
 if (pre.status) process.exit(pre.status || 1);
 
+const mig = spawnSync(process.execPath, [path.join(__dirname, 'check-conexoes-migrate.mjs')], {
+  cwd: path.join(__dirname, '..'),
+  stdio: 'inherit'
+});
+if (mig.status) process.exit(mig.status || 1);
+
 const wordsFile = path.join(__dirname, '..', 'data', 'cattyping', 'words.json');
 let wordsJson;
 try {

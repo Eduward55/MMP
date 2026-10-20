@@ -232,6 +232,10 @@
   color: var(--text-muted);
   font-size: 0.88rem;
 }
+.cn-lives__calm {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
 .cn-pip {
   width: 22px;
   height: 20px;
@@ -340,8 +344,14 @@
 .cn-tile.is-hint {
   border-color: var(--accent-hover);
 }
-.cn-tile.is-shake {
-  animation: cn-miss 0.4s ease;
+.cn-tile.is-shake,
+.cn-tile.is-miss {
+  animation: cn-miss 0.42s ease;
+}
+.cn-tile.is-on.is-miss {
+  background: #fecdd3;
+  color: #9f1239;
+  border-color: #e11d48;
 }
 @keyframes cn-miss {
   0%,

@@ -300,3 +300,28 @@ export function validateCategories(categories) {
 export function emptyStats() {
   return { played: 0, wins: 0, losses: 0, streak: 0, best: 0, fewestMistakes: null };
 }
+
+/** Bump to wipe kv/localStorage `conexoes` saves from the old "erros" era (derrota antiga some). */
+export const STORE_VERSION = 3;
+
+export function migrateSaved(saved, historyMax = 16) {
+  const raw = saved && typeof saved === 'object' ? saved : {};
+  const from = Number(raw.version) || 0;
+  const stats = { ...emptyStats(), ...(raw.stats || {}) };
+  let history = Array.isArray(raw.history) ? raw.history.slice(0, historyMax) : [];
+  let game = raw.game || null;
+  const used = Array.isArray(raw.used) ? raw.used.filter((id) => typeof id === 'string') : [];
+  const stale = from !== STORE_VERSION;
+  if (stale) {
+    history = [];
+    stats.losses = 0;
+    stats.played = Number(stats.wins) || 0;
+    if (!stats.played) {
+      stats.streak = 0;
+      stats.best = 0;
+    }
+    if (game && game.done && !game.won) game = null;
+    else if (game && !game.done) game = { ...game, mistakes: 0 };
+  }
+  return { version: STORE_VERSION, stats, history, game, used, stale, from };
+}
