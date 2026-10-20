@@ -131,6 +131,12 @@
     await go('airpads');
     const ap = window.__mmpAirPads;
     ok('Air Pads: 2 círculos + HUD + gato maestro', $$('.air-circle').length === 2 && $$('.air-hud').length === 2 && $('.air-maestro svg.creature--cat'));
+    ok(
+      'Air Pads: miolo preto e bolinha neutra no meio',
+      $$('.air-circle__hole').length === 2 && $('.air-rest') && /neutro/i.test($('.air-rest').textContent),
+      $('.air-rest') && $('.air-rest').textContent
+    );
+    ok('Air Pads: modelos extra no seletor (bloco, sinos, harpa, flauta)', $$('.airx__pick .chip').length >= 9, String($$('.airx__pick .chip').length));
     ok('Air Pads: círculos em fatias com as notas', $$('.air-slice').length >= 6, String($$('.air-slice').length));
     ok('Air Pads: HUD mostra os instrumentos', $('.air-hud--0').textContent.includes('Piano') && $('.air-hud--1').textContent.includes('Bateria'), $$('.air-hud').map((h) => h.textContent).join(' | '));
     {
@@ -210,9 +216,19 @@
     ok('Air Pads: maestro aponta para o círculo tocado', $('.air-maestro').classList.contains('is-right'));
     ap.release();
     await sleep(120);
+    const hitsBeforeHole = ap.state().hits[0];
     ap.tap(0, 0, 0);
     await sleep(120);
-    ok('Air Pads: sair e entrar de novo toca de novo', ap.state().hits[0] === 2);
+    ok(
+      'Air Pads: miolo preto é neutro (sem som)',
+      ap.state().hits[0] === hitsBeforeHole && ap.state().neutral && ap.state().neutral[0],
+      JSON.stringify(ap.state())
+    );
+    ap.release();
+    await sleep(80);
+    ap.tap(0, 0, -0.75);
+    await sleep(120);
+    ok('Air Pads: sair e entrar de novo toca de novo', ap.state().hits[0] === hitsBeforeHole + 1);
     ap.release();
     ap.setInstrument(1, 'theremin');
     await sleep(60);

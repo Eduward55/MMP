@@ -9,14 +9,17 @@ import { themeTokens } from '../shared/theme.js';
 import { el, startAudio, stamp, toast } from '../shared/ui.js';
 import { HAND_CONNECTIONS, loadHandLandmarker, mapHands, resetHandSmooth } from './hands.js';
 import {
+  DEADZONE,
   DRUM_ZONES,
   INSTRUMENTS,
   INSTRUMENT_BY_ID,
   ROOTS,
   SCALES,
   SCALE_BY_ID,
+  createClap,
   createInstrument,
   drumZone,
+  inDeadzone,
   midiName,
   pickNote,
   scaleNotes,
@@ -42,7 +45,7 @@ export default {
   title: 'Air Pads',
   icon: 'airpads',
   accent: '#9b5cff',
-  desc: 'Dois círculos no ar, um por mão: piano, bateria, synth, baixo e theremin.',
+  desc: 'Dois círculos no ar, um por mão. O miolo preto é silêncio; junte as mãos no meio para palmas.',
   async mount(root, { params }) {
     const config = normalize(await kv.get('airpads').catch(() => null));
     const profile = getProfile();
@@ -69,6 +72,9 @@ export default {
     let rec = null;
     let recTimer = 0;
     let pointTimer = 0;
+    let clapEng = null;
+    let clapArmed = true;
+    const lastNeutral = [false, false];
     const keyHeld = new Set();
     const inside = [false, false];
     const pos = [null, null];
@@ -114,13 +120,19 @@ export default {
     const fsCam = el('button', { class: 'btn btn--ghost airx__fs-cam', type: 'button', hidden: true }, 'Desligar câmera');
     const fsHint = el('span', { class: 'airx__fs-hint' }, 'Esc também sai.');
     const fsBar = el('div', { class: 'airx__fsbar', hidden: true, 'aria-label': 'Controles da tela cheia' }, fsBack, fsExit, fsCam, fsHint);
-    const arena = el('div', { class: 'airx__arena' }, video, ...circles, canvas, ...huds, maestro, fsBar);
+    const rest = el(
+      'div',
+      { class: 'air-rest', title: 'Neutro — sem som. Junte as mãos aqui para palmas.' },
+      el('span', { class: 'air-rest__hole' }),
+      el('span', { class: 'air-rest__label' }, 'neutro')
+    );
+    const arena = el('div', { class: 'airx__arena' }, video, ...circles, rest, canvas, ...huds, maestro, fsBar);
 
     const camBtn = el('button', { class: 'btn btn--primary', type: 'button', 'aria-pressed': 'false' }, 'Ativar câmera');
     const demoBtn = el('button', { class: 'btn btn--ghost', 'aria-pressed': 'false' }, 'Simular dedos: Não');
     const recBtn = el('button', { class: 'btn btn--rec', 'aria-pressed': 'false' }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar: Não'));
     const timer = el('span', { class: 'pill' }, '00:00');
-    const status = el('p', { class: 'muted airx__status' }, 'Mouse nos círculos ou A / L. Câmera: tela cheia ajuda.');
+    const status = el('p', { class: 'muted airx__status' }, 'O miolo preto é silêncio. Junte as mãos no meio para palmas. Mouse ou A / L sem câmera.');
     const distHint = el('p', { class: 'airx__dist hint', hidden: true }, '');
     const fsBtn = el('button', { class: 'btn btn--ghost', 'aria-pressed': 'false' }, 'Tela cheia');
 
@@ -162,7 +174,7 @@ export default {
         .join(',');
       c.style.setProperty('--pie', `conic-gradient(from -90deg, ${pie})`);
       const slices = labels.map((_, k) => `<span class="air-slice" style="--i:${k};--n:${n}"></span>`).join('');
-      c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span><span class="air-circle__note">${lastLabel[i] || ''}</span><span class="air-bead" aria-hidden="true"></span><span class="air-circle__name">${inst.name}</span>`;
+      c.innerHTML = `<span class="air-circle__slices" aria-hidden="true">${slices}</span><span class="air-circle__hole" title="Neutro"></span><span class="air-circle__note">${lastLabel[i] || ''}</span><span class="air-bead" aria-hidden="true"></span><span class="air-circle__name">${inst.name}</span>`;
     }
 
     function renderHud(i) {
@@ -207,8 +219,9 @@ export default {
         audioPromise = (async () => {
           Tone = await startAudio();
           if (!alive) return;
-          out = new Tone.Gain(0.9).toDestination();
+          out = new Tone.Gain(0.82).toDestination();
           engines = config.instruments.map((id) => createInstrument(Tone, id, out));
+          clapEng = createClap(Tone, out);
           metroSynth = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.02 }, volume: -22 }).connect(out);
           Tone.Transport.bpm.value = config.bpm;
           repeatLoop = new Tone.Loop((time) => {
@@ -350,6 +363,67 @@ export default {
       };
     }
 
+    function restGeom() {
+      const a = arena.getBoundingClientRect();
+      const b = rest.getBoundingClientRect();
+      return {
+        cx: b.left + b.width / 2 - a.left - arena.clientLeft,
+        cy: b.top + b.height / 2 - a.top - arena.clientTop,
+        r: Math.min(b.width, b.height) / 2
+      };
+    }
+
+    function silenceHand(i) {
+      const wasInside = inside[i];
+      inside[i] = false;
+      lastSlice[i] = -1;
+      pos[i] = null;
+      lastNeutral[i] = true;
+      circles[i].classList.remove('is-inside');
+      const continuous = INSTRUMENT_BY_ID[config.instruments[i]].continuous;
+      if (wasInside && continuous && engines && engines[i] && engines[i].release) engines[i].release();
+      if (wasInside && continuous) theremin[i] = null;
+      if (wasInside && continuous) log.noteOff(`theremin-${i}`);
+      lastLabel[i] = 'neutro';
+      const noteEl = circles[i].querySelector('.air-circle__note');
+      const hudEl = huds[i].querySelector('.air-hud__note');
+      if (noteEl) noteEl.textContent = 'neutro';
+      if (hudEl) hudEl.textContent = 'neutro';
+    }
+
+    function playClap(x, y) {
+      const fire = () => clapEng && clapEng.play();
+      if (clapEng) fire();
+      else ensureAudio().then(fire).catch(() => {});
+      log.note({ note: 39, inst: 'clap', track: 'palmas', trackName: 'Palmas', dur: 0.12, vel: 0.7 });
+      burst(x, y, '#e8e8ea', 'Palmas!');
+      rest.classList.add('is-clap');
+      setTimeout(() => rest.classList.remove('is-clap'), 280);
+      pointAt(0, 'Palmas!');
+    }
+
+    function maybeClap(tips, rg) {
+      const left = tips.filter((t) => t.hand === 0 && t.src !== 'cam-tip');
+      const right = tips.filter((t) => t.hand === 1 && t.src !== 'cam-tip');
+      const inRest = (t) => Math.hypot(t.x - rg.cx, t.y - rg.cy) <= rg.r * 1.35;
+      const restTips = tips.filter((t) => t.src !== 'cam-tip' && inRest(t));
+      let minD = Infinity;
+      left.forEach((a) => right.forEach((b) => {
+        minD = Math.min(minD, Math.hypot(a.x - b.x, a.y - b.y));
+      }));
+      const joined = minD < Math.max(28, rg.r * 1.6) || restTips.length >= 2;
+      if (joined) {
+        if (clapArmed) {
+          clapArmed = false;
+          const ax = restTips[0] ? restTips[0].x : (left[0] && right[0] ? (left[0].x + right[0].x) / 2 : rg.cx);
+          const ay = restTips[0] ? restTips[0].y : (left[0] && right[0] ? (left[0].y + right[0].y) / 2 : rg.cy);
+          playClap(ax, ay);
+        }
+      } else if (minD > rg.r * 2.4 || (!left.length || !right.length)) {
+        clapArmed = true;
+      }
+    }
+
     function collectTips(now, geoms) {
       const tips = [];
       const mouseOn = mouseTip
@@ -425,8 +499,10 @@ export default {
 
     function step(now) {
       const geoms = [geom(0), geom(1)];
+      const rg = restGeom();
       if (!rvfc) runDetect(now);
       const tips = collectTips(now, geoms);
+      maybeClap(tips, rg);
       if (stream && camHands.length) {
         const pts = camHands.flatMap((h) => h.points || [{ x: h.x, y: h.y }]);
         const xs = pts.map((p) => p.x);
@@ -450,10 +526,17 @@ export default {
         const bead = circles[i].querySelector('.air-bead');
         if (tip) {
           const rel = { rx: (tip.x - g.cx) / g.r, ry: (tip.y - g.cy) / g.r };
+          const inRest = Math.hypot(tip.x - rg.cx, tip.y - rg.cy) <= rg.r;
+          const inHole = inDeadzone(rel.rx, rel.ry) || inRest;
           pos[i] = rel;
           circles[i].style.setProperty('--bx', `${tip.x - g.cx}px`);
           circles[i].style.setProperty('--by', `${tip.y - g.cy}px`);
-          if (bead) bead.classList.add('is-on');
+          if (bead) bead.classList.toggle('is-on', !inHole);
+          if (inHole) {
+            silenceHand(i);
+            return;
+          }
+          lastNeutral[i] = false;
           const n = Math.max(1, sliceLabels(i).length);
           const slice = sliceIndex(rel.rx, rel.ry, n);
           if (!inside[i]) {
@@ -485,12 +568,15 @@ export default {
           inside[i] = false;
           lastSlice[i] = -1;
           pos[i] = null;
+          lastNeutral[i] = false;
           circles[i].classList.remove('is-inside');
           if (continuous && engines && engines[i].release) engines[i].release();
           if (continuous) theremin[i] = null;
           if (continuous) log.noteOff(`theremin-${i}`);
         }
       });
+      const restHot = tips.some((t) => t.src !== 'cam-tip' && Math.hypot(t.x - rg.cx, t.y - rg.cy) <= rg.r);
+      rest.classList.toggle('is-inside', restHot);
       draw(now, tips);
     }
 
@@ -598,7 +684,7 @@ export default {
       if (!on) {
         distHint.textContent = '';
         distHint.classList.remove('is-warn');
-        status.textContent = 'Mouse nos círculos ou A / L. Câmera: Hub e Esc continuam visíveis.';
+        status.textContent = 'O miolo preto é silêncio. Junte as mãos no meio para palmas. Mouse ou A / L.';
       }
       syncFsChrome();
     }
@@ -693,7 +779,7 @@ export default {
       const c = e.target.closest('[data-circle]');
       if (!c) return;
       const i = Number(c.dataset.circle);
-      if (inside[i] && pos[i]) {
+      if (inside[i] && pos[i] && !inDeadzone(pos[i].rx, pos[i].ry)) {
         const label = play(i, pos[i]);
         const p = clientToArena(e.clientX, e.clientY);
         if (label) burst(p.x, p.y, INSTRUMENT_BY_ID[config.instruments[i]].color, label);
@@ -902,7 +988,9 @@ export default {
         audio: Boolean(engines),
         fullscreen: arena.classList.contains('is-fs'),
         camera: cameraUiOn(),
-        hands: camHands.length
+        hands: camHands.length,
+        deadzone: DEADZONE,
+        neutral: [...lastNeutral]
       }),
       setArenaSize,
       exitArena,
@@ -952,7 +1040,7 @@ export default {
           Tone.Transport.stop();
           Tone.Transport.cancel();
         }
-        [repeatLoop, metroLoop, metroSynth].forEach((n) => n && n.dispose());
+        [repeatLoop, metroLoop, metroSynth, clapEng].forEach((n) => n && n.dispose());
         if (engines) engines.forEach((e) => e.dispose());
         if (out) setTimeout(() => out.dispose(), 500);
       }

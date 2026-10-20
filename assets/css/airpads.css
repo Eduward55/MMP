@@ -63,12 +63,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 0;
   z-index: 2;
   color: var(--text);
-  background: color-mix(in srgb, var(--c) 10%, transparent);
-  border: 2px solid var(--c);
+  background:
+    radial-gradient(circle at 50% 50%, transparent 29%, color-mix(in srgb, var(--c) 14%, transparent) 30%),
+    repeating-radial-gradient(circle at 50% 50%, color-mix(in srgb, #fff 6%, transparent) 0 1px, transparent 1px 7px);
+  border: 2px solid color-mix(in srgb, var(--c) 70%, #111);
+  box-shadow: inset 0 0 24px color-mix(in srgb, #000 35%, transparent);
   transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
   user-select: none;
 }
@@ -79,19 +82,72 @@
   left: 75%;
 }
 .air-circle.is-inside {
-  background: color-mix(in srgb, var(--c) 18%, transparent);
   border-color: var(--accent-hover);
+  box-shadow: inset 0 0 24px color-mix(in srgb, #000 28%, transparent), 0 0 18px color-mix(in srgb, var(--c) 28%, transparent);
 }
 .air-circle.is-hit {
-  animation: air-hit 0.28s ease;
+  animation: air-hit 0.36s ease;
 }
 @keyframes air-hit {
   0% {
-    box-shadow: 0 0 0 10px color-mix(in srgb, var(--c) 40%, transparent);
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--c) 28%, transparent);
   }
   100% {
     box-shadow: 0 0 0 0 transparent;
   }
+}
+.air-circle__hole {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: 30%;
+  height: 30%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #2a2a30 0 18%, #050508 55%, #000 100%);
+  border: 2px solid #111;
+  box-shadow: inset 0 0 8px #000, 0 0 0 2px color-mix(in srgb, #fff 10%, transparent);
+  pointer-events: none;
+}
+.air-rest {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  z-index: 3;
+  width: min(11%, 18cqh, 92px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.air-rest__hole {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #3a3a42 0 14%, #0a0a0c 48%, #000 100%);
+  border: 3px solid #16161a;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #fff 12%, transparent), inset 0 0 10px #000;
+}
+.air-rest__label {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c8c8cc;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+.air-rest.is-inside .air-rest__hole {
+  box-shadow: 0 0 0 3px color-mix(in srgb, #fff 22%, transparent), inset 0 0 10px #000;
+}
+.air-rest.is-clap .air-rest__hole {
+  animation: air-hit 0.28s ease;
 }
 .air-circle__slices {
   position: absolute;
@@ -110,9 +166,10 @@
 }
 .air-circle__name {
   position: relative;
-  z-index: 1;
+  z-index: 3;
+  margin-bottom: 10%;
   font-family: var(--font);
-  font-size: clamp(0.78rem, 1.3vw, 1rem);
+  font-size: clamp(0.72rem, 1.2vw, 0.92rem);
   font-weight: 650;
   color: var(--c);
   background: color-mix(in srgb, var(--bg) 82%, transparent);
@@ -389,6 +446,9 @@
 .airx__stage .toolbar {
   flex-wrap: wrap;
   gap: 8px;
+}
+.airx__pick .chips {
+  flex-wrap: wrap;
 }
 .airx__pick .chip.is-on {
   border-color: var(--c, var(--accent));
