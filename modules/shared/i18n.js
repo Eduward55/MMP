@@ -290,6 +290,9 @@ const DICT = {
 
     'tz.title': 'Tetris do gato',
     'tz.next': 'Próxima',
+    'tz.hold': 'Reserva',
+    'tz.holdEmpty': 'vazia',
+    'tz.hint': 'C ou Shift guarda a peça (reserva) e você puxa de novo no próximo drop. ← → ou A D andam. ↑ / W gira. ↓ / S acelera. Espaço cai de uma vez. Esc pausa.',
     'tz.over': 'Fim de jogo',
     'tz.pause': 'Pausa',
     'tz.pauseHint': 'Esc continua.',
@@ -642,6 +645,9 @@ const DICT = {
 
     'tz.title': 'Cat Tetris',
     'tz.next': 'Next',
+    'tz.hold': 'Hold',
+    'tz.holdEmpty': 'empty',
+    'tz.hint': 'C or Shift holds the piece; you can pull it back after it locks. ← → or A D move. ↑ / W rotate. ↓ / S soft drop. Space hard-drops. Esc pauses.',
     'tz.over': 'Game over',
     'tz.pause': 'Paused',
     'tz.pauseHint': 'Esc resumes.',

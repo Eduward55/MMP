@@ -47,6 +47,7 @@ const PT = {
 • Lontrinha: Gravar frase abre embaixo — fale, Pausar, depois Play. Solo cala as outras. Resetar apaga.`,
   tetris: `Tetris — como mexer
 • Setas ou WASD: A/D andam, W gira, S acelera.
+• C ou Shift guarda a peça (reserva). Você puxa de novo depois que ela trava — uma vez por queda.
 • Espaço solta a peça. Esc pausa.
 • Complete linhas para pontuar.
 • Som liga/desliga a musiquinha; o slider abaixa o volume.`,
@@ -108,6 +109,7 @@ const EN = {
 • Otter: Record phrase opens below — speak, Pause, then Play. Solo mutes the others. Reset clears.`,
   tetris: `Tetris — how to play
 • Arrows or WASD: A/D move, W rotates, S drops faster.
+• C or Shift holds the piece. Pull it back after it locks — once per drop.
 • Space hard-drops. Esc pauses.
 • Clear lines to score.
 • Sound toggles the tune; the slider lowers the volume.`,

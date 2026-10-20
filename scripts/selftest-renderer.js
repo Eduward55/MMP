@@ -680,6 +680,24 @@
     TZ.move(-1, 0);
     TZ.rotate();
     ok('Tetris: peça responde ao movimento', TZ.state().piece && TZ.state().piece.id, JSON.stringify(TZ.state().piece));
+    TZ.newGame();
+    const heldFrom = TZ.state().piece.id;
+    const nextBefore = TZ.state().next;
+    TZ.hold();
+    let tzs = TZ.state();
+    ok(
+      'Tetris: hold guarda a peça atual e puxa a próxima',
+      tzs.hold === heldFrom && tzs.piece && tzs.piece.id === nextBefore && tzs.canHold === false && $('.tz-hold .tz-mini'),
+      JSON.stringify({ hold: tzs.hold, piece: tzs.piece, nextWas: nextBefore, canHold: tzs.canHold })
+    );
+    const lockedPiece = tzs.piece.id;
+    TZ.hold();
+    tzs = TZ.state();
+    ok('Tetris: um hold por queda', tzs.hold === heldFrom && tzs.piece.id === lockedPiece, JSON.stringify(tzs));
+    TZ.drop();
+    TZ.hold();
+    tzs = TZ.state();
+    ok('Tetris: depois do drop dá para puxar a peça de novo', tzs.piece && tzs.piece.id === heldFrom, JSON.stringify(tzs));
 
     await go('corrida');
     const CR = window.__mmpCorrida;

@@ -84,6 +84,9 @@ export default {
     let grid = emptyGrid();
     let piece = null;
     let nextId = NAMES[Math.floor(Math.random() * NAMES.length)];
+    let holdId = null;
+    let canHold = true;
+    let stars = [];
     let score = 0;
     let lines = 0;
     let level = 1;
@@ -104,6 +107,7 @@ export default {
     const canvas = el('canvas', { class: 'tz-canvas', width: '300', height: '600' });
     const ctx = canvas.getContext('2d');
     const nextBox = el('div', { class: 'tz-next' });
+    const holdBox = el('div', { class: 'tz-next tz-hold' });
     const nums = el('div', { class: 'tz-stats' });
     const overlay = el('div', { class: 'tz-overlay', hidden: true });
     const mascot = el(
@@ -137,9 +141,14 @@ export default {
           el('h2', {}, t('tz.title')),
           mascot,
           nums,
-          el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('tz.next')), nextBox),
+          el(
+            'div',
+            { class: 'tz-previews' },
+            el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('tz.hold')), holdBox),
+            el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('tz.next')), nextBox)
+          ),
           el('div', { class: 'row-actions' }, pauseBtn, newBtn, soundRow),
-          el('p', { class: 'hint' }, '← → ou A D andam. ↑ / W gira. ↓ / S acelera. Espaço cai de uma vez. Esc pausa.')
+          el('p', { class: 'hint' }, t('tz.hint'))
         ),
         el('div', { class: 'tz-stage panel' }, canvas, overlay)
       )
@@ -248,9 +257,10 @@ export default {
       persist();
     }
 
-    function spawn() {
-      const id = nextId;
-      nextId = NAMES[Math.floor(Math.random() * NAMES.length)];
+    function spawn(opts = {}) {
+      const id = opts.id || nextId;
+      if (!opts.id) nextId = NAMES[Math.floor(Math.random() * NAMES.length)];
+      if (!opts.keepHoldLock) canHold = true;
       piece = { id, m: SHAPES[id].map((r) => [...r]), x: 3, y: 0 };
       if (collides(piece.m, piece.x, piece.y)) {
         over = true;
@@ -261,6 +271,25 @@ export default {
         showOverlay();
       }
       paintNext();
+      paintHold();
+    }
+
+    function holdSwap() {
+      if (!piece || over || paused || !canHold) return false;
+      canHold = false;
+      const current = piece.id;
+      if (holdId) {
+        const swapped = holdId;
+        holdId = current;
+        spawn({ id: swapped, keepHoldLock: true });
+      } else {
+        holdId = current;
+        spawn({ keepHoldLock: true });
+      }
+      paintHold();
+      hud();
+      cue('move');
+      return true;
     }
 
     function collides(m, x, y) {
@@ -396,13 +425,66 @@ export default {
       ctx.globalAlpha = 1;
     }
 
+    function ensureStars() {
+      if (stars.length) return;
+      stars = Array.from({ length: 56 }, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        s: 0.6 + Math.random() * 1.8,
+        a: 0.35 + Math.random() * 0.65,
+        tw: Math.random() * Math.PI * 2
+      }));
+    }
+
+    function drawSpace() {
+      ensureStars();
+      const w = canvas.width;
+      const h = canvas.height;
+      const sky = ctx.createLinearGradient(0, 0, 0, h);
+      sky.addColorStop(0, '#14081f');
+      sky.addColorStop(0.45, '#0c1028');
+      sky.addColorStop(1, '#1a1020');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, h);
+      const nebula = ctx.createRadialGradient(w * 0.2, h * 0.18, 8, w * 0.28, h * 0.22, w * 0.7);
+      nebula.addColorStop(0, 'rgba(155, 92, 255, 0.22)');
+      nebula.addColorStop(0.45, 'rgba(251, 146, 60, 0.08)');
+      nebula.addColorStop(1, 'rgba(20, 8, 31, 0)');
+      ctx.fillStyle = nebula;
+      ctx.fillRect(0, 0, w, h);
+      stars.forEach((st) => {
+        st.tw += 0.03;
+        ctx.fillStyle = `rgba(255,244,214,${st.a * (0.45 + Math.sin(st.tw) * 0.25)})`;
+        ctx.fillRect(st.x * w, st.y * h, st.s, st.s);
+      });
+      ctx.fillStyle = 'rgba(254, 240, 138, 0.9)';
+      ctx.beginPath();
+      ctx.arc(w * 0.82, h * 0.12, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#14081f';
+      ctx.beginPath();
+      ctx.arc(w * 0.845, h * 0.1, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(251, 146, 60, 0.85)';
+      ctx.beginPath();
+      ctx.moveTo(w * 0.82, h * 0.12 - 20);
+      ctx.lineTo(w * 0.82 - 5, h * 0.12 - 12);
+      ctx.lineTo(w * 0.82 + 5, h * 0.12 - 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(w * 0.82, h * 0.12 - 20);
+      ctx.lineTo(w * 0.82 + 6, h * 0.12 - 12);
+      ctx.lineTo(w * 0.82 + 12, h * 0.12 - 14);
+      ctx.closePath();
+      ctx.fill();
+    }
+
     function draw() {
-      const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0f0f12';
       const line = getComputedStyle(document.documentElement).getPropertyValue('--hairline').trim() || '#2a2a32';
       ctx.save();
       if (shake > 0) ctx.translate((Math.random() - 0.5) * 6, (Math.random() - 0.5) * 4);
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawSpace();
       const cw = canvas.width / COLS;
       const ch = canvas.height / ROWS;
       ctx.strokeStyle = line;
@@ -458,14 +540,26 @@ export default {
       ctx.restore();
     }
 
-    function paintNext() {
-      nextBox.innerHTML = '';
-      const m = SHAPES[nextId];
+    function paintMini(box, id) {
+      box.innerHTML = '';
+      if (!id || !SHAPES[id]) {
+        box.append(el('span', { class: 'muted tz-hold__empty' }, t('tz.holdEmpty')));
+        return;
+      }
+      const m = SHAPES[id];
       const g = el('div', { class: 'tz-mini', style: `--w:${m[0].length};--h:${m.length}` });
       m.forEach((row) =>
-        row.forEach((v) => g.append(el('i', { style: v ? `background:${COLORS[nextId]}` : 'background:transparent' })))
+        row.forEach((v) => g.append(el('i', { style: v ? `background:${COLORS[id]}` : 'background:transparent' })))
       );
-      nextBox.append(g);
+      box.append(g);
+    }
+
+    function paintNext() {
+      paintMini(nextBox, nextId);
+    }
+
+    function paintHold() {
+      paintMini(holdBox, holdId);
     }
 
     function hud() {
@@ -513,6 +607,8 @@ export default {
       dropMs = 700;
       over = false;
       paused = false;
+      holdId = null;
+      canHold = true;
       syncMusic();
       spawn();
       hud();
@@ -580,6 +676,10 @@ export default {
         e.preventDefault();
         armAudio();
         hardDrop();
+      } else if (k === 'c' || k === 'h' || k === 'shift') {
+        e.preventDefault();
+        armAudio();
+        holdSwap();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -597,11 +697,15 @@ export default {
         sound,
         volume,
         piece: piece && { id: piece.id, x: piece.x, y: piece.y },
+        next: nextId,
+        hold: holdId,
+        canHold,
         filled: grid.flat().filter(Boolean).length
       }),
       move,
       rotate: spin,
       drop: hardDrop,
+      hold: holdSwap,
       tick: () => move(0, 1, 'gravity'),
       newGame,
       setVolume,
