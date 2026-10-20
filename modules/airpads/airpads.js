@@ -89,12 +89,19 @@ export default {
     const circles = [0, 1].map((i) => el('div', { class: `air-circle air-circle--${i}`, 'data-circle': String(i) }));
     const huds = [0, 1].map((i) => el('div', { class: `air-hud air-hud--${i}` }));
     const bubble = el('div', { class: 'air-maestro__bubble' }, 'Prontos?');
-    const maestroCat = el('div', {
-      class: 'air-maestro__cat',
-      html: creatureSVG('cat', profile.cat, { size: 112, label: profile.cat.name }),
-      title: `Clique em ${profile.cat.name}`
+    const maestroArt = el('div', {
+      class: 'air-maestro__art',
+      html: creatureSVG('cat', profile.cat, { size: 112, label: profile.cat.name })
     });
-    maestroCat.addEventListener('click', () => reactCreature(maestroCat, maestroCat.querySelector('svg.creature')));
+    const maestroCat = el(
+      'div',
+      { class: 'air-maestro__cat', title: `Clique em ${profile.cat.name}` },
+      maestroArt
+    );
+    maestroCat.addEventListener('click', (e) => {
+      e.stopPropagation();
+      reactCreature(maestroCat, maestroCat.querySelector('svg.creature'));
+    });
     const maestro = el(
       'div',
       { class: 'air-maestro', title: profile.cat.name },

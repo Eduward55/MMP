@@ -232,19 +232,38 @@
   pointer-events: none;
 }
 .air-maestro__cat {
-  transition: transform 0.2s ease;
+  position: relative;
   pointer-events: auto;
   cursor: pointer;
 }
+.air-maestro__art {
+  display: block;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+}
 .air-maestro__cat svg {
+  display: block;
   width: clamp(64px, 9vw, 112px);
   height: auto;
 }
-.air-maestro.is-left .air-maestro__cat {
+/* Espelha só o desenho, para o gato olhar para o círculo. Fala, coração, bolha e nome ficam de fora. */
+.air-maestro.is-left .air-maestro__art {
   transform: scaleX(-1) rotate(-6deg);
 }
-.air-maestro.is-right .air-maestro__cat {
+.air-maestro.is-right .air-maestro__art {
   transform: rotate(6deg);
+}
+.air-maestro .react-speech,
+.air-maestro .react-heart,
+.air-maestro__bubble,
+.air-maestro__name {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+/* Se a fala cair dentro do desenho espelhado, desfaz o scaleX no eixo X (scale é independente do transform da animação). */
+.air-maestro.is-left .air-maestro__art .react-speech,
+.air-maestro.is-left .air-maestro__art .react-heart {
+  scale: -1 1;
 }
 .air-maestro.is-playing .acc-hand {
   animation: conduct 0.4s ease-in-out infinite alternate;
