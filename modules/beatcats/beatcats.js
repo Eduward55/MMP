@@ -7,7 +7,6 @@ import { OUTFIT_BY_ID } from '../shared/outfits.js';
 import { gallery, getProfile, kv } from '../shared/store.js';
 import { el, esc, startAudio, stamp, toast } from '../shared/ui.js';
 import { GROUPS, GROUP_BY_ID, LOOP_STEPS, SOUNDS, SOUND_BY_ID, makeCaptured, otterSplash } from './sounds.js';
-import { createStageRecorder } from './stage-recorder.js';
 
 const CAT_COUNT = 8;
 const ROUND_STEPS = 32;
@@ -83,7 +82,7 @@ export function beatFromJson(json, prevMix) {
     cats: cats.map((id) => (id && !seen.has(id) ? (seen.add(id), id) : null)),
     bpm: Math.max(60, Math.min(160, Number(json && json.bpm) || 100)),
     mode: json && json.mode === 'round' ? 'round' : 'continuous',
-    recordMode: json && json.recordMode === 'video' ? 'video' : 'audio',
+    recordMode: 'audio',
     mix: mixFrom(json && json.mix, prevMix)
   };
 }
@@ -128,7 +127,6 @@ export default {
     const bpmInput = el('input', { class: 'range', type: 'range', min: '60', max: '160', value: String(state.bpm), 'aria-label': 'BPM' });
     const bpmLabel = el('span', { class: 'pill' }, `${state.bpm} BPM`);
     const modeTabs = el('div', { class: 'segmented', role: 'radiogroup', 'aria-label': 'Modo' });
-    const recModeTabs = el('div', { class: 'segmented', role: 'radiogroup', 'aria-label': 'O que gravar' });
     const recBtn = el('button', { class: 'btn btn--rec' }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar'));
     const timer = el('span', { class: 'pill' }, '00:00');
     const status = el('span', { class: 'muted bc-status' }, 'Novo beat');
@@ -274,24 +272,6 @@ export default {
             role: 'radio',
             'aria-checked': String(state.mode === id),
             onclick: () => setMode(id)
-          }, label)
-        )
-      );
-      recModeTabs.innerHTML = '';
-      [
-        ['audio', 'Só áudio'],
-        ['video', 'Áudio + animação']
-      ].forEach(([id, label]) =>
-        recModeTabs.append(
-          el('button', {
-            class: `segmented__btn ${state.recordMode === id ? 'is-on' : ''}`,
-            role: 'radio',
-            'aria-checked': String(state.recordMode === id),
-            disabled: rec ? true : null,
-            onclick: () => {
-              state.recordMode = id;
-              renderModes();
-            }
           }, label)
         )
       );
@@ -661,11 +641,10 @@ export default {
       clearInterval(recTimer);
       recBtn.classList.remove('is-active');
       recBtn.querySelector('.btn__text').textContent = 'Gravar';
-      renderModes();
       const events = log.stopTake();
       const { blob, seconds } = await r.handle.stop();
       if (r.handle.dispose) r.handle.dispose();
-      const title = `${nameInput.value.trim() || name} (${r.type === 'video' ? 'vídeo' : 'áudio'})`;
+      const title = `${nameInput.value.trim() || name} (áudio)`;
       return gallery.addBlob(r.type, title, 'beatcats', blob, { seconds, bpm: state.bpm, layers: state.cats.filter(Boolean).length, ...eventsSummary(events) }, events);
     }
 
@@ -678,11 +657,10 @@ export default {
           dockSay('Que show! A gravação está na Galeria.');
         } else {
           await ensureAudio();
-          const type = state.recordMode === 'video' ? 'video' : 'audio';
-          const handle = type === 'video' ? createStageRecorder(Tone, masterFilter, stage) : await createOutputRecorder(masterFilter);
+          const handle = await createOutputRecorder(masterFilter);
           handle.start();
           log.startTake();
-          rec = { type, handle };
+          rec = { type: 'audio', handle };
           const t0 = Date.now();
           timer.textContent = '00:00';
           recTimer = setInterval(() => {
@@ -690,8 +668,7 @@ export default {
             timer.textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
           }, 250);
           recBtn.classList.add('is-active');
-          recBtn.querySelector('.btn__text').textContent = type === 'video' ? 'Parar (vídeo)' : 'Parar (áudio)';
-          renderModes();
+          recBtn.querySelector('.btn__text').textContent = 'Parar (áudio)';
           if (!playing && state.cats.some(Boolean)) start();
         }
       } catch (err) {
@@ -748,7 +725,6 @@ export default {
             el('label', { class: 'toolbar__bpm' }, bpmLabel, bpmInput),
             el('div', { class: 'toolbar__bpm bc-vol bc-vol--master' }, volLabel, volInput, muteBtn),
             el('div', { class: 'bc-opt' }, el('span', { class: 'field__label' }, 'Modo'), modeTabs),
-            el('div', { class: 'bc-opt' }, el('span', { class: 'field__label' }, 'Gravar'), recModeTabs),
             recBtn,
             timer,
             clearBtn,
@@ -828,7 +804,7 @@ export default {
           kind: 'beatcats',
           bpm: state.bpm,
           mode: state.mode,
-          recordMode: state.recordMode,
+          recordMode: 'audio',
           cats: state.cats.map((id, i) => (pending.has(i) ? pending.get(i) : id) || null),
           mix: mixPayload(state.mix)
         };
