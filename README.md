@@ -2,61 +2,15 @@
 
 App desktop musical, fofo e **100% offline**, feito com **Electron + HTML/JS/CSS puro** (sem frameworks de UI, sem bundler). Tema padrão **Noite** (fundo `#0f0f12`, bordas zinco, acento azul). O ícone de paleta no Hub e na barra de cima abre as paletas (Noite, Oceano, Dia, Floresta, Creme, Rosa, Menta, Uva, Dourado, Pôr do sol, Praia). As cores ficam em `assets/css/theme.css`. A gata **Pirrinha** e a lontra **Manhoso** aparecem em todos os módulos.
 
-## Como rodar
+## Como jogar
 
-Requisitos: Node.js 18+ (testado com Node 22).
-
-```bash
-npm install
-npm start
-```
-
-Pronto. Tone.js, MediaPipe (wasm + modelo) e as fontes já estão versionados em `/vendor` e `/assets`, então o app funciona sem internet.
-
-Outros comandos:
-
-| Comando | O que faz |
-|---|---|
-| `npm run start:local-data` | Roda salvando os dados em `./data/user` em vez do `userData` do Electron |
-| `npm run preview` | Prévia no navegador em `http://127.0.0.1:47261` (o gato anima; dados ficam no localStorage) |
-| `npm run check` | Autoteste ponta a ponta dentro do Electron (Galeria, Meu Gato, Air Pads, Beat Cats, eventos, Studio com export WAV/WebM e webcam falsa, Termo, Conexões, Cat Typing, MediaPipe local, rede bloqueada) |
-| `npm run screenshots` | Gera PNGs do Hub, Meu Gato e Galeria em `out/screenshots/` |
-| `npm run termo:words` | Regera `data/termo/answers.json` e `valid.json` a partir de dicionários Hunspell e da lista de frequência (ver `data/termo/README.md`) |
-| `npm run conexoes:check` | Valida `data/conexoes/categories.json` (400+ categorias, 8–12 palavras, gerador sem sobreposição) e conta as combinações válidas |
-| `npm run cattyping:words` | Regenera `data/cattyping/words.json` (5.000+ palavras reais de 3–10 letras; cada tema com 800+) a partir do Hunspell pt-BR, com termos históricos comuns mesmo fora da frequência |
-| `npm run vendor` | Recria `/vendor` a partir de `node_modules` (e baixa o modelo do MediaPipe se faltar) |
-| `npm run icon` | Gera `build/icon.png` e `build/icon.ico` (gato pixel) |
-| `npm run dist:win` | Instalador Windows `.exe` (NSIS) via electron-builder |
-| `npm run dist:mac` | Disco macOS `.dmg` via electron-builder (precisa rodar no macOS) |
-
-Em Linux sem tela (CI/servidor), use o `xvfb`: `xvfb-run -a npm run check`.
-
-## Pacote desktop (.exe e .dmg)
-
-O app se chama **My Music Place**, usa o **ícone do gato** em `build/icon.png` e pede **permissão de câmera** (Air Pads e webcam do Studio). No macOS isso vai no `Info.plist` (`NSCameraUsageDescription`) e nos entitlements; no Windows o Chromium pergunta na hora, e o processo principal autoriza `camera` / `media`.
+No Linux (Lenovo), **um comando só**:
 
 ```bash
-npm run dist:win   # instalador NSIS + zip portátil (ícone do gato pixel)
-npm run dist:mac   # MyMusicPlace-0.1.0-mac-universal.dmg  (só no macOS)
+rm -rf ~/MMP && git clone https://github.com/Eduward55/MMP.git ~/MMP && cd ~/MMP/entrega && bash juntar.sh
 ```
 
-Os artefatos saem em `dist/`:
-
-- `MyMusicPlace-0.1.0-win-x64-Setup.exe` — instalador (atalho “My Music Place”)
-- `MyMusicPlace-0.1.0-win-x64.zip` — pasta portátil; extraia e abra `My Music Place.exe`
-
-O NSIS completo no Linux pede Wine; nesta VM geramos o zip/.exe portátil. O instalador NSIS e o DMG saem na Action do GitHub (tag `v*`) quando o repositório existir.
-
-### Release no GitHub (repo privado)
-
-A Action `.github/workflows/release.yml` empacota Windows e macOS e anexa o `.exe` e o `.dmg` num Release quando você publica uma tag:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-O repositório precisa ser **privado** no GitHub (a Action usa `GITHUB_TOKEN` com `contents: write`). Sem certificado Apple o DMG sai sem notarização; o .exe NSIS também é sem assinatura de código.
+Isso clona o jogo e junta os pedaços do zip do Windows (~118 MB depois de juntar). Extraia `MyMusicPlace-Windows.zip` (a pasta inteira) e envie para quem for jogar no Windows; lá, abra **My Music Place.exe**. Você está no Linux: o `.exe` é o pacote para mandar a outras pessoas.
 
 ## O que tem
 
@@ -164,3 +118,7 @@ build/               ícone do gato (png/ico) e entitlements da câmera no macOS
 ## Palavras do Termo
 
 `data/termo/answers.json` (1.547 respostas: 171 de psicologia, 162 de arte, 151 de história e 1.063 gerais) e `data/termo/valid.json` (12.502 palpites aceitos) **não foram escritos à mão**: saem de `npm run termo:words`. Toda palavra passa pelo corretor Hunspell pt-BR do LibreOffice e precisa aparecer na lista de frequência real do português brasileiro (legendas do OpenSubtitles). As respostas gerais também precisam ser reconhecidas pelo dicionário pt-PT, que é independente. As candidatas temáticas ficam em `scripts/termo-themes.mjs`, e o `build-report.json` lista as que foram recusadas e o motivo. Fontes e licenças estão em `data/termo/README.md`.
+
+## Desenvolvimento no repositório
+
+Para quem clona o código e vai mexer nele (Node.js 18+, testado com Node 22): `npm ci` e `npm start`. Tone.js, MediaPipe e fontes já estão em `/vendor` e `/assets` (funciona sem internet). Autoteste: `npm run check` (em Linux sem tela, `xvfb-run -a npm run check`). Outros scripts: `start:local-data`, `preview`, `screenshots`, `termo:words`, `conexoes:check`, `cattyping:words`, `vendor`, `icon`, `dist:win`, `dist:mac`.

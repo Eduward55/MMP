@@ -1,9 +1,11 @@
 My Music Place — Windows
 
-1. Junte os pedaços:
-   - Windows: dê dois cliques em juntar.bat
-   - Linux/Mac: ./juntar.sh
-2. Extraia MyMusicPlace-Windows.zip (a pasta inteira).
-3. Abra "My Music Place.exe" de dentro da pasta extraída.
+Como chegar aqui (Linux):
 
-Não use http://127.0.0.1 — isso não é o seu computador.
+rm -rf ~/MMP && git clone https://github.com/Eduward55/MMP.git ~/MMP && cd ~/MMP/entrega && bash juntar.sh
+
+1. O comando acima junta os pedaços (~118 MB).
+2. Extraia MyMusicPlace-Windows.zip (a pasta inteira).
+3. No Windows, abra "My Music Place.exe" de dentro da pasta extraída.
+
+O .exe é para mandar a outras pessoas no Windows.

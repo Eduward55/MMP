@@ -4,3 +4,6 @@ data/electron-playtest/
 out/
 dist/
 *.tmp
+MyMusicPlace-Windows.zip
+entrega/MyMusicPlace-Windows.zip
+agent-tools/
