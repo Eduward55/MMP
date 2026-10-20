@@ -483,8 +483,8 @@
     await go('cantar');
     const CG = window.__mmpCantar;
     ok('Cantar: palco com gato no microfone e 3 lontrinhas', $$('.cantar__cat svg.creature--cat').length === 1 && $$('.cantar__otter').length === 3 && $$('.cantar__otter svg.creature--otter').length === 3);
-    const chipLabel = (id) => ({ robo: 'robô', radio: 'rádio' }[id] || id);
-    const requiredChips = ['natural', 'autotune', 'agudo', 'grave', 'robo', 'eco', 'acapela', 'velhinha'];
+    const chipLabel = (id) => ({ robo: 'robô', radio: 'rádio', alvinhos: 'alvinhos', transformers: 'transformers' }[id] || id);
+    const requiredChips = ['natural', 'autotune', 'agudo', 'grave', 'robo', 'eco', 'acapela', 'velhinha', 'alvinhos', 'transformers'];
     ok(
       'Cantar: modificadores de voz',
       CG && requiredChips.every((id) => $$(`.cantar .chip`).some((c) => c.textContent.toLowerCase().includes(chipLabel(id)))),
@@ -495,7 +495,7 @@
     CG.setRms(0.2);
     ok('Cantar: gato abre a boca com volume', $('.cantar__cat svg.creature.is-sing-open') && CG.state().fx === 'agudo');
 
-    const fxIds = ['natural', 'acapela', 'autotune', 'agudo', 'grave', 'robo', 'eco', 'talkbox', 'coro', 'radio', 'cristal', 'caverna', 'sussurro', 'velhinha'];
+    const fxIds = ['natural', 'acapela', 'autotune', 'agudo', 'grave', 'robo', 'eco', 'talkbox', 'coro', 'radio', 'cristal', 'caverna', 'sussurro', 'velhinha', 'alvinhos', 'transformers'];
     CG.setAutotune(false);
     const prints = new Set();
     let clash = '';
@@ -510,18 +510,50 @@
     ok('Cantar: agudo sobe o pitch', CG.graph().pitch >= 6 && (CG.graph().connected || []).includes('pitchShift'), JSON.stringify(CG.graph()));
     CG.setFx('grave');
     ok('Cantar: grave desce o pitch', CG.graph().pitch <= -6, JSON.stringify(CG.graph()));
+    const bedLabels = [...$$('.cantar select[aria-label="Acompanhamento"] option, .cantar__backing-sel option')].map((o) => o.textContent);
+    ok(
+      'Cantar: acompanhamentos extra',
+      ['Pad suave', 'Coro aahs', 'Beat simples', 'Baixo + click'].every((n) => bedLabels.some((l) => l.includes(n))),
+      bedLabels.join(' | ')
+    );
+    ok(
+      'Cantar: Arpejo e Nenhum continuam',
+      bedLabels.some((l) => /Arpejo/i.test(l)) && bedLabels.some((l) => /Nenhum/i.test(l)),
+      bedLabels.slice(0, 8).join(' | ')
+    );
+    ok(
+      'Cantar: lontrinhas com Gravar frase abaixo',
+      $$('.cantar__otter-deck').length === 3 && $$('.cantar__otter-rec').length === 3 && $$('.cantar__pitch-sel').length === 1
+    );
+    ok('Cantar: sem biblioteca RNNoise', CG.ns && CG.ns().library === false && CG.state().nsLibrary === false, JSON.stringify(CG.ns && CG.ns()));
     CG.setFx('eco');
     ok('Cantar: eco tem delay audível', CG.graph().delayTime >= 0.25 && CG.graph().delayFeedback >= 0.4 && (CG.graph().connected || []).includes('delay'), JSON.stringify(CG.graph()));
+    ok(
+      'Cantar: eco mais curto sem estourar',
+      CG.graph().delayTime <= 0.34 && CG.graph().delayFeedback <= 0.5 && CG.graph().wet <= 0.75 && (CG.graph().monitorScale == null || CG.graph().monitorScale <= 0.7),
+      JSON.stringify(CG.graph())
+    );
     CG.setFx('robo');
     ok('Cantar: robô bitcrush/ring', CG.graph().bits > 0 && CG.graph().bits <= 5 && CG.graph().ringHz > 0, JSON.stringify(CG.graph()));
     CG.setFx('caverna');
     ok('Cantar: caverna reverb', CG.graph().reverbWet >= 0.7 && (CG.graph().connected || []).includes('convolver'), JSON.stringify(CG.graph()));
+    ok('Cantar: caverna menos molhada', CG.graph().reverbWet <= 0.85 && CG.graph().wet <= 0.8 && (CG.graph().monitorScale == null || CG.graph().monitorScale <= 0.65), JSON.stringify(CG.graph()));
+    CG.setFx('coro');
+    ok('Cantar: coro menos molhado', CG.graph().wet <= 0.7 && CG.graph().chorusDepth > 0.3 && (CG.graph().connected || []).includes('chorus'), JSON.stringify(CG.graph()));
     CG.setFx('sussurro');
     ok('Cantar: sussurro não é Natural', CG.graph().noiseMix > 0.1 && CG.graph().hp >= 400, JSON.stringify(CG.graph()));
     CG.setFx('radio');
     ok('Cantar: rádio bandpass', CG.graph().bpLow >= 400 && CG.graph().bpHigh <= 2800 && (CG.graph().connected || []).includes('radio'), JSON.stringify(CG.graph()));
     CG.setFx('velhinha');
     ok('Cantar: velhinha vibrato', CG.graph().vibratoRate >= 4 && CG.graph().pitch >= 3, JSON.stringify(CG.graph()));
+    CG.setFx('alvinhos');
+    ok('Cantar: Alvinhos é chipmunk agudo', CG.graph().pitch >= 11 && (CG.graph().connected || []).includes('pitchShift'), JSON.stringify(CG.graph()));
+    CG.setFx('transformers');
+    ok(
+      'Cantar: Transformers vocoder metálico',
+      (CG.graph().connected || []).includes('talkbox') && (CG.graph().connected || []).includes('crush') && CG.graph().talkboxWet > 1,
+      JSON.stringify(CG.graph())
+    );
     CG.setFx('acapela');
     ok('Cantar: acapela seca a base', CG.graph().backingDuck <= 0.22 && CG.graph().wet === 0, JSON.stringify(CG.graph()));
     CG.setFx('natural');

@@ -5,15 +5,16 @@ import { beatFromJson } from '../beatcats/beatcats.js';
 import { LOOP_STEPS, SOUND_BY_ID, makeCaptured } from '../beatcats/sounds.js';
 import { createEventLog } from '../shared/events.js';
 import { gallery, getProfile } from '../shared/store.js';
-import { el, modal, startAudio, stamp, toast } from '../shared/ui.js';
-import { FX, OVERLAY_IDS, createVoiceFx, fingerprint, graphFor, normalizeFxId } from './voice-fx.js';
+import { el, startAudio, stamp, toast } from '../shared/ui.js';
+import { t } from '../shared/i18n.js';
+import { FX, OVERLAY_IDS, NS_LIBRARY, createVoiceFx, fingerprint, graphFor, normalizeFxId } from './voice-fx.js';
 import {
   OTTER_INTERVAL_MAX,
   OTTER_INTERVAL_MIN,
   OTTER_REC_MAX,
-  OTTER_REC_MIN,
   clampOtterSeconds,
   decodePhraseBlob,
+  formatOtterClock,
   formatOtterSeconds,
   makeBeepBuffer,
   recordPhraseFromStream,
@@ -22,6 +23,24 @@ import {
 
 const SCALE = [0, 2, 3, 5, 7, 8, 10];
 const OTTER_SLOTS = 3;
+const BEDS = [
+  { id: 'none', key: 'cantar.none', label: 'Nenhum' },
+  { id: 'arpeggio', key: 'cantar.arp', label: 'Arpejo (notas da escala)' },
+  { id: 'pad', key: 'cantar.bed.pad', label: 'Pad suave' },
+  { id: 'choir', key: 'cantar.bed.choir', label: 'Coro aahs' },
+  { id: 'beat', key: 'cantar.bed.beat', label: 'Beat simples' },
+  { id: 'bassclick', key: 'cantar.bed.bassclick', label: 'Baixo + click' }
+];
+const GENERATED_BEDS = new Set(['arpeggio', 'pad', 'choir', 'beat', 'bassclick']);
+const PITCH_NOTES = [
+  { id: 'off', name: 'Nenhuma', freq: 0 },
+  { id: 'C4', name: 'Dó (C4)', freq: 261.63 },
+  { id: 'D4', name: 'Ré (D4)', freq: 293.66 },
+  { id: 'E4', name: 'Mi (E4)', freq: 329.63 },
+  { id: 'F4', name: 'Fá (F4)', freq: 349.23 },
+  { id: 'G4', name: 'Sol (G4)', freq: 392 },
+  { id: 'A4', name: 'Lá (A4)', freq: 440 }
+];
 
 function detectPitchYin(buf, sr) {
   const half = Math.floor(buf.length / 2);
@@ -94,9 +113,11 @@ export default {
     let Tone = null;
     let audioPromise = null;
     let stream = null;
+    let micPromise = null;
     let micNode = null;
     let voiceFx = null;
     let backingGain = null;
+    let pitchGain = null;
     let rec = null;
     let recTimer = 0;
     let raf = 0;
@@ -107,36 +128,48 @@ export default {
     let fx = 'natural';
     let autotune = false;
     let backing = 'arpeggio';
+    let pitchNote = 'C4';
     let bpm = 100;
     let sync = true;
     let backingLoop = null;
     let backingVoices = [];
+    let pitchVoices = [];
     let otterGain = null;
     let otterAnimRaf = 0;
     let otterBusy = false;
     let otterRecSession = null;
+    let otterSolo = null;
     const otterPlayers = new Array(OTTER_SLOTS).fill(null);
     const otterClips = new Array(OTTER_SLOTS).fill(null);
-    const otterUi = Array.from({ length: OTTER_SLOTS }, () => ({ recording: false, looping: false, singing: false }));
-    const log = createEventLog({ source: 'cantar', bpm, scale: 'minor', root: 9 });
+    const otterUi = Array.from({ length: OTTER_SLOTS }, () => ({
+      recording: false,
+      playing: false,
+      singing: false,
+      elapsed: 0
+    }));
+    const log = createEventLog({ source: 'cantar', bpm, scale: 'minor', root: 0 });
 
     const nameInput = el('input', { class: 'input', type: 'text', maxlength: '60', value: `Canto ${stamp()}`, 'aria-label': 'Nome da gravação' });
-    const micBtn = el('button', { class: 'btn btn--primary' }, 'Ligar microfone');
+    const micBtn = el('button', { class: 'btn btn--primary' }, t('cantar.micOn'));
     const recBtn = el('button', { class: 'btn btn--rec', disabled: true }, el('span', { class: 'rec-dot' }), el('span', { class: 'btn__text' }, 'Gravar'));
     const timer = el('span', { class: 'pill' }, '00:00');
-    const status = el('p', { class: 'muted' }, 'Ligue o microfone e cante. Cada chip muda a voz de um jeito — Natural fica limpo.');
+    const status = el('p', { class: 'muted' }, t('cantar.status'));
     const fxRow = el('div', { class: 'chips', role: 'radiogroup', 'aria-label': 'Modificador de voz' });
     const fxCaption = el('p', { class: 'cantar__fx-now' }, FX[0].hint);
-    const autoBtn = el('button', { class: 'btn btn--ghost btn--sm', 'aria-pressed': 'false' }, 'Autotune: Não');
+    const autoBtn = el('button', { class: 'btn btn--ghost btn--sm', 'aria-pressed': 'false' }, t('cantar.auto', { on: t('cantar.no') }));
     const syncBtn = el('button', { class: 'btn btn--ghost btn--sm', 'aria-pressed': 'true' }, 'Sync: Sim');
     const bpmInput = el('input', { class: 'range', type: 'range', min: '70', max: '140', value: String(bpm), 'aria-label': 'BPM' });
     const bpmLabel = el('span', { class: 'pill' }, `${bpm} BPM`);
-    const mixInput = el('input', { class: 'range', type: 'range', min: '0', max: '100', value: '78', 'aria-label': 'Mix da voz' });
-    const backingSel = el('select', { class: 'input input--select', 'aria-label': 'Base' });
+    const mixInput = el('input', { class: 'range', type: 'range', min: '0', max: '100', value: '70', 'aria-label': 'Mix da voz' });
+    const backingSel = el('select', { class: 'input input--select cantar__backing-sel', 'aria-label': 'Acompanhamento' });
+    const pitchSel = el('select', { class: 'input input--select cantar__pitch cantar__pitch-sel', 'aria-label': 'Pitch inicial' });
     const catStage = el('div', { class: 'cantar__cat' });
     const ottersRow = el('div', { class: 'cantar__otters' });
     const meterFill = el('div', { class: 'cantar__meter-fill' });
     const meter = el('div', { class: 'cantar__meter', title: 'Volume da voz' }, meterFill);
+
+    PITCH_NOTES.forEach((n) => pitchSel.append(el('option', { value: n.id }, t(`cantar.pitch.${n.id}`, n.name))));
+    pitchSel.value = pitchNote;
 
     function currentGraph() {
       return voiceFx ? voiceFx.snapshot() : graphFor(fx, autotune);
@@ -156,33 +189,61 @@ export default {
       return ottersRow.querySelector(`.cantar__otter[data-slot="${i}"]`);
     }
 
+    function otterStatusText(i) {
+      const ui = otterUi[i];
+      const clip = otterClips[i];
+      if (ui.recording) return `Gravando ${formatOtterClock(ui.elapsed)}`;
+      if (clip && ui.playing && (otterSolo == null || otterSolo === i)) return 'Tocando';
+      if (clip && otterSolo != null && otterSolo !== i) return 'No mute (solo em outra)';
+      if (clip) return 'Pausada — aperte Play';
+      return 'Sem frase ainda';
+    }
+
+    function deckHint(i) {
+      const ui = otterUi[i];
+      if (ui.recording) return 'Fale agora, olhando para o palco. Depois Pausar, aí Play.';
+      if (otterClips[i] && ui.playing) return 'Solo deixa só esta lontrinha. Resetar apaga a frase.';
+      if (otterClips[i]) return 'Play ouve a frase (repete no intervalo). Solo silencia as outras.';
+      return 'Gravar frase abre o gravador aqui embaixo — sem janela por cima.';
+    }
+
     function renderOtters() {
       ottersRow.innerHTML = '';
       for (let i = 0; i < OTTER_SLOTS; i++) {
         const clip = otterClips[i];
         const ui = otterUi[i];
-        const looping = Boolean(clip && ui.looping);
+        const audible = Boolean(clip && ui.playing && otterPlayers[i] && (otterSolo == null || otterSolo === i));
+        const recOther = otterUi.some((u, j) => u.recording && j !== i);
+        const wrap = el('div', {
+          class: `cantar__otter-wrap${ui.recording ? ' is-recording' : ''}${audible ? ' is-playing' : ''}${otterSolo === i ? ' is-solo' : ''}`,
+          'data-slot': String(i)
+        });
         const card = el(
           'div',
           {
-            class: `cantar__otter${clip ? ' is-on' : ''}${ui.recording ? ' is-recording' : ''}${looping ? ' is-looping' : ''}${ui.singing ? ' is-singing' : ''}`,
+            class: `cantar__otter${clip ? ' is-on' : ''}${ui.recording ? ' is-recording' : ''}${audible ? ' is-looping' : ''}${ui.singing ? ' is-singing' : ''}${otterSolo === i ? ' is-solo' : ''}`,
             'data-slot': String(i)
           },
           el('div', {
             class: 'cantar__otter-art',
             html: creatureSVG('otter', profile.otter, {
-              size: 86,
-              extraClass: ui.recording || looping ? 'is-dancing' : 'is-idle',
+              size: 104,
+              extraClass: ui.recording || audible ? 'is-dancing' : 'is-idle',
               label: `${profile.otter.name} ${i + 1}`
             })
           }),
-          el('span', { class: 'cantar__otter-name' }, `Lontrinha ${i + 1}`),
-          ui.recording ? el('span', { class: 'cantar__otter-countdown' }, 'Gravando…') : null,
+          el('span', { class: 'cantar__otter-name' }, t('cantar.otterN', { n: i + 1 })),
+          el('span', { class: `cantar__otter-countdown${ui.recording ? '' : ' is-idle'}` }, otterStatusText(i))
+        );
+        const deck = el(
+          'div',
+          { class: 'cantar__otter-deck', 'data-slot': String(i) },
+          el('p', { class: 'cantar__otter-deck-hint' }, deckHint(i)),
           clip
             ? el(
                 'label',
                 { class: 'cantar__otter-interval' },
-                el('span', {}, 'Repete a cada'),
+                el('span', {}, t('cantar.repeat')),
                 el('input', {
                   class: 'input cantar__otter-interval-num',
                   type: 'number',
@@ -199,7 +260,7 @@ export default {
                     const v = clampOtterSeconds(e.target.value, OTTER_INTERVAL_MIN, OTTER_INTERVAL_MAX, clip.interval);
                     clip.interval = v;
                     e.target.value = String(v);
-                    if (ui.looping) startOtterLoop(i).catch((err) => toast(err.message, 'error'));
+                    if (ui.playing) syncOtterAudio().catch((err) => toast(err.message, 'error'));
                   }
                 }),
                 el('span', {}, 's')
@@ -207,15 +268,65 @@ export default {
             : null,
           el(
             'div',
-            { class: 'cantar__otter-actions' },
-            el('button', { class: 'btn btn--sm btn--primary', onclick: () => recordOtter(i) }, ui.recording ? 'Gravando…' : clip ? 'Regravar' : 'Gravar frase'),
-            clip ? el('button', { class: 'btn btn--sm btn--ghost', onclick: () => clearOtter(i) }, 'Parar') : null
+            { class: 'cantar__otter-transport' },
+            el(
+              'button',
+              {
+                class: `btn btn--sm btn--primary cantar__otter-rec${ui.recording ? ' is-active' : ''}`,
+                'data-act': 'rec',
+                disabled: recOther ? true : undefined,
+                onclick: () => recordOtter(i)
+              },
+              ui.recording ? t('cantar.recording') : clip ? t('cantar.rerec') : t('cantar.recPhrase')
+            ),
+            el(
+              'button',
+              {
+                class: 'btn btn--sm btn--ghost',
+                'data-act': 'pause',
+                disabled: !(ui.recording || ui.playing) ? true : undefined,
+                onclick: () => pauseOtter(i)
+              },
+              t('cantar.pause')
+            ),
+            el(
+              'button',
+              {
+                class: 'btn btn--sm btn--ghost',
+                'data-act': 'play',
+                disabled: !clip || ui.recording || ui.playing ? true : undefined,
+                onclick: () => playOtter(i)
+              },
+              t('cantar.play')
+            ),
+            el(
+              'button',
+              {
+                class: `btn btn--sm btn--ghost${otterSolo === i ? ' is-on' : ''}`,
+                'data-act': 'solo',
+                'aria-pressed': String(otterSolo === i),
+                disabled: !clip ? true : undefined,
+                onclick: () => soloOtter(i)
+              },
+              otterSolo === i ? t('cantar.soloOn') : t('cantar.solo')
+            ),
+            el(
+              'button',
+              {
+                class: 'btn btn--sm btn--ghost',
+                'data-act': 'reset',
+                disabled: !clip && !ui.recording ? true : undefined,
+                onclick: () => resetOtter(i)
+              },
+              t('cantar.reset')
+            )
           )
         );
-        ottersRow.append(card);
+        wrap.append(card, deck);
+        ottersRow.append(wrap);
       }
       paintOtterAnims();
-      if (otterUi.some((u) => u.looping || u.recording)) startOtterAnim();
+      if (otterUi.some((u) => u.playing || u.recording)) startOtterAnim();
     }
 
     function renderFx() {
@@ -231,9 +342,10 @@ export default {
               onclick: () => {
                 fx = f.id;
                 applyFx();
+                ensureMic().catch((err) => toast(err.message || 'Sem microfone.', 'error'));
               }
             },
-            f.name
+            t(`cantar.fx.${f.id}`, f.name)
           )
         );
       });
@@ -244,14 +356,19 @@ export default {
 
     async function fillBacking() {
       backingSel.innerHTML = '';
-      backingSel.append(el('option', { value: 'none' }, 'Sem base'), el('option', { value: 'arpeggio' }, 'Arpejo menor'));
+      BEDS.forEach((b) => backingSel.append(el('option', { value: b.id }, t(b.key, b.label))));
       try {
         const items = await gallery.list();
         items
           .filter((i) => i.type === 'beat' || i.type === 'audio')
-          .forEach((i) => backingSel.append(el('option', { value: `${i.type}:${i.id}` }, `${i.type === 'beat' ? 'Beat' : 'Áudio'} · ${i.name}`)));
+          .forEach((i) =>
+            backingSel.append(
+              el('option', { value: `${i.type}:${i.id}` }, t('cantar.fromGal', { kind: i.type === 'beat' ? t('cantar.beat') : t('cantar.audio'), name: i.name }))
+            )
+          );
       } catch {}
-      backingSel.value = backing === 'arpeggio' || backing === 'none' ? backing : backingSel.querySelector(`option[value="${backing}"]`) ? backing : 'arpeggio';
+      const has = [...backingSel.options].some((o) => o.value === backing);
+      backingSel.value = has ? backing : 'arpeggio';
       backing = backingSel.value;
     }
 
@@ -268,9 +385,12 @@ export default {
           Tone = await startAudio();
           if (!alive) return;
           voiceFx = createVoiceFx(Tone);
-          backingGain = new Tone.Gain(0.36).toDestination();
+          backingGain = new Tone.Gain(0.52).toDestination();
+          pitchGain = new Tone.Gain(0.28).toDestination();
           Tone.Transport.bpm.value = bpm;
           applyFx();
+          startPitchDrone();
+          await startBacking();
         })();
         audioPromise.catch((err) => {
           audioPromise = null;
@@ -282,27 +402,64 @@ export default {
 
     async function startMic() {
       await ensureAudio();
-      stream = await navigator.mediaDevices.getUserMedia({
+      if (stream) return stream;
+      // EC/NS/AGC do SO ficam off de propósito: com eles ligados os chips (Alvinhos, Eco, Caverna…)
+      // viram a mesma voz abafada. Ruído de fundo sai no grafo (HPF + Tone.Gate + limiter), não aqui.
+      const gum = navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
           channelCount: 1
         },
         video: false
       });
+      gum.catch(() => {});
+      let timedOut = false;
+      try {
+        stream = await Promise.race([
+          gum,
+          new Promise((_, reject) =>
+            setTimeout(() => {
+              timedOut = true;
+              reject(new Error('Microfone não respondeu. Clique em Ligar microfone.'));
+            }, 4500)
+          )
+        ]);
+      } catch (err) {
+        if (timedOut) gum.then((s) => s.getTracks().forEach((t) => t.stop())).catch(() => {});
+        throw err;
+      }
+      if (!alive) {
+        stream.getTracks().forEach((t) => t.stop());
+        stream = null;
+        return null;
+      }
       const src = Tone.context.createMediaStreamSource(stream);
-      micNode = new Tone.Gain(1.05);
+      micNode = new Tone.Gain(1);
       Tone.connect(src, micNode);
       Tone.connect(micNode, voiceFx.input);
       recBtn.disabled = false;
-      micBtn.textContent = 'Microfone ligado';
+      micBtn.textContent = t('cantar.micLive');
       micBtn.disabled = true;
-      status.textContent = 'Cante perto do microfone. Natural fica limpo; cada chip liga um efeito diferente.';
+      status.textContent = t('cantar.statusLive');
       applyFx();
-      if (sync) Tone.Transport.start('+0.05');
+      if (sync && Tone.Transport.state !== 'started') Tone.Transport.start('+0.05');
       tickMouth();
+      startPitchDrone();
       await startBacking();
+      return stream;
+    }
+
+    async function ensureMic() {
+      if (stream) return stream;
+      if (!micPromise) {
+        micPromise = startMic().catch((err) => {
+          micPromise = null;
+          throw err;
+        });
+      }
+      return micPromise;
     }
 
     function tickMouth() {
@@ -315,18 +472,18 @@ export default {
       for (let i = 0; i < n; i++) sum += buf[i] * buf[i];
       rms = Math.sqrt(sum / n);
       const g = voiceFx.snapshot();
-      voiceFx.setGate(rms > 0.016, g.gateFloor);
+      voiceFx.setGate(rms > 0.012, g.gateFloor);
       voiceFx.setNoiseEnvelope(rms);
-      const open = rms > 0.025;
+      const open = rms > 0.02;
       if (open !== mouthOpen) {
         mouthOpen = open;
         paintCat();
       }
-      meterFill.style.width = `${Math.min(100, rms * 420)}%`;
+      meterFill.style.width = `${Math.min(100, rms * 380)}%`;
       pitchFrame++;
       const wantsSnap = fx === 'autotune' || (autotune && OVERLAY_IDS.has(fx));
-      if (pitchFrame % 2 === 0) {
-        const hz = detectPitchYin(buf, Tone.context.sampleRate);
+      if (pitchFrame % 3 === 0 && (wantsSnap || fx === 'talkbox')) {
+        const hz = detectPitchYin(buf.subarray(0, 512), Tone.context.sampleRate);
         if (hz) {
           pitchHz = hz;
           const snapped = snapHz(hz);
@@ -342,24 +499,183 @@ export default {
       raf = requestAnimationFrame(tickMouth);
     }
 
-    async function startBacking() {
-      stopBacking();
-      if (!Tone || backing === 'none') return;
+    function stopPitchDrone() {
+      pitchVoices.forEach((v) => {
+        try {
+          v.stop();
+        } catch {}
+        try {
+          v.dispose && v.dispose();
+        } catch {}
+      });
+      pitchVoices = [];
+    }
+
+    function startPitchDrone() {
+      stopPitchDrone();
+      if (!Tone || !pitchGain || pitchNote === 'off') return;
+      const meta = PITCH_NOTES.find((n) => n.id === pitchNote);
+      if (!meta || !meta.freq) return;
+      const sine = new Tone.Oscillator({ type: 'sine', frequency: meta.freq, volume: -14 }).connect(pitchGain);
+      const hum = new Tone.Oscillator({ type: 'triangle', frequency: meta.freq / 2, volume: -20 }).connect(pitchGain);
+      sine.start();
+      hum.start();
+      pitchVoices = [sine, hum];
+    }
+
+    function backingMidi() {
+      const root = pitchNote === 'off' ? 'C4' : pitchNote;
+      return Tone.Frequency(root).toMidi();
+    }
+
+    function noteAt(midi, st) {
+      return Tone.Frequency(midi + st, 'midi').toNote();
+    }
+
+    function startGeneratedBed() {
+      const midi = backingMidi();
       if (backing === 'arpeggio') {
-        const synth = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.12, sustain: 0, release: 0.08 }, volume: -14 }).connect(backingGain);
-        const notes = ['A3', 'C4', 'E4', 'A4', 'E4', 'C4'];
+        const hp = new Tone.Filter(140, 'highpass').connect(backingGain);
+        const synth = new Tone.Synth({
+          oscillator: { type: 'sawtooth' },
+          envelope: { attack: 0.006, decay: 0.16, sustain: 0.1, release: 0.12 },
+          volume: -9
+        }).connect(hp);
+        const sparkle = new Tone.Synth({
+          oscillator: { type: 'triangle' },
+          envelope: { attack: 0.002, decay: 0.22, sustain: 0, release: 0.08 },
+          volume: -12
+        }).connect(hp);
+        const notes = [noteAt(midi, -12), noteAt(midi, -8), noteAt(midi, -5), noteAt(midi, 0), noteAt(midi, -5), noteAt(midi, -8)];
+        const highs = [noteAt(midi, 7), noteAt(midi, 12), noteAt(midi, 15), noteAt(midi, 19), noteAt(midi, 15), noteAt(midi, 12)];
         let i = 0;
         backingLoop = new Tone.Loop((time) => {
           const n = notes[i % notes.length];
+          const h = highs[i % highs.length];
           synth.triggerAttackRelease(n, '8n', time);
-          log.note({ note: Tone.Frequency(n).toMidi(), inst: 'keys', track: 'arpejo', time, dur: 30 / bpm, vel: 0.6 });
+          sparkle.triggerAttackRelease(h, '16n', time);
+          log.note({ note: Tone.Frequency(n).toMidi(), inst: 'keys', track: 'arpejo', time, dur: 30 / bpm, vel: 0.72 });
           i++;
         }, '8n').start(0);
-        backingVoices = [synth];
+        backingVoices = [synth, sparkle, hp];
+        return;
+      }
+      if (backing === 'pad') {
+        const lp = new Tone.Filter(780, 'lowpass').connect(backingGain);
+        const synth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.55, decay: 0.35, sustain: 0.72, release: 1.6 },
+          volume: -16
+        }).connect(lp);
+        const chord = [0, 3, 7, 10].map((st) => noteAt(midi, st - 12));
+        backingLoop = new Tone.Loop((time) => {
+          synth.triggerAttackRelease(chord, '1n', time);
+        }, '1n').start(0);
+        backingVoices = [synth, lp];
+        return;
+      }
+      if (backing === 'choir') {
+        const lp = new Tone.Filter(1200, 'lowpass').connect(backingGain);
+        const chorus = new Tone.Chorus({ frequency: 0.55, delayTime: 3.2, depth: 0.35, wet: 0.45 }).connect(lp);
+        try {
+          chorus.start();
+        } catch {}
+        const voices = [-12, -8, -5, 0].map((st, i) => {
+          const osc = new Tone.Oscillator({
+            type: i % 2 ? 'triangle' : 'sine',
+            frequency: Tone.Frequency(midi + st, 'midi').toFrequency() * (1 + (i - 1.5) * 0.0035),
+            volume: -21
+          }).connect(chorus);
+          osc.start();
+          return osc;
+        });
+        backingVoices = [...voices, chorus, lp];
+        return;
+      }
+      if (backing === 'beat') {
+        const kick = new Tone.MembraneSynth({
+          pitchDecay: 0.03,
+          octaves: 5,
+          envelope: { attack: 0.001, decay: 0.28, sustain: 0, release: 0.08 },
+          volume: -9
+        }).connect(backingGain);
+        const snareHp = new Tone.Filter(1400, 'highpass').connect(backingGain);
+        const snare = new Tone.NoiseSynth({
+          noise: { type: 'white' },
+          envelope: { attack: 0.001, decay: 0.14, sustain: 0 },
+          volume: -12
+        }).connect(snareHp);
+        const hat = new Tone.MetalSynth({
+          envelope: { attack: 0.001, decay: 0.05, release: 0.02 },
+          harmonicity: 5.1,
+          modulationIndex: 32,
+          resonance: 4200,
+          octaves: 1.5,
+          volume: -28
+        }).connect(backingGain);
+        let step = 0;
+        backingLoop = new Tone.Loop((time) => {
+          const s = step % 16;
+          if (s === 0 || s === 8) kick.triggerAttackRelease('C1', '8n', time);
+          if (s === 4 || s === 12) snare.triggerAttackRelease('16n', time);
+          if (s % 2 === 0) hat.triggerAttackRelease(280, '32n', time);
+          step++;
+        }, '16n').start(0);
+        backingVoices = [kick, snare, snareHp, hat];
+        return;
+      }
+      if (backing === 'bassclick') {
+        const bass = new Tone.MonoSynth({
+          oscillator: { type: 'square' },
+          filter: { Q: 2.2, type: 'lowpass' },
+          envelope: { attack: 0.01, decay: 0.16, sustain: 0.32, release: 0.12 },
+          filterEnvelope: { attack: 0.02, decay: 0.18, sustain: 0.2, baseFrequency: 80, octaves: 2.1 },
+          volume: -11
+        }).connect(backingGain);
+        const clickHp = new Tone.Filter(2500, 'highpass').connect(backingGain);
+        const click = new Tone.NoiseSynth({
+          noise: { type: 'white' },
+          envelope: { attack: 0.001, decay: 0.028, sustain: 0 },
+          volume: -18
+        }).connect(clickHp);
+        const bassNotes = [0, 0, 7, 0].map((st) => noteAt(midi, st - 24));
+        let i = 0;
+        backingLoop = new Tone.Loop((time) => {
+          click.triggerAttackRelease('32n', time);
+          if (i % 2 === 0) bass.triggerAttackRelease(bassNotes[(i / 2) % bassNotes.length], '8n', time);
+          i++;
+        }, '8n').start(0);
+        backingVoices = [bass, click, clickHp];
+      }
+    }
+
+    async function startBacking() {
+      stopBacking();
+      if (!Tone || backing === 'none') return;
+      if (GENERATED_BEDS.has(backing)) {
+        startGeneratedBed();
         if (Tone.Transport.state !== 'started') Tone.Transport.start('+0.05');
         return;
       }
       const [kind, id] = backing.split(':');
+      if (kind === 'audio' && id) {
+        try {
+          const read = await gallery.read(id);
+          if (!read || !read.data) throw new Error('Áudio vazio.');
+          const bytes = read.data instanceof Uint8Array ? read.data : new Uint8Array(read.data);
+          const blob = new Blob([bytes], { type: (read.item && read.item.mime) || 'audio/webm' });
+          const buffer = await decodePhraseBlob(Tone, blob);
+          const player = new Tone.Player({ url: buffer, loop: true, fadeIn: 0.02, fadeOut: 0.05, volume: -6 }).connect(backingGain);
+          try {
+            await Promise.race([player.loaded, new Promise((r) => setTimeout(r, 120))]);
+          } catch {}
+          player.start();
+          backingVoices = [player];
+        } catch (err) {
+          toast(`Não deu para puxar o áudio da Galeria: ${err.message}`, 'error');
+        }
+        return;
+      }
       if (kind !== 'beat' || !id) return;
       try {
         const read = await gallery.read(id);
@@ -375,20 +691,27 @@ export default {
         }, '16n').start(0);
         if (Tone.Transport.state !== 'started') Tone.Transport.start('+0.05');
       } catch (err) {
-        toast(`Não deu para puxar a base: ${err.message}`, 'error');
+        toast(`Não deu para puxar o acompanhamento: ${err.message}`, 'error');
       }
     }
 
     function stopBacking() {
       if (backingLoop) backingLoop.dispose();
       backingLoop = null;
-      backingVoices.forEach((v) => v.dispose && v.dispose());
+      backingVoices.forEach((v) => {
+        try {
+          v.stop && v.stop();
+        } catch {}
+        try {
+          v.dispose && v.dispose();
+        } catch {}
+      });
       backingVoices = [];
     }
 
     async function ensureOtterGain() {
       await ensureAudio();
-      if (!otterGain) otterGain = new Tone.Gain(0.55).toDestination();
+      if (!otterGain) otterGain = new Tone.Gain(0.62).toDestination();
       return otterGain;
     }
 
@@ -396,15 +719,11 @@ export default {
       const p = otterPlayers[i];
       otterPlayers[i] = null;
       if (p && p.dispose) p.dispose();
-      otterUi[i].looping = false;
       otterUi[i].singing = false;
     }
 
-    function clearOtter(i) {
-      if (otterRecSession && otterRecSession.i === i) otterRecSession.stop();
-      stopOtterLoop(i);
-      otterClips[i] = null;
-      renderOtters();
+    function otterAudible(i) {
+      return Boolean(otterClips[i] && otterUi[i].playing && !otterUi[i].recording && (otterSolo == null || otterSolo === i));
     }
 
     async function startOtterLoop(i) {
@@ -417,7 +736,17 @@ export default {
       const next = await startOtterLoopPlayer(Tone, clip.buffer, otterGain, interval);
       otterPlayers[i] = next;
       if (prev && prev !== next && prev.dispose) prev.dispose();
-      otterUi[i].looping = true;
+      otterUi[i].playing = true;
+      startOtterAnim();
+      paintOtterAnims();
+    }
+
+    async function syncOtterAudio() {
+      for (let i = 0; i < OTTER_SLOTS; i++) {
+        const want = otterAudible(i);
+        if (want && !otterPlayers[i]) await startOtterLoop(i);
+        else if (!want && otterPlayers[i]) stopOtterLoop(i);
+      }
       startOtterAnim();
       paintOtterAnims();
     }
@@ -425,20 +754,29 @@ export default {
     function paintOtterAnims() {
       for (let i = 0; i < OTTER_SLOTS; i++) {
         const card = otterCard(i);
+        const wrap = ottersRow.querySelector(`.cantar__otter-wrap[data-slot="${i}"]`);
         const p = otterPlayers[i];
-        const looping = Boolean(otterClips[i] && otterUi[i].looping);
-        const singing = Boolean(looping && p && p.singingAt && p.singingAt());
+        const audible = otterAudible(i) && Boolean(p);
+        const singing = Boolean(audible && p && p.singingAt && p.singingAt());
         otterUi[i].singing = singing;
+        if (wrap) {
+          wrap.classList.toggle('is-recording', otterUi[i].recording);
+          wrap.classList.toggle('is-playing', audible);
+          wrap.classList.toggle('is-solo', otterSolo === i);
+        }
         if (!card) continue;
         card.classList.toggle('is-on', Boolean(otterClips[i]));
-        card.classList.toggle('is-looping', looping);
+        card.classList.toggle('is-looping', audible);
         card.classList.toggle('is-singing', singing);
         card.classList.toggle('is-recording', otterUi[i].recording);
+        card.classList.toggle('is-solo', otterSolo === i);
+        const mark = card.querySelector('.cantar__otter-countdown');
+        if (mark && !otterUi[i].recording) mark.textContent = otterStatusText(i);
         const svg = card.querySelector('svg.creature');
         if (svg) {
-          svg.classList.toggle('is-dancing', looping || otterUi[i].recording);
+          svg.classList.toggle('is-dancing', audible || otterUi[i].recording);
           svg.classList.toggle('is-sing-open', singing || otterUi[i].recording);
-          svg.classList.toggle('is-idle', !looping && !otterUi[i].recording);
+          svg.classList.toggle('is-idle', !audible && !otterUi[i].recording);
         }
       }
     }
@@ -448,108 +786,29 @@ export default {
       const tick = () => {
         if (!alive) return;
         paintOtterAnims();
-        if (otterUi.some((u) => u.looping || u.recording)) otterAnimRaf = requestAnimationFrame(tick);
+        if (otterUi.some((u) => u.playing || u.recording)) otterAnimRaf = requestAnimationFrame(tick);
         else otterAnimRaf = 0;
       };
       otterAnimRaf = requestAnimationFrame(tick);
     }
 
-    function askOtterDuration(i) {
-      return new Promise((resolve) => {
-        let secs = 2;
-        const label = el('span', { class: 'pill' }, '2 segundos');
-        const range = el('input', {
-          class: 'range cantar__dur-range',
-          type: 'range',
-          min: String(OTTER_REC_MIN),
-          max: String(OTTER_REC_MAX),
-          step: '0.5',
-          value: '2',
-          'aria-label': 'Duração da gravação em segundos'
-        });
-        const num = el('input', {
-          class: 'input cantar__dur-num',
-          type: 'number',
-          min: String(OTTER_REC_MIN),
-          max: String(OTTER_REC_MAX),
-          step: '0.5',
-          value: '2',
-          'aria-label': 'Segundos de gravação'
-        });
-        const syncDur = (v) => {
-          secs = clampOtterSeconds(v, OTTER_REC_MIN, OTTER_REC_MAX, 2);
-          range.value = String(secs);
-          num.value = String(secs);
-          label.textContent = secs === 1 ? '1 segundo' : `${secs} segundos`;
-        };
-        range.addEventListener('input', () => syncDur(range.value));
-        num.addEventListener('input', () => syncDur(num.value));
-        modal({
-          title: `Gravar frase · Lontrinha ${i + 1}`,
-          body: el(
-            'div',
-            { class: 'cantar__otter-ask' },
-            el('p', {}, 'Escolha quanto tempo gravar no mesmo microfone do Cantar. Depois a lontrinha fica repetindo.'),
-            el('div', { class: 'cantar__otter-ask-row' }, label, num, el('span', { class: 'muted' }, 's')),
-            range
-          ),
-          onClose: resolve,
-          actions: [
-            { label: 'Cancelar', value: null },
-            { label: 'Gravar agora', kind: 'primary', onClick: (close) => close(secs) }
-          ]
-        });
-      });
-    }
-
-    async function captureOtterPhrase(i, seconds) {
-      const statusP = el('p', { class: 'cantar__otter-countdown' }, `Gravando… ${Number(seconds).toFixed(1)} s`);
-      let settled = false;
-      let cancelled = false;
-      const session = recordPhraseFromStream(stream, seconds, {
-        onTick: (left) => {
-          statusP.textContent = `Gravando… ${left.toFixed(1)} s`;
-          const mark = otterCard(i) && otterCard(i).querySelector('.cantar__otter-countdown');
-          if (mark) mark.textContent = `Gravando ${left.toFixed(1)} s`;
-        }
-      });
-      otterRecSession = { i, stop: session.stop };
-      otterUi[i].recording = true;
-      renderOtters();
-      const recModal = modal({
-        title: `Lontrinha ${i + 1} gravando`,
-        body: el('div', {}, el('p', {}, 'Cante a frase. A voz ao vivo e as outras lontrinhas continuam.'), statusP),
-        onClose: (v) => {
-          if (v !== 'done') session.stop();
-          if (v == null) cancelled = true;
-        },
-        actions: [{ label: 'Parar agora', kind: 'primary', onClick: (close) => close('stop') }]
-      });
-      try {
-        const result = await session.done;
-        settled = true;
-        recModal.close('done');
-        if (cancelled) return null;
-        return result;
-      } finally {
-        otterRecSession = null;
-        otterUi[i].recording = false;
-        if (!settled) recModal.close('done');
-      }
+    function paintRecTick(i, elapsed) {
+      otterUi[i].elapsed = elapsed;
+      const mark = otterCard(i) && otterCard(i).querySelector('.cantar__otter-countdown');
+      if (mark) mark.textContent = `Gravando ${formatOtterClock(elapsed)}`;
     }
 
     async function recordOtter(i) {
+      if (otterUi[i].recording) return;
       if (otterBusy || otterUi.some((u) => u.recording)) {
-        toast('Espere a outra frase terminar.', 'info');
+        toast('Espere a outra frase — pause ela primeiro.', 'info');
         return;
       }
       otterBusy = true;
+      let discard = false;
       try {
-        const seconds = await askOtterDuration(i);
-        if (seconds == null) return;
         try {
-          await ensureAudio();
-          if (!stream) await startMic();
+          await ensureMic();
         } catch (err) {
           toast(err.message || 'Sem microfone.', 'error');
           return;
@@ -558,21 +817,48 @@ export default {
           toast('Não achei o microfone.', 'error');
           return;
         }
+        otterUi[i].playing = false;
         stopOtterLoop(i);
-        const result = await captureOtterPhrase(i, seconds);
+        otterUi[i].recording = true;
+        otterUi[i].elapsed = 0;
+        renderOtters();
+        const session = recordPhraseFromStream(stream, {
+          maxSeconds: OTTER_REC_MAX,
+          autoStop: false,
+          onTick: (_left, elapsed) => paintRecTick(i, elapsed)
+        });
+        otterRecSession = {
+          i,
+          stop: session.stop,
+          discard() {
+            discard = true;
+            return session.stop();
+          }
+        };
+        const result = await session.done;
+        otterRecSession = null;
+        otterUi[i].recording = false;
+        otterUi[i].elapsed = 0;
+        if (discard) {
+          renderOtters();
+          return;
+        }
         if (!result || !result.blob || result.blob.size < 32) {
           renderOtters();
-          if (result) toast('Gravação vazia — tente de novo.', 'warn');
+          toast('Gravação vazia — tente de novo.', 'warn');
           return;
         }
         const buffer = await decodePhraseBlob(Tone, result.blob);
         const duration = buffer.duration;
         const interval = clampOtterSeconds(duration, OTTER_INTERVAL_MIN, OTTER_INTERVAL_MAX, Math.max(1, Math.round(duration * 2) / 2));
         otterClips[i] = { name: `Lontrinha ${i + 1}`, buffer, duration, interval };
-        await startOtterLoop(i);
+        otterUi[i].playing = false;
+        await syncOtterAudio();
         renderOtters();
-        toast(`${profile.otter.name} ${i + 1} repetindo a cada ${formatOtterSeconds(interval)}.`, 'ok');
+        toast(`${profile.otter.name} ${i + 1} gravada. Pause feito — agora Play.`, 'ok');
       } catch (err) {
+        otterRecSession = null;
+        otterUi[i].recording = false;
         renderOtters();
         toast(err.message || 'Não deu para gravar a frase.', 'error');
       } finally {
@@ -580,13 +866,63 @@ export default {
       }
     }
 
-    async function setOtterClip(i, { duration = 0.25, interval, freq } = {}) {
+    async function pauseOtter(i) {
+      if (otterUi[i].recording && otterRecSession && otterRecSession.i === i) {
+        await otterRecSession.stop();
+        return;
+      }
+      otterUi[i].playing = false;
+      stopOtterLoop(i);
+      renderOtters();
+    }
+
+    async function playOtter(i) {
+      if (!otterClips[i] || otterUi[i].recording) return;
+      otterUi[i].playing = true;
+      await syncOtterAudio();
+      renderOtters();
+    }
+
+    async function soloOtter(i) {
+      if (!otterClips[i] && otterSolo !== i) return;
+      if (otterSolo === i) otterSolo = null;
+      else {
+        otterSolo = i;
+        if (otterClips[i] && !otterUi[i].recording) otterUi[i].playing = true;
+      }
+      await syncOtterAudio();
+      renderOtters();
+    }
+
+    async function resetOtter(i) {
+      const rec = otterRecSession && otterRecSession.i === i ? otterRecSession : null;
+      otterClips[i] = null;
+      otterUi[i].playing = false;
+      otterUi[i].recording = false;
+      otterUi[i].elapsed = 0;
+      if (otterSolo === i) otterSolo = null;
+      stopOtterLoop(i);
+      if (rec) {
+        try {
+          await rec.discard();
+        } catch {}
+      }
+      await syncOtterAudio();
+      renderOtters();
+    }
+
+    function clearOtter(i) {
+      return resetOtter(i);
+    }
+
+    async function setOtterClip(i, { duration = 0.25, interval, freq, play = false } = {}) {
       await ensureOtterGain();
       const ctx = Tone.getContext().rawContext || Tone.context;
       const buffer = makeBeepBuffer(ctx, { seconds: duration, freq: freq || 440 + i * 90 });
       const iv = clampOtterSeconds(interval ?? Math.max(1, duration), OTTER_INTERVAL_MIN, OTTER_INTERVAL_MAX, 1);
       otterClips[i] = { name: `Lontrinha ${i + 1}`, buffer, duration: buffer.duration, interval: iv };
-      await startOtterLoop(i);
+      otterUi[i].playing = Boolean(play);
+      await syncOtterAudio();
       renderOtters();
       return true;
     }
@@ -595,9 +931,9 @@ export default {
       const clip = otterClips[i];
       if (!clip) return clip;
       clip.interval = clampOtterSeconds(sec, OTTER_INTERVAL_MIN, OTTER_INTERVAL_MAX, clip.interval);
-      const input = otterCard(i) && otterCard(i).querySelector('.cantar__otter-interval-num');
+      const input = otterCard(i) && ottersRow.querySelector(`.cantar__otter-wrap[data-slot="${i}"] .cantar__otter-interval-num`);
       if (input) input.value = String(clip.interval);
-      if (otterUi[i].looping) await startOtterLoop(i);
+      if (otterUi[i].playing) await syncOtterAudio();
       return clip;
     }
 
@@ -605,12 +941,14 @@ export default {
       const mix = Number(mixInput.value) / 100;
       const duck = currentGraph().backingDuck ?? 1;
       if (voiceFx) voiceFx.setOutGain(mix);
-      if (backingGain) backingGain.gain.value = (1 - mix / 2) * duck;
+      if (backingGain) backingGain.gain.value = (0.42 + (1 - mix) * 0.55) * duck;
+      if (pitchGain) pitchGain.gain.value = 0.18 + (1 - mix) * 0.16;
     }
 
     recBtn.addEventListener('click', async () => {
       try {
         await ensureAudio();
+        await ensureMic().catch(() => {});
         if (rec) {
           const r = rec;
           rec = null;
@@ -637,16 +975,16 @@ export default {
       }
     });
 
-    micBtn.addEventListener('click', () => startMic().catch((err) => toast(err.message || 'Sem microfone.', 'error')));
+    micBtn.addEventListener('click', () => ensureMic().catch((err) => toast(err.message || 'Sem microfone.', 'error')));
     autoBtn.addEventListener('click', () => {
       autotune = !autotune;
-      autoBtn.textContent = `Autotune: ${autotune ? 'Sim' : 'Não'}`;
+      autoBtn.textContent = t('cantar.auto', { on: autotune ? t('cantar.yes') : t('cantar.no') });
       autoBtn.setAttribute('aria-pressed', String(autotune));
       applyFx();
     });
     syncBtn.addEventListener('click', () => {
       sync = !sync;
-      syncBtn.textContent = `Sync: ${sync ? 'Sim' : 'Não'}`;
+      syncBtn.textContent = t('cantar.sync', { on: sync ? t('cantar.yes') : t('cantar.no') });
       syncBtn.setAttribute('aria-pressed', String(sync));
       if (Tone) {
         if (sync && Tone.Transport.state !== 'started') Tone.Transport.start();
@@ -664,6 +1002,15 @@ export default {
       backing = backingSel.value;
       startBacking().catch((err) => toast(err.message, 'error'));
     });
+    pitchSel.addEventListener('change', () => {
+      pitchNote = pitchSel.value;
+      ensureAudio()
+        .then(() => {
+          startPitchDrone();
+          if (GENERATED_BEDS.has(backing)) return startBacking();
+        })
+        .catch((err) => toast(err.message, 'error'));
+    });
 
     root.append(
       el(
@@ -672,28 +1019,40 @@ export default {
         el(
           'section',
           { class: 'panel cantar__stage' },
-          el('div', { class: 'panel__head' }, el('h2', {}, 'Palco'), el('span', { class: 'pill' }, profile.cat.name)),
+          el('div', { class: 'panel__head' }, el('h2', {}, t('cantar.stage')), el('span', { class: 'pill' }, profile.cat.name)),
           meter,
           catStage,
-          el('h3', { class: 'subhead' }, `Sobrevoz · ${profile.otter.name}`),
+          el('h3', { class: 'subhead' }, t('cantar.overvoice', { name: profile.otter.name })),
           ottersRow
         ),
         el(
           'section',
           { class: 'panel cantar__desk' },
-          el('label', { class: 'field' }, el('span', { class: 'field__label' }, 'Nome'), nameInput),
+          el('label', { class: 'field' }, el('span', { class: 'field__label' }, t('cantar.name')), nameInput),
           el('div', { class: 'toolbar' }, micBtn, recBtn, timer),
           status,
-          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Modificador de voz'), fxRow, fxCaption, autoBtn),
+          el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('cantar.fx')), fxRow, fxCaption, autoBtn),
           el(
             'div',
             { class: 'field' },
-            el('span', { class: 'field__label' }, 'Base (puxa da Galeria ou arpejo)'),
+            el('span', { class: 'field__label cantar__backing-label' }, t('cantar.backing')),
             backingSel,
+            el('p', { class: 'cantar__field-hint' }, t('cantar.backingHint')),
             el('div', { class: 'row-actions' }, syncBtn, bpmLabel, bpmInput)
           ),
-          el('div', { class: 'field' }, el('span', { class: 'field__label' }, 'Mix da voz'), mixInput),
-          el('p', { class: 'hint' }, 'Natural é limpo (gate, filtro e compressão). Os outros chips ligam só o efeito escolhido — Agudo/Grave mudam o tom, Eco atrasos, Robô metal, Caverna reverb, Velhinha vibrato. Cada lontrinha grava uma frase (você escolhe os segundos) e fica repetindo junto da voz.')
+          el(
+            'div',
+            { class: 'field cantar__pitch' },
+            el('span', { class: 'field__label' }, t('cantar.pitch')),
+            pitchSel,
+            el('p', { class: 'cantar__field-hint' }, t('cantar.pitchHint'))
+          ),
+          el('div', { class: 'field' }, el('span', { class: 'field__label' }, t('cantar.mix')), mixInput),
+          el(
+            'p',
+            { class: 'hint' },
+            t('cantar.hint')
+          )
         )
       )
     );
@@ -708,24 +1067,34 @@ export default {
         fx,
         autotune,
         backing,
+        beds: BEDS.map((b) => b.id),
+        nsLibrary: NS_LIBRARY,
+        pitchNote,
         bpm,
         sync,
         rms,
         pitchHz,
         otters: otterClips.filter(Boolean).length,
+        otterSolo,
         mic: Boolean(stream),
         graph: currentGraph(),
         otterLoops: otterClips.map((c, i) => ({
           hasClip: Boolean(c),
           interval: c ? c.interval : null,
           duration: c ? c.duration : null,
-          looping: otterUi[i].looping,
+          looping: otterAudible(i),
+          playing: otterUi[i].playing,
+          paused: Boolean(c) && !otterUi[i].playing && !otterUi[i].recording,
           recording: otterUi[i].recording,
-          singing: otterUi[i].singing
+          singing: otterUi[i].singing,
+          audible: otterAudible(i) && Boolean(otterPlayers[i]),
+          solo: otterSolo === i
         }))
       }),
       graph: () => currentGraph(),
       fingerprint: () => fingerprint(currentGraph()),
+      ns: () => ({ library: NS_LIBRARY, gate: true, limiter: true, rumbleHp: 90 }),
+      beds: () => BEDS.map((b) => ({ id: b.id, label: t(b.key, b.label) })),
       boot: () => ensureAudio(),
       setFx: (id) => {
         fx = normalizeFxId(id);
@@ -733,13 +1102,20 @@ export default {
       },
       setAutotune: (on) => {
         autotune = Boolean(on);
-        autoBtn.textContent = `Autotune: ${autotune ? 'Sim' : 'Não'}`;
+        autoBtn.textContent = t('cantar.auto', { on: autotune ? t('cantar.yes') : t('cantar.no') });
         autoBtn.setAttribute('aria-pressed', String(autotune));
         applyFx();
       },
       setBacking: (id) => {
         backing = id;
-        backingSel.value = id;
+        if ([...backingSel.options].some((o) => o.value === id)) backingSel.value = id;
+        if (Tone) startBacking().catch(() => {});
+      },
+      setPitchNote: (id) => {
+        pitchNote = PITCH_NOTES.some((n) => n.id === id) ? id : 'off';
+        pitchSel.value = pitchNote;
+        startPitchDrone();
+        if (Tone && GENERATED_BEDS.has(backing)) startBacking().catch(() => {});
       },
       setRms: (v) => {
         rms = v;
@@ -748,8 +1124,15 @@ export default {
       },
       setOtterClip,
       setOtterInterval,
+      playOtter,
+      pauseOtter,
+      soloOtter,
+      resetOtter,
+      openOtterDeck: () => renderOtters(),
       clearOtter
     };
+
+    status.textContent = t('cantar.status');
 
     return {
       async save() {
@@ -762,6 +1145,7 @@ export default {
         cancelAnimationFrame(otterAnimRaf);
         clearInterval(recTimer);
         stopBacking();
+        stopPitchDrone();
         if (otterRecSession) otterRecSession.stop();
         for (let i = 0; i < OTTER_SLOTS; i++) stopOtterLoop(i);
         if (otterGain) otterGain.dispose();
@@ -769,6 +1153,7 @@ export default {
         if (rec) rec.dispose();
         if (voiceFx) voiceFx.dispose();
         if (backingGain) backingGain.dispose();
+        if (pitchGain) pitchGain.dispose();
         if (micNode) micNode.dispose();
         if (window.__mmpCantar) delete window.__mmpCantar;
       }

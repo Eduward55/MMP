@@ -1,8 +1,9 @@
 // Lontrinhas no Cantar: MediaRecorder no mesmo mic + Tone.Player em loop.
 // Independente do grafo de FX e do Tone.Transport (as três tocam em paralelo).
+// Grava até Pausar — sem modal de duração e sem auto-loop.
 
-export const OTTER_REC_MIN = 1;
-export const OTTER_REC_MAX = 8;
+export const OTTER_REC_MIN = 0.4;
+export const OTTER_REC_MAX = 30;
 export const OTTER_INTERVAL_MIN = 1;
 export const OTTER_INTERVAL_MAX = 16;
 
@@ -18,6 +19,14 @@ export function formatOtterSeconds(v) {
   if (!Number.isFinite(n)) return '—';
   const s = Number.isInteger(n) ? String(n) : String(n);
   return `${s} s`;
+}
+
+export function formatOtterClock(sec) {
+  const s = Math.max(0, Number(sec) || 0);
+  const m = Math.floor(s / 60);
+  const r = s - m * 60;
+  if (m <= 0) return `${r.toFixed(1)} s`;
+  return `${m}:${String(Math.floor(r)).padStart(2, '0')}`;
 }
 
 export function pickAudioRecorderMime() {
@@ -67,13 +76,33 @@ export async function decodePhraseBlob(Tone, blob) {
   }
 }
 
+function normalizeRecOpts(secondsOrOpts, maybeOpts) {
+  if (secondsOrOpts && typeof secondsOrOpts === 'object') {
+    const o = secondsOrOpts;
+    return {
+      maxSeconds: Math.max(OTTER_REC_MIN, Number(o.maxSeconds) || OTTER_REC_MAX),
+      autoStop: o.autoStop === true,
+      onTick: o.onTick
+    };
+  }
+  const o = maybeOpts || {};
+  const maxSeconds = Math.max(OTTER_REC_MIN, Number(secondsOrOpts) || OTTER_REC_MAX);
+  return {
+    maxSeconds,
+    autoStop: o.autoStop !== false && Number.isFinite(Number(secondsOrOpts)),
+    onTick: o.onTick
+  };
+}
+
 /**
  * Grava o MediaStream do Cantar sem parar as tracks originais (voz ao vivo segue).
+ * Sem autoStop: grava até stop() (Pausar) ou o teto maxSeconds.
  * @returns {{ stop: () => Promise<{blob: Blob, seconds: number}>, done: Promise<{blob: Blob, seconds: number}> }}
  */
-export function recordPhraseFromStream(stream, seconds, { onTick } = {}) {
+export function recordPhraseFromStream(stream, secondsOrOpts, maybeOpts) {
   if (!stream) return failRec('Microfone desligado.');
   if (typeof MediaRecorder === 'undefined') return failRec('Este navegador não grava áudio.');
+  const { maxSeconds, autoStop, onTick } = normalizeRecOpts(secondsOrOpts, maybeOpts);
 
   const recStream = typeof stream.clone === 'function' ? stream.clone() : stream;
   const mime = pickAudioRecorderMime();
@@ -93,7 +122,7 @@ export function recordPhraseFromStream(stream, seconds, { onTick } = {}) {
   let tickTimer = 0;
   let stopped = false;
   const t0 = performance.now();
-  const total = Math.max(0.4, Number(seconds) || 2) * 1000;
+  const total = Math.max(OTTER_REC_MIN, maxSeconds) * 1000;
 
   const blobP = new Promise((resolve, reject) => {
     mr.onstop = () => {
@@ -110,7 +139,7 @@ export function recordPhraseFromStream(stream, seconds, { onTick } = {}) {
     if (!stopped) {
       stopped = true;
       clearTimeout(tickTimer);
-      if (mr.state === 'recording') {
+      if (mr.state === 'recording' || mr.state === 'paused') {
         try {
           mr.requestData();
         } catch {}
@@ -123,7 +152,7 @@ export function recordPhraseFromStream(stream, seconds, { onTick } = {}) {
   };
 
   try {
-    mr.start(50);
+    mr.start(80);
   } catch (err) {
     stopClone(recStream, stream);
     return failRec(err.message || 'Não deu para começar a gravação.');
@@ -134,7 +163,11 @@ export function recordPhraseFromStream(stream, seconds, { onTick } = {}) {
     const elapsed = performance.now() - t0;
     const left = Math.max(0, total - elapsed);
     if (onTick) onTick(left / 1000, elapsed / 1000);
-    if (left <= 0) {
+    if (elapsed >= total) {
+      stop();
+      return;
+    }
+    if (autoStop && left <= 0) {
       stop();
       return;
     }
@@ -185,7 +218,22 @@ export async function startOtterLoopPlayer(Tone, buffer, dest, intervalSec) {
     interval,
     clipDuration,
     startedAt,
+    paused: false,
+    pause() {
+      try {
+        player.stop();
+      } catch {}
+      this.paused = true;
+    },
+    resume() {
+      try {
+        player.start();
+      } catch {}
+      this.startedAt = performance.now();
+      this.paused = false;
+    },
     singingAt(now = performance.now()) {
+      if (this.paused) return false;
       const cycle = this.interval * 1000;
       if (cycle <= 0) return false;
       const t = (now - this.startedAt) % cycle;

@@ -77,8 +77,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 10px 8px;
+  gap: 8px;
+  padding: 14px 10px 12px;
+  min-height: 168px;
   background: var(--bg);
   border: 1px solid var(--hairline);
   border-radius: 10px;
@@ -105,11 +106,15 @@
   animation: hop 0.32s ease-in-out infinite;
 }
 .cantar__otter-name {
-  font-family: var(--font-pixel);
-  font-size: 8px;
-  font-weight: 400;
-  letter-spacing: 0.04em;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
   color: var(--accent);
+  text-align: center;
+  transform: none;
+  white-space: nowrap;
 }
 .cantar__otter-countdown {
   font-size: 0.75rem;
@@ -188,8 +193,11 @@
 .cantar__otter-rec {
   grid-column: 1 / -1;
 }
-.cantar__pitch-sel {
+.cantar__pitch-sel,
+.cantar__backing-sel {
   min-width: 10rem;
+  width: 100%;
+  max-width: 100%;
 }
 .cantar__otter-transport .btn.is-on,
 .cantar__otter-transport .btn[aria-pressed='true'] {
