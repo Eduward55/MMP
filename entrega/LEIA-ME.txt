@@ -1,0 +1,9 @@
+My Music Place — Windows
+
+1. Junte os pedaços:
+   - Windows: dê dois cliques em juntar.bat
+   - Linux/Mac: ./juntar.sh
+2. Extraia MyMusicPlace-Windows.zip (a pasta inteira).
+3. Abra "My Music Place.exe" de dentro da pasta extraída.
+
+Não use http://127.0.0.1 — isso não é o seu computador.
