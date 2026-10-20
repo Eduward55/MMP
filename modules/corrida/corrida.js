@@ -7,6 +7,10 @@ import { el, startAudio, toast } from '../shared/ui.js';
 import { t } from '../shared/i18n.js';
 
 const KEY = 'corrida';
+export const CRUISE_MULT = 1;
+export const BOOST_MULT = 2;
+export const CRUISE_SPEED = 180;
+export const BOOST_SPEED = CRUISE_SPEED * BOOST_MULT;
 const CARS = [
   { id: 'laranja', nameKey: 'cr.laranja', body: '#e8954a', trim: '#9a3412' },
   { id: 'azul', nameKey: 'cr.azul', body: '#5b7c9a', trim: '#1e3a5f' },
@@ -32,7 +36,8 @@ export default {
     let y = 0.84;
     let vx = 0;
     let dist = 0;
-    let speed = 180;
+    let speed = CRUISE_SPEED;
+    let speedMult = CRUISE_MULT;
     let over = false;
     let paused = false;
     let alive = true;
@@ -52,7 +57,8 @@ export default {
     const car = el('div', { class: 'cr-car' });
     const fan = el('div', { class: 'cr-fan' });
     const skinRow = el('div', { class: 'chips cr-skins', role: 'radiogroup', 'aria-label': 'Carrinho' });
-    const stage = el('div', { class: 'cr-stage panel' }, canvas, car, overlay);
+    const boostFx = el('div', { class: 'cr-boostfx', 'aria-hidden': 'true' });
+    const stage = el('div', { class: 'cr-stage panel' }, canvas, boostFx, car, overlay);
     const pauseBtn = el('button', { class: 'btn btn--primary', onclick: () => togglePause() }, t('cr.pause'));
     const newBtn = el('button', { class: 'btn btn--ghost', onclick: () => newGame() }, t('cr.new'));
     const soundBtn = el('button', { class: 'btn btn--ghost btn--sm', onclick: () => toggleSound() }, '');
@@ -96,6 +102,7 @@ export default {
         <span class="cr-car__art">${kartSVG(s)}</span>
         <figure class="cr-car__pilot">${creatureSVG('cat', profile.cat, { size: 40, label: profile.cat.name, viewBox: '12 6 24 22' })}</figure>
         <span class="cr-car__flame cr-car__flame--l"></span>
+        <span class="cr-car__flame cr-car__flame--c"></span>
         <span class="cr-car__flame cr-car__flame--r"></span>`;
       fan.innerHTML = `
         <span class="cr-fan__art">${creatureSVG('otter', profile.otter, { size: 72, extraClass: 'is-dancing', label: profile.otter.name })}</span>
@@ -176,6 +183,10 @@ export default {
     const ROAD_BOT = 0.88;
     const LANE_HALF = 0.32;
 
+    function isBoosting() {
+      return !over && !paused && keys.has(' ');
+    }
+
     function roadHalf(ny) {
       const t = Math.max(0, Math.min(1, ny));
       return (ROAD_TOP + (ROAD_BOT - ROAD_TOP) * t) * 0.5;
@@ -224,9 +235,11 @@ export default {
       const zoom = String((0.62 + y * 0.4).toFixed(3));
       if (car.style.getPropertyValue('--zoom') !== zoom) car.style.setProperty('--zoom', zoom);
       const rushing = !over && !paused;
+      const boosting = isBoosting();
       car.classList.toggle('is-hit', hitFlash > 0);
       car.classList.toggle('is-run', rushing);
-      car.classList.toggle('is-boost', keys.has(' '));
+      car.classList.toggle('is-boost', boosting);
+      stage.classList.toggle('is-boost', boosting);
     }
 
     function showOverlay() {
@@ -253,7 +266,8 @@ export default {
       y = 0.84;
       vx = 0;
       dist = 0;
-      speed = 180;
+      speed = CRUISE_SPEED;
+      speedMult = CRUISE_MULT;
       over = false;
       paused = false;
       obstacles = [];
@@ -298,13 +312,12 @@ export default {
       const right = keys.has('d') || keys.has('arrowright');
       const up = keys.has('w') || keys.has('arrowup');
       const down = keys.has('s') || keys.has('arrowdown');
-      const boost = keys.has(' ');
+      const boosting = isBoosting();
       vx = (right ? 1 : 0) - (left ? 1 : 0);
       x = Math.max(0.22, Math.min(0.78, x + vx * dt * 0.85));
-      if (boost) speed = Math.min(540, speed + dt * 190);
-      else if (up) speed = Math.min(380, speed + dt * 70);
-      else if (down) speed = Math.max(150, speed - dt * 26);
-      else speed = Math.max(170, speed - dt * 14);
+      // Space = BOOST_MULT on world scroll. W/S only climb/drop the lane.
+      speedMult = boosting ? BOOST_MULT : CRUISE_MULT;
+      speed = CRUISE_SPEED * speedMult;
       if (up) y = Math.max(0.18, y - dt * 0.42);
       else if (down) y = Math.min(0.9, y + dt * 0.48);
       if (musicOn && !chip) ensureSound().catch(() => {});
@@ -326,8 +339,15 @@ export default {
       obstacles.forEach((o) => {
         if (Math.abs(o.x - px) < hitW + o.w * 0.42 && Math.abs(o.y - py) < hitH + 0.022) crash();
       });
-      if (Math.random() < dt * 14) {
-        spark.push({ x: x + (Math.random() - 0.5) * 0.04, y: y + 0.08, vy: 0.2 + Math.random() * 0.15, life: 0.35 });
+      const sparkRate = boosting ? 52 : 14;
+      if (Math.random() < dt * sparkRate) {
+        spark.push({
+          x: x + (Math.random() - 0.5) * (boosting ? 0.07 : 0.04),
+          y: y + 0.08,
+          vy: (boosting ? 0.55 : 0.2) + Math.random() * (boosting ? 0.4 : 0.15),
+          life: boosting ? 0.28 : 0.35,
+          boost: boosting
+        });
       }
       spark.forEach((s) => {
         s.y += s.vy * dt;
@@ -422,9 +442,43 @@ export default {
       ctx.fillStyle = pool;
       ctx.fillRect(carPx - poolR, carPy - poolR * 1.4, poolR * 2, poolR * 1.6);
 
+      if (isBoosting()) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx - topHalf, 0);
+        ctx.lineTo(cx + topHalf, 0);
+        ctx.lineTo(cx + botHalf, h);
+        ctx.lineTo(cx - botHalf, h);
+        ctx.closePath();
+        ctx.clip();
+        for (let i = 0; i < 22; i++) {
+          const nx = 0.24 + (i % 11) * 0.052;
+          const y0 = ((i * 0.13 + roadY * 0.11) % 1.15) - 0.08;
+          const y1 = y0 + 0.1 + (i % 3) * 0.03;
+          const sc = depthScale((y0 + y1) / 2);
+          ctx.strokeStyle = i % 2 ? 'rgba(254,243,199,0.45)' : 'rgba(255,255,255,0.32)';
+          ctx.lineWidth = 1 + sc * 2.2;
+          ctx.beginPath();
+          ctx.moveTo(projectX(nx, y0) * w, y0 * h);
+          ctx.lineTo(projectX(nx, y1) * w, y1 * h);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
       spark.forEach((s) => {
-        ctx.fillStyle = hexToRgba('#fb923c', Math.max(0, s.life * 2));
-        ctx.fillRect(projectX(s.x, s.y) * w - 2, s.y * h, 3, 8 * depthScale(s.y));
+        const sc = depthScale(s.y);
+        if (s.boost) {
+          ctx.strokeStyle = hexToRgba('#fdba74', Math.max(0, s.life * 3));
+          ctx.lineWidth = 2 + sc * 2;
+          ctx.beginPath();
+          ctx.moveTo(projectX(s.x, s.y) * w, s.y * h);
+          ctx.lineTo(projectX(s.x, s.y + 0.05) * w, (s.y + 0.05) * h);
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = hexToRgba('#fb923c', Math.max(0, s.life * 2));
+          ctx.fillRect(projectX(s.x, s.y) * w - 2, s.y * h, 3, 8 * sc);
+        }
       });
 
       obstacles.forEach((o) => {
@@ -516,12 +570,31 @@ export default {
     raf = requestAnimationFrame(loop);
 
     window.__mmpCorrida = {
-      state: () => ({ x, y, dist, speed, over, paused, obstacles: obstacles.length, kinds: obstacles.map((o) => o.kind), car: carSkin, boost: keys.has(' ') }),
+      state: () => ({
+        x,
+        y,
+        dist,
+        speed,
+        speedMult,
+        cruiseSpeed: CRUISE_SPEED,
+        boostSpeed: BOOST_SPEED,
+        cruiseMult: CRUISE_MULT,
+        boostMult: BOOST_MULT,
+        over,
+        paused,
+        obstacles: obstacles.length,
+        kinds: obstacles.map((o) => o.kind),
+        car: carSkin,
+        boost: isBoosting()
+      }),
       input: (k, on = true) => {
         if (on) keys.add(k);
         else keys.delete(k);
       },
-      tick: (dt) => tick(dt),
+      tick: (dt) => {
+        tick(dt);
+        hud();
+      },
       spawnSack: () => spawn('sack', 0.42),
       crash,
       newGame

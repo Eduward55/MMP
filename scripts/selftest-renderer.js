@@ -723,17 +723,60 @@
     CR.tick(0.4);
     CR.input('arrowleft', false);
     ok('Corrida: seta esquerda desvia', CR.state().x < x0, `${x0} → ${CR.state().x}`);
+    CR.newGame();
     const y0 = CR.state().y;
+    const spW = CR.state().speed;
     CR.input('arrowup', true);
     CR.tick(0.45);
     CR.input('arrowup', false);
-    ok('Corrida: acelerar sobe a pista', CR.state().y < y0 && CR.state().speed > 180, `${y0} → ${CR.state().y} · ${CR.state().speed}`);
+    ok(
+      'Corrida: W sobe a faixa sem ser o boost',
+      !CR.state().over && CR.state().y < y0 && CR.state().speed === CR.state().cruiseSpeed && CR.state().speed === spW && !CR.state().boost,
+      `${y0} → ${CR.state().y} · speed ${CR.state().speed} · over=${CR.state().over}`
+    );
     CR.newGame();
-    const sp0 = CR.state().speed;
-    CR.input(' ', true);
-    CR.tick(0.45);
+    const constants = CR.state();
+    ok(
+      'Corrida: boostSpeed > cruiseSpeed',
+      constants.boostSpeed > constants.cruiseSpeed &&
+        constants.boostMult >= 1.7 &&
+        constants.boostMult <= 2.2 &&
+        constants.cruiseMult === 1 &&
+        constants.boostSpeed === constants.cruiseSpeed * constants.boostMult,
+      `cruise ${constants.cruiseSpeed}×${constants.cruiseMult} · boost ${constants.boostSpeed}×${constants.boostMult}`
+    );
     CR.input(' ', false);
-    ok('Corrida: espaço dá boost', CR.state().speed > sp0 + 50, `${sp0} → ${CR.state().speed}`);
+    CR.tick(0.2);
+    const cruise = CR.state();
+    const cruiseDist = cruise.dist;
+    CR.newGame();
+    CR.input(' ', true);
+    CR.tick(0.2);
+    const boosted = CR.state();
+    ok(
+      'Corrida: espaço dá boost',
+      boosted.boost === true &&
+        boosted.speed === boosted.boostSpeed &&
+        cruise.speed === cruise.cruiseSpeed &&
+        boosted.speed > cruise.speed &&
+        boosted.speed / cruise.speed >= 1.7 &&
+        boosted.speedMult > cruise.speedMult &&
+        boosted.dist > cruiseDist * 1.6 &&
+        $('.cr-car') &&
+        $('.cr-car').classList.contains('is-boost') &&
+        $('.cr-stage') &&
+        $('.cr-stage').classList.contains('is-boost') &&
+        $$('.cr-car__flame').length >= 3 &&
+        $('.cr-boostfx'),
+      `cruise ${cruise.speed} (×${cruise.speedMult}, ${cruiseDist} m) → boost ${boosted.speed} (×${boosted.speedMult}, ${boosted.dist} m)`
+    );
+    CR.input(' ', false);
+    CR.tick(0.05);
+    ok(
+      'Corrida: soltar espaço volta ao cruise',
+      CR.state().speed === CR.state().cruiseSpeed && CR.state().boost === false && !$('.cr-car').classList.contains('is-boost'),
+      `${CR.state().speed}`
+    );
     const carBox = $('.cr-car') && $('.cr-car').getBoundingClientRect();
     ok('Corrida: carrinho menor na pista', carBox && carBox.height <= 130 && carBox.width <= 95, carBox && `${Math.round(carBox.width)}×${Math.round(carBox.height)}`);
     ok('Corrida: sem a palavra saco na tela', !/saco/i.test(($('.cr') && $('.cr').textContent) || ''));
